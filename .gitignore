@@ -1,5 +1,7 @@
 # Environment variables
 .env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -34,13 +36,16 @@ ENV/
 *.swp
 *.swo
 .project
+.pydevproject
 .classpath
 .settings/
 
-# Logs
+# Logs and databases
 *.log
 logs/
 log/
+*.sqlite3
+*.db
 
 # Generated files
 generated_images/
@@ -49,11 +54,27 @@ chat_history/
 *.jpg
 *.jpeg
 
-# OS
+# OS generated files
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Project-specific
+# Project specific
 *.session
 *.session-journal
+gitleaks-report.json
+bandit-results.json
+coverage.xml
+.coverage
+htmlcov/
+
+# Documentation
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
