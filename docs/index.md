@@ -77,12 +77,38 @@ Your data's security is our priority:
 - 💾 No persistent storage
 - 🔒 Private conversations
 
-## 🚀 Getting Started
+## 🔑 Getting Your API Keys
 
-1. 🤖 Get your bot token from [@BotFather](https://t.me/botfather)
-2. ⚙️ Set up your environment
-3. 🔑 Configure API keys
-4. 💬 Start chatting!
+### Telegram Bot Token
+1. Open Telegram and search for [@BotFather](https://t.me/botfather)
+2. Send `/newbot` command
+3. Follow instructions to create your bot
+4. Copy the provided API token
+5. Keep this token secure!
+
+### Groq API Key
+1. Visit [Groq Cloud Console](https://console.groq.com)
+2. Sign up or log in to your account
+3. Go to API Keys section
+4. Click "Create New API Key"
+5. Copy your API key
+6. In NovaChat AI, use `/setgroqkey your_key_here`
+
+### Together AI Key
+1. Go to [Together AI Platform](https://together.ai)
+2. Create an account or sign in
+3. Navigate to API section
+4. Generate a new API key
+5. Copy the key
+6. Use `/settogetherkey your_key_here` in NovaChat AI
+
+### Replicate API Key (Coming in v1.1)
+1. Visit [Replicate](https://replicate.com)
+2. Sign up for an account
+3. Go to Account Settings
+4. Find API Tokens section
+5. Generate new token
+6. Will be used with upcoming video generation feature
 
 For detailed setup instructions, visit our [Setup Guide](setup.md).
 

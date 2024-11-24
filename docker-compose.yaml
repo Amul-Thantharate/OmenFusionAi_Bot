@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  novachat:
+    build: .
+    container_name: novachat-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+    environment:
+      - TZ=UTC
