@@ -31,10 +31,7 @@ def generate_image(prompt: str) -> tuple[bool, bytes, str]:
                                 image_bytes contains the raw image data, and message contains status info
     """
     try:
-        url = os.getenv('APP_URL')
-        if not url:
-            return False, None, "APP_URL environment variable not set"
-
+        url = "https://api.airforce/v1/imagine2"
         headers = {
             "Content-Type": "application/json"
         }
