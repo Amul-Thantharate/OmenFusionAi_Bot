@@ -2,6 +2,8 @@
 
 A powerful Flask-based Telegram bot powered by Groq and Together AI for chat and image generation.
 
+🤖 **Try the bot now**: [A_iFusion_bot](https://t.me/A_iFusion_bot)
+
 ## Features
 
 - 🤖 Advanced AI Chat using Groq
