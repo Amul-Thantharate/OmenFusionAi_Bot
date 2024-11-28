@@ -1,112 +1,144 @@
-# Changelog 📝
+---
+layout: default
+title: Changelog
+nav_order: 4
+---
 
-All notable changes to NovaChat AI will be documented in this file.
+# Changelog
+{: .no_toc }
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+Track NovaChat AI's version history and updates.
+{: .fs-6 .fw-300 }
 
-## [Unreleased]
+## Table of Contents
+{: .no_toc .text-delta }
 
-### Coming in Version 1.3 🚀
-- 🎭 Custom AI model selection for personalized interactions
-- 🗣️ Speech-to-Text integration for voice commands
-- 🎤 Enhanced voice message processing capabilities
-- 📝 Smart image captioning system
+1. TOC
+{:toc}
 
-### Coming in Version 1.2 🔜
-- 👥 Group chat support with advanced features
-- 🎨 Image editing and manipulation tools
-- 🤖 Custom AI model selection options
-- 📝 Advanced prompt templates for better control
-- 🎯 Enhanced prompt system for image generation
+---
 
-### Coming in Version 1.1 ⚡
-- 🌐 Multi-language support for global users
-- 🎤 Voice message processing capabilities
-- 🎨 Custom image style options
-- 📋 Chat summarization features
-- 🎥 Video generation using Replicate API
+## [1.0.0] - 2024-03-20
 
-## [1.0.0] - 2024-03-14
-
-### Added ✨
-- Initial release of NovaChat AI
-- Advanced AI chat using Groq's Llama3-8b-8192 model
-- Dual image generation system:
-  * Basic image generation with `/image`
-  * High-quality Together AI generation with `/imagine`
+### Added
+- Flask web application integration
+- Telegram bot with webhook support
+- Advanced AI chat using Groq's Llama3-8b-8192
+- Basic and high-quality image generation
 - Chat history management
-- Export functionality (Markdown/PDF)
-- User session management
+- Docker containerization
+- Gunicorn production server
+
+### Features
+- Intelligent chat with context awareness
+- Dual image generation systems
+- Chat history export (Markdown/PDF)
 - Customizable AI parameters
-- Security features for API key handling
+- Secure API key management
 
-### New Commands 🛠️
-- `/start` - Initialize the bot
-- `/help` - Show all commands
-- `/chat` - Start AI conversation
-- `/image` - Generate basic image
-- `/imagine` - Create high-quality image
-- `/setgroqkey` - Set Groq API key
-- `/settogetherkey` - Set Together AI key
-- `/settings` - View current settings
-- `/export` - Export chat history
-- `/clear` - Clear chat history
-- `/temperature` - Adjust response creativity
-- `/tokens` - Set maximum response length
+### Commands
+- `/start` - Bot initialization
+- `/help` - Command reference
+- `/chat` - AI conversations
+- `/image` - Basic image generation
+- `/imagine` - High-quality images
+- `/setgroqkey` - Groq API configuration
+- `/settogetherkey` - Together AI setup
+- `/settings` - Bot configuration
+- `/export` - History export
+- `/clear` - History management
+- `/temperature` - Response creativity
+- `/tokens` - Response length
 
-### Security 🔒
-- Secure API key storage in memory
-- Auto-deletion of sensitive messages
-- No persistent storage of API keys
-- Private conversation handling
+### Technical
+- Python 3.12 support
+- Flask web framework
+- Gunicorn WSGI server
+- Docker deployment
+- Webhook integration
+- Async bot operations
+- Error handling system
+- Logging implementation
 
-### Dependencies 📦
-- Added python-telegram-bot
-- Added groq client
-- Added together library
-- Added fpdf2 for PDF export
-- Added python-dotenv for environment management
+## Upcoming Features
 
-## [0.9.0] - 2024-03-13 (Beta)
+### [1.1.0] - Planned
+- Multi-language support
+- Voice message processing
+- Custom image styles
+- Chat summarization
+- Video generation (Replicate)
+- Database integration
 
-### Added
-- Beta testing of core features
-- Initial implementation of AI chat
-- Basic image generation testing
-- Command structure setup
+### [1.2.0] - Planned
+- Group chat support
+- Image editing capabilities
+- Custom AI model selection
+- Advanced prompt templates
+- Enhanced image generation
 
-### Changed
-- Optimized response handling
-- Improved error messages
-- Enhanced user session management
+### [1.3.0] - Planned
+- Speech-to-Text integration
+- Image captioning
+- Voice commands
+- Advanced security features
+- Performance optimizations
 
-### Fixed
-- API connection stability
-- Message formatting issues
-- Command parsing errors
+## Version History
 
-## [0.8.0] - 2024-03-12 (Alpha)
+### Beta Releases
+- Beta 0.9.0 - Initial testing release
+- Beta 0.9.1 - Bug fixes and stability
+- Beta 0.9.2 - Performance improvements
+- Beta 0.9.3 - Security enhancements
+- Beta 0.9.4 - Final beta release
 
-### Added
-- Project structure setup
-- Basic bot framework
-- Initial command handlers
-- Environment configuration
+### Alpha Releases
+- Alpha 0.1.0 - Core functionality
+- Alpha 0.2.0 - Basic chat features
+- Alpha 0.3.0 - Image generation
+- Alpha 0.4.0 - API integration
+- Alpha 0.5.0 - User interface
 
-### Security
-- Basic API key handling
-- Secure message processing
+## Deprecation Notices
 
-## Version Numbering
+### Version 1.0.0
+- Legacy image generation endpoint
+- Basic text-only responses
+- Simple command structure
 
-- Major version (X.0.0): Significant feature additions or breaking changes
-- Minor version (0.X.0): New features in a backward-compatible manner
-- Patch version (0.0.X): Bug fixes and minor improvements
+## Migration Guides
 
-## Reporting Issues
+### To Version 1.0.0
+1. Update Python to 3.12+
+2. Install new dependencies
+3. Configure Flask application
+4. Set up webhook
+5. Update API keys
 
-Found a bug? Please report it in our [Issue Tracker](https://github.com/yourusername/NovaChat-AI/issues) with:
-- Version number
-- Steps to reproduce
-- Expected vs actual behavior
+## Security Updates
+
+### Version 1.0.0
+- Secure API key handling
+- Webhook authentication
+- Rate limiting implementation
+- Input validation
+- Error logging
+
+## Performance Improvements
+
+### Version 1.0.0
+- Async operations
+- Docker optimization
+- Response caching
+- Memory management
+- Error recovery
+
+## Bug Fixes
+
+### Version 1.0.0
+- Fixed memory leaks
+- Improved error handling
+- Enhanced stability
+- Better timeout handling
+- Updated dependencies
