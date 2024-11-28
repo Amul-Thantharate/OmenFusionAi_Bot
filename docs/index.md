@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 ---
 layout: default
 title: AIFusionBot Documentation
@@ -69,7 +68,6 @@ Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin 
 
 ## API Keys Setup
 
-=======
 # AIFusionBot Documentation
 
 A comprehensive Flask-based Telegram bot that combines advanced AI chat capabilities with image generation.
@@ -116,7 +114,6 @@ Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin 
 
 ## API Keys Setup
 
->>>>>>> feature/docker-improvements
 To run your own instance of AIFusionBot, you'll need the following API keys:
 
 ### Groq API Key
@@ -172,10 +169,7 @@ Stay tuned for exciting new features coming to AIFusionBot! Here's our developme
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md) for details.
-<<<<<<< HEAD
 
 ## Support
 
 Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharate/AIFusionBot/issues).
-=======
->>>>>>> feature/docker-improvements
