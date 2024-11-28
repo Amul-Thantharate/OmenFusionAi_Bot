@@ -1,104 +1,210 @@
-# Command Reference 🛠️
+---
+layout: default
+title: Command Reference
+nav_order: 3
+---
+
+# Command Reference
+{: .no_toc }
+
+Complete list of NovaChat AI bot commands and their usage.
+{: .fs-6 .fw-300 }
+
+## Table of Contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Basic Commands
 
-### Getting Started
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/start` | Initialize the bot | `/start` |
-| `/help` | Show all available commands | `/help` |
-| `/settings` | View current configuration | `/settings` |
+### /start
+Start the bot and receive a welcome message.
+```
+/start
+```
 
-### Chat Commands
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/chat` | Start AI conversation | `/chat What is quantum computing?` |
-| `/clear` | Clear chat history | `/clear` |
-| `/export` | Export chat history | `/export markdown` or `/export pdf` |
+### /help
+Display all available commands and their descriptions.
+```
+/help
+```
+
+## Chat Commands
+
+### /chat
+Start a conversation with the AI.
+```
+/chat Hello, how are you today?
+```
+
+### /clear
+Clear your chat history.
+```
+/clear
+```
+Requires confirmation via inline buttons.
+
+### /export
+Export your chat history in different formats.
+```
+/export markdown  # Export as Markdown
+/export pdf      # Export as PDF
+```
+
+## Image Generation
+
+### /image
+Generate a basic image quickly.
+```
+/image sunset over mountains
+```
+
+### /imagine
+Create high-quality images using Together AI.
+```
+/imagine beautiful sunset over mountains, realistic, 4k, detailed
+```
+
+## Settings & Configuration
+
+### /setgroqkey
+Set your Groq API key for chat functionality.
+```
+/setgroqkey your_api_key_here
+```
+Note: Message will be deleted immediately for security.
+
+### /settogetherkey
+Set your Together AI key for high-quality image generation.
+```
+/settogetherkey your_api_key_here
+```
+Note: Message will be deleted immediately for security.
+
+### /settings
+View current bot settings.
+```
+/settings
+```
+
+### /temperature
+Adjust the AI's response creativity (0.0-1.0).
+```
+/temperature 0.7
+```
+
+### /tokens
+Set maximum response length.
+```
+/tokens 1024
+```
+
+## Response Examples
+
+### Chat Response
+```
+You: /chat What is artificial intelligence?
+
+🤖 AI: Artificial Intelligence (AI) refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include:
+
+1. Learning from experience
+2. Understanding natural language
+3. Recognizing patterns
+4. Making decisions
+5. Solving complex problems
+
+AI systems can range from rule-based programs to sophisticated deep learning models.
+```
 
 ### Image Generation
-| Command | Description | Example |
-|---------|-------------|---------|
-| `/image` | Generate basic image | `/image sunset over mountains` |
-| `/imagine` | Create high-quality image | `/imagine photorealistic mountain landscape, 4k` |
+```
+You: /imagine beautiful sunset at beach, realistic, 4k
 
-## Configuration Commands
+🎨 Generating your high-quality image with Together AI... Please wait.
 
-### API Keys
-| Command | Description | Security |
-|---------|-------------|----------|
-| `/setgroqkey` | Set Groq API key | Auto-deletes message |
-| `/settogetherkey` | Set Together AI key | Auto-deletes message |
+[Image appears]
+✨ Generated with Together AI:
+beautiful sunset at beach, realistic, 4k
 
-### Chat Settings
-| Command | Description | Range |
-|---------|-------------|-------|
-| `/temperature` | Set response creativity | 0.0 - 1.0 |
-| `/tokens` | Set maximum response length | 1 - 4096 |
-
-## Advanced Usage
-
-### Chat Export Options
-```bash
-/export markdown  # Export as .md file
-/export pdf      # Export as .pdf file
+⏱️ Image generated in 5.23 seconds
 ```
 
-### Image Generation Tips
-- Be specific in descriptions
-- Include style preferences
-- Specify quality level
-- Add artistic references
+## Error Handling
 
-Example:
-```bash
-/imagine beautiful mountain landscape at sunset, 
-         photorealistic style, 
-         dramatic lighting, 
-         4k resolution
+Common error messages and their solutions:
+
+1. **API Key Not Set**
+```
+⚠️ Please set your API key first using:
+/setgroqkey your_api_key
 ```
 
-## Command Parameters
+2. **Invalid API Key**
+```
+❌ Invalid API key. Please check your key and try again.
+```
 
-### Temperature
-- Lower (0.1-0.3): More focused, deterministic responses
-- Medium (0.4-0.7): Balanced creativity
-- Higher (0.8-1.0): More creative, varied responses
-
-### Token Length
-- Short (256): Quick responses
-- Medium (1024): Standard conversations
-- Long (2048+): Detailed explanations
-
-## Error Messages
-
-### Common Errors
-| Error | Meaning | Solution |
-|-------|----------|----------|
-| "API key required" | Missing API key | Set key with appropriate command |
-| "Invalid API key" | Incorrect key format | Check key and try again |
-| "Generation failed" | Image creation error | Check prompt and try again |
+3. **Rate Limit**
+```
+⚠️ Rate limit reached. Please try again later.
+```
 
 ## Best Practices
 
-1. **API Key Security**
-   - Set keys in private chat
-   - Never share keys publicly
-   - Rotate keys periodically
+1. **Chat Commands**
+   - Be specific in your requests
+   - Use clear, concise language
+   - Check response temperature for desired creativity
 
 2. **Image Generation**
-   - Be specific in prompts
-   - Start simple, then add detail
-   - Use reference examples
+   - Provide detailed descriptions
+   - Specify desired style and quality
+   - Use appropriate keywords
 
-3. **Chat Optimization**
-   - Clear context when switching topics
-   - Export important conversations
-   - Adjust temperature for task type
+3. **API Keys**
+   - Never share your API keys
+   - Set keys in private messages
+   - Rotate keys periodically
 
-## Command Shortcuts
+## Command Categories
 
-Coming in future updates:
-- Custom command aliases
-- Keyboard shortcuts
-- Quick response templates
+### Essential
+- `/start`
+- `/help`
+- `/chat`
+- `/image`
+
+### Advanced
+- `/imagine`
+- `/export`
+- `/settings`
+- `/temperature`
+
+### Configuration
+- `/setgroqkey`
+- `/settogetherkey`
+- `/tokens`
+
+### Management
+- `/clear`
+- `/export`
+
+## Tips & Tricks
+
+1. **Better Chat Responses**
+   - Adjust temperature for creativity
+   - Use context in conversations
+   - Be specific in questions
+
+2. **Quality Images**
+   - Add style descriptors
+   - Specify resolution
+   - Include artistic elements
+
+3. **Efficient Usage**
+   - Export chats regularly
+   - Clear history when needed
+   - Monitor API usage
