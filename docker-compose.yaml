@@ -1,13 +1,21 @@
 version: '3.8'
 
 services:
-  novachat:
+  web:
     build: .
     container_name: novachat-ai
-    restart: unless-stopped
-    env_file:
-      - .env
+    env_file: .env
     volumes:
       - ./data:/app/data
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
     environment:
-      - TZ=UTC
+      - FLASK_APP=app.py
+      - FLASK_ENV=production
+      - GUNICORN_CMD_ARGS="--workers=4 --timeout=120"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
