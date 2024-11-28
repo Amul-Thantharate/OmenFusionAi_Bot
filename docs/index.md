@@ -13,7 +13,7 @@ A comprehensive Flask-based Telegram bot that combines advanced AI chat capabili
 {: .fs-6 .fw-300 }
 
 [Get Started](setup.md){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View on GitHub](https://github.com/yourusername/NovaChat-AI){: .btn .fs-5 .mb-4 .mb-md-0 }
+[View on GitHub](https://github.com/Amul-Thantharte/NovaChat-AI){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
@@ -60,8 +60,8 @@ graph TD
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](https://github.com/yourusername/NovaChat-AI/blob/main/CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharte/NovaChat-AI/blob/main/CONTRIBUTING.md) for details.
 
 ## Support
 
-Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/yourusername/NovaChat-AI/issues).
+Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharte/NovaChat-AI/issues).

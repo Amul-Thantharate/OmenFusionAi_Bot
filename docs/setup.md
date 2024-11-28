@@ -33,7 +33,7 @@ Before you begin, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/NovaChat-AI.git
+git clone https://github.com/Amul-Thantharte/NovaChat-AI.git
 cd NovaChat-AI
 ```
 
