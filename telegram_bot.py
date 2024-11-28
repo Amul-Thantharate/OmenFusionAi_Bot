@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NovaChat AI - Telegram Bot Implementation
+AIFusionBot - Telegram Bot Implementation
 Handles all bot commands and interactions
 """
 
@@ -12,8 +12,17 @@ from telegram.ext import (
     CommandHandler,
     MessageHandler,
     ContextTypes,
-    filters
+    filters,
+    CallbackQueryHandler
 )
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from datetime import datetime
+from io import BytesIO
+import time
+from typing import Optional
+from dotenv import load_dotenv
+from main import interactive_chat, save_chat_history, generate_image, generate_image_together
+from flask import Flask, request, jsonify
 
 # Configure logging
 logging.basicConfig(
@@ -22,9 +31,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Global variable for user sessions
+user_sessions = {}
+
 # Bot command descriptions
 COMMANDS = {
-    'start': 'Start NovaChat AI',
+    'start': 'Start AIFusionBot',
     'help': 'Show available commands',
     'chat': 'Start AI conversation',
     'image': 'Generate a basic image',
@@ -38,10 +50,20 @@ COMMANDS = {
     'tokens': 'Set maximum response length'
 }
 
+class UserSession:
+    def __init__(self):
+        self.model_type = "groq"
+        self.temperature = 0.5
+        self.max_tokens = 1024
+        self.chat_history = []
+        self.groq_api_key = None
+        self.together_api_key = None
+
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
+    logger.info(f"Start command received from user {update.effective_user.id}")
     welcome_message = (
-        "👋 Welcome to NovaChat AI!\n\n"
+        "👋 Welcome to AIFusionBot!\n\n"
         "I'm your advanced AI assistant powered by Groq and Together AI. "
         "I can help you with:\n\n"
         "🗣️ Natural conversations\n"
@@ -53,7 +75,8 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /help command"""
-    help_text = "🤖 NovaChat AI Commands:\n\n"
+    logger.info(f"Help command received from user {update.effective_user.id}")
+    help_text = "🤖 AIFusionBot Commands:\n\n"
     for cmd, desc in COMMANDS.items():
         help_text += f"/{cmd} - {desc}\n"
     await update.message.reply_text(help_text)
@@ -62,7 +85,7 @@ async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     """Handle the /setgroqkey command."""
     # Delete the message containing the API key for security
     await update.message.delete()
-    
+
     if not context.args:
         await update.message.reply_text(
             "Please provide your Groq API key after /setgroqkey\n"
@@ -75,11 +98,10 @@ async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     user_id = update.effective_user.id
     if user_id not in user_sessions:
         user_sessions[user_id] = UserSession()
-    
+
     session = user_sessions[user_id]
     session.groq_api_key = context.args[0]
-    
-    # Send confirmation in private message
+
     await update.message.reply_text(
         "✅ Groq API key set successfully!\n"
         "You can now use all bot features.\n"
@@ -91,7 +113,7 @@ async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_T
     """Handle the /settogetherkey command."""
     # Delete the message containing the API key for security
     await update.message.delete()
-    
+
     if not context.args:
         await update.message.reply_text(
             "Please provide your Together API key after /settogetherkey\n"
@@ -104,10 +126,10 @@ async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_T
     user_id = update.effective_user.id
     if user_id not in user_sessions:
         user_sessions[user_id] = UserSession()
-    
+
     session = user_sessions[user_id]
     session.together_api_key = context.args[0]
-    
+
     # Send confirmation in private message
     await update.message.reply_text(
         "✅ Together API key set successfully!\n"
@@ -124,14 +146,14 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id not in user_sessions:
         user_sessions[user_id] = UserSession()
-    
+
     session = user_sessions[user_id]
     message = ' '.join(context.args)
 
     try:
         # Send typing action
         await update.message.chat.send_action(action="typing")
-        
+
         response = interactive_chat(
             text=message,
             temperature=session.temperature,
@@ -140,11 +162,11 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             stream=False,
             api_key=session.groq_api_key
         )
-        
+
         # Store in chat history
         session.chat_history.append({"role": "user", "content": message})
         session.chat_history.append({"role": "assistant", "content": response})
-        
+
         await update.message.reply_text(response)
     except Exception as e:
         logger.error(f"Error in chat_command: {str(e)}")
@@ -174,7 +196,7 @@ async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         success, image_bytes, message = generate_image(prompt)
-        
+
         if success and image_bytes:
             # Send the generated image directly from bytes
             await update.message.reply_photo(
@@ -226,10 +248,10 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         success, image_bytes, message = generate_image_together(
-            prompt, 
+            prompt,
             api_key=user_sessions[user_id].together_api_key
         )
-        
+
         if success and image_bytes:
             # Send the generated image directly from bytes
             await update.message.reply_photo(
@@ -252,7 +274,7 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id not in user_sessions:
         user_sessions[user_id] = UserSession()
-    
+
     session = user_sessions[user_id]
     settings_text = (
         f"*Current Settings:*\n"
@@ -270,12 +292,12 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id not in user_sessions:
         await update.message.reply_text("No chat history to save.")
         return
-    
+
     session = user_sessions[user_id]
     if not session.chat_history:
         await update.message.reply_text("No chat history to save.")
         return
-    
+
     try:
         # Save chat history
         filename = save_chat_history(
@@ -293,16 +315,16 @@ async def temperature_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     if not context.args:
         await update.message.reply_text("Please provide a temperature value (0.0-1.0)")
         return
-    
+
     try:
         temp = float(context.args[0])
         if not 0 <= temp <= 1:
             raise ValueError("Temperature must be between 0 and 1")
-        
+
         user_id = update.effective_user.id
         if user_id not in user_sessions:
             user_sessions[user_id] = UserSession()
-        
+
         session = user_sessions[user_id]
         session.temperature = temp
         await update.message.reply_text(f"Temperature set to: {temp}")
@@ -406,20 +428,24 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Delete the processing message
         await processing_msg.delete()
 
-class UserSession:
-    def __init__(self):
-        self.model_type = "groq"
-        self.temperature = 0.5
-        self.max_tokens = 1024
-        self.chat_history = []
-        self.groq_api_key = None
-        self.together_api_key = None
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle errors in the telegram bot."""
+    logger.error(f"Exception while handling an update: {context.error}")
+    if update and isinstance(update, Update) and update.effective_message:
+        text = "Sorry, an error occurred while processing your request."
+        await update.effective_message.reply_text(text)
 
 def setup_bot(token: str) -> Application:
-    """Initialize and configure the NovaChat AI bot"""
+    """Initialize and configure the AIFusionBot bot"""
     try:
-        # Create application
-        app = Application.builder().token(token).build()
+        logger.info("Setting up bot application...")
+        # Create application with specific defaults for polling
+        app = (
+            Application.builder()
+            .token(token)
+            .concurrent_updates(True)
+            .build()
+        )
 
         # Add command handlers
         app.add_handler(CommandHandler('start', start_command))
@@ -433,44 +459,31 @@ def setup_bot(token: str) -> Application:
         app.add_handler(CommandHandler('export', export_command))
         app.add_handler(CommandHandler('temperature', temperature_command))
         app.add_handler(CommandHandler('clear', clear_command))
-        
+
         # Add callback query handler for buttons
         app.add_handler(CallbackQueryHandler(button_callback))
 
+        # Add error handler
+        app.add_error_handler(error_handler)
+
+        logger.info("Bot setup completed successfully")
         return app
 
     except Exception as e:
-        logger.error(f"Failed to setup NovaChat AI bot: {str(e)}")
+        logger.error(f"Failed to setup AIFusionBot bot: {str(e)}")
         raise
 
-def run_telegram_bot():
-    """Start the Telegram bot."""
-    if not TELEGRAM_BOT_TOKEN:
-        logger.error("TELEGRAM_BOT_TOKEN not found in environment variables")
-        print("Error: Please set TELEGRAM_BOT_TOKEN in your .env file")
-        return
-
-    # Create application
-    application = setup_bot(TELEGRAM_BOT_TOKEN)
-
-    # Start the bot
-    print("Starting Telegram bot...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
-
 if __name__ == "__main__":
-    from dotenv import load_dotenv
-    from main import interactive_chat, save_chat_history, generate_image, generate_image_together
-    import time
-    from io import BytesIO
-    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-    from datetime import datetime
-    from typing import Optional
-
     # Load environment variables
     load_dotenv()
     TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-
-    # Store user sessions
-    user_sessions = {}
-
-    run_telegram_bot()
+    
+    if not TELEGRAM_BOT_TOKEN:
+        logger.error("TELEGRAM_BOT_TOKEN not found in environment variables")
+        print("Error: Please set TELEGRAM_BOT_TOKEN in your .env file")
+        exit(1)
+    
+    # Create and run the bot in polling mode
+    application = setup_bot(TELEGRAM_BOT_TOKEN)
+    print("Starting Telegram bot in polling mode...")
+    application.run_polling(allowed_updates=Update.ALL_TYPES)

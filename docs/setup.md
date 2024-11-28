@@ -1,151 +1,199 @@
-# 🚀 Setup Guide
+---
+layout: default
+title: Setup Guide
+nav_order: 2
+---
+
+# Setup Guide
+{: .no_toc }
+
+Learn how to set up and deploy NovaChat AI.
+{: .fs-6 .fw-300 }
+
+## Table of Contents
+{: .no_toc .text-delta }
+
+1. TOC
+{:toc}
+
+---
 
 ## Prerequisites
 
-Before setting up NovaChat AI, ensure you have:
+Before you begin, ensure you have:
 
-- Python 3.8 or higher installed
-- A Telegram account
-- Access to the required API services
+- Python 3.12 or higher
+- Docker (optional, for containerized deployment)
+- Telegram Bot Token
+- Groq API Key (for chat)
+- Together AI API Key (for high-quality images)
 
-## 🔑 Getting Required API Keys
+## Installation
 
-### 1. Telegram Bot Token
-1. Open Telegram and search for [@BotFather](https://t.me/botfather)
-2. Send `/newbot` command
-3. Follow instructions to create your bot
-4. Copy the provided API token
-5. Keep this token secure!
+### 1. Clone the Repository
 
-### 2. Groq API Key (For AI Chat)
-1. Visit [Groq Cloud Console](https://console.groq.com)
-2. Create an account or sign in
-3. Navigate to API Keys section
-4. Click "Create New API Key"
-5. Copy your API key
-6. Use `/setgroqkey your_key_here` in NovaChat AI
-
-### 3. Together AI Key (For Image Generation)
-1. Go to [Together AI Platform](https://together.ai)
-2. Sign up for an account
-3. Go to API section
-4. Generate a new API key
-5. Copy the key
-6. Use `/settogetherkey your_key_here` in NovaChat AI
-
-### 4. Replicate API Key (Coming in v1.1)
-1. Visit [Replicate](https://replicate.com)
-2. Create an account
-3. Go to Account Settings
-4. Find API Tokens section
-5. Generate new token
-6. Save for upcoming video generation feature
-
-## 🛠️ Installation Steps
-
-1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/NovaChat-AI.git
-cd NovaChat-AI
+git clone https://github.com/Amul-Thantharate/AIFusionBot.git
+cd AIFusionBot
 ```
 
-2. Create a virtual environment (recommended):
-```bash
-python -m venv venv
-# On Windows
-venv\Scripts\activate
-# On Unix or MacOS
-source venv/bin/activate
-```
+### 2. Set Up Environment
 
-3. Install dependencies:
-```bash
-pip install -r requirements.txt
-```
+Create and configure your `.env` file:
 
-4. Set up environment variables:
 ```bash
 cp .env.example .env
 ```
 
-5. Edit `.env` file with your tokens:
-```ini
+Edit `.env` with your configuration:
+
+```env
 # Required
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token_here
-APP_URL=your_app_url_here
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+GROQ_API_KEY=your_groq_api_key
+TOGETHER_API_KEY=your_together_api_key
 
-# Optional - AI Service API Keys
-GROQ_API_KEY=your_groq_api_key_here
-TOGETHER_API_KEY=your_together_api_key_here
+# Optional
+PORT=5000
+FLASK_ENV=production
 ```
 
-## 🚀 Running the Bot
+### 3. Install Dependencies
 
-1. Start the bot:
 ```bash
-python app/main.py
+# Create virtual environment
+python -m venv venv
+
+# Activate virtual environment
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+
+# Install requirements
+pip install -r requirements.txt
 ```
 
-2. Open Telegram and search for your bot's username
-3. Start chatting with `/start` command
+## Development Setup
 
-## 🔧 Configuration Options
+### Running in Development Mode
 
-### AI Parameters
-- Temperature: Controls response creativity (0.0-1.0)
-- Max Tokens: Sets response length limit
-- Model Selection: Choose between available AI models
+```bash
+# Set Flask environment
+export FLASK_APP=app.py
+export FLASK_ENV=development
 
-### Chat Settings
-- History retention
-- Export formats
-- Response styles
+# Run Flask development server
+flask run
+```
 
-## 🔒 Security Notes
+### Setting Up Pre-commit Hooks
 
-- Never share your API keys
-- Use environment variables for sensitive data
-- Keep your `.env` file secure
-- Regularly rotate API keys
+```bash
+pre-commit install
+```
 
-## ⚠️ Troubleshooting
+## Production Deployment
+
+### Using Docker (Recommended)
+
+1. Build and start containers:
+```bash
+docker-compose up -d
+```
+
+2. View logs:
+```bash
+docker-compose logs -f
+```
+
+3. Stop services:
+```bash
+docker-compose down
+```
+
+### Manual Deployment
+
+Run with Gunicorn:
+
+```bash
+gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app
+```
+
+## Telegram Bot Setup
+
+1. Create a new bot:
+   - Message [@BotFather](https://t.me/botfather) on Telegram
+   - Send `/newbot` command
+   - Follow instructions to create your bot
+   - Copy the provided token
+
+2. Set webhook URL (replace with your domain):
+```bash
+curl -F "url=https://your-domain.com/webhook" \
+     https://api.telegram.org/bot<YOUR_BOT_TOKEN>/setWebhook
+```
+
+## API Keys Setup
+
+### Groq API Key
+
+1. Visit [Groq Cloud Console](https://console.groq.com)
+2. Create an account or sign in
+3. Navigate to API Keys section
+4. Generate a new key
+5. Use `/setgroqkey` command in your bot
+
+### Together AI Key
+
+1. Go to [Together AI](https://together.ai)
+2. Sign up or log in
+3. Access API section
+4. Create new API key
+5. Use `/settogetherkey` command in your bot
+
+## Security Considerations
+
+1. **API Keys**:
+   - Never commit API keys to version control
+   - Use environment variables
+   - Rotate keys periodically
+
+2. **Production Deployment**:
+   - Use HTTPS
+   - Set up proper firewalls
+   - Keep dependencies updated
+
+3. **Bot Security**:
+   - Implement rate limiting
+   - Validate all user inputs
+   - Monitor bot activity
+
+## Troubleshooting
 
 ### Common Issues
 
-1. Bot not responding
-   - Check if bot is running
-   - Verify Telegram token
-   - Check internet connection
+1. **Bot Not Responding**:
+   - Check if the bot is running
+   - Verify webhook URL
+   - Check error logs
 
-2. API errors
-   - Verify API keys
-   - Check API service status
-   - Confirm quota limits
+2. **API Errors**:
+   - Validate API keys
+   - Check API quotas
+   - Review error messages
 
-3. Installation problems
-   - Update pip
-   - Check Python version
-   - Verify dependencies
+3. **Docker Issues**:
+   - Verify Docker installation
+   - Check container logs
+   - Ensure ports are available
 
-## 📞 Support
+### Getting Help
 
-Need help? Try these resources:
-- Check [Command Reference](commands.md)
-- View [Changelog](changelog.md)
-- Create an issue on GitHub
+- Check [GitHub Issues](https://github.com/Amul-Thantharate/AIFusionBot/issues)
+- Review error logs
+- Contact support team
 
-## 🔄 Updating
+## Next Steps
 
-To update NovaChat AI:
-
-1. Pull latest changes:
-```bash
-git pull origin main
-```
-
-2. Update dependencies:
-```bash
-pip install -r requirements.txt --upgrade
-```
-
-3. Check changelog for breaking changes
+- [Learn available commands](commands.md)
+- [View changelog](changelog.md)
+- [Contribute to development](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md)

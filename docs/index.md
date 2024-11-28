@@ -1,124 +1,129 @@
-# 🤖 NovaChat AI Documentation
+---
+layout: default
+title: AIFusionBot Documentation
+nav_order: 1
+description: "AIFusionBot - A Flask-based Telegram Bot powered by Groq and Together AI"
+permalink: /
+---
 
-## 👋 Welcome to NovaChat AI!
+# AIFusionBot Documentation
+{: .fs-9 }
 
-Welcome to the world of intelligent conversations and creative imagery! NovaChat AI is your advanced AI companion on Telegram, combining the power of Groq's cutting-edge language models with state-of-the-art image generation capabilities.
+A comprehensive Flask-based Telegram bot that combines advanced AI chat capabilities with image generation.
+{: .fs-6 .fw-300 }
 
-Whether you're looking to engage in meaningful discussions, generate stunning artwork, or simply explore the possibilities of AI, NovaChat AI is here to assist you with:
+[Get Started](setup.md){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
+[View on GitHub](https://github.com/Amul-Thantharate/AIFusionBot){: .btn .fs-5 .mb-4 .mb-md-0 }
 
-🧠 **Intelligent Conversations**
-- Natural language understanding
-- Context-aware responses
-- Personalized interactions
+---
 
-🎨 **Creative Image Generation**
-- Dual generation systems
-- High-quality artistic creations
-- Quick visualization tools
+## Overview
 
-🛠️ **Powerful Features**
-- Customizable AI parameters
-- Chat history management
-- Secure API handling
+AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's advanced language models and Together AI's image generation capabilities. Built with Flask and Docker, it offers seamless chat interactions, stunning image creation, and upcoming video generation features. Perfect for both casual users and developers, it provides an intuitive interface for AI-powered conversations, creative image generation, and robust chat management—all within your Telegram app. Whether you're looking to have engaging conversations, create unique images, or build upon the platform, AIFusionBot offers a complete AI assistant experience.
 
-Let's begin your journey with NovaChat AI! 🚀
+### Key Features
 
-## 🚀 Future Releases
+- **Advanced AI Chat**: Powered by Groq's Llama3-8b-8192 model
+- **Dual Image Generation**: Basic and high-quality options
+- **Flask Web Interface**: Professional grade web server
+- **Webhook Support**: Real-time Telegram updates
+- **Chat Management**: Export and clear chat history
+- **Customizable Settings**: Adjust AI parameters
 
-### Version 1.1 ⚡
-- 🌐 Multi-language support
-- 🎤 Voice message processing
-- 🎨 Custom image styles
-- 📋 Chat summarization
-- 🎥 Video generation using Replicate
+### Architecture
 
-### Version 1.2 🔜
-- 👥 Group chat support
-- 🎨 Image editing capabilities
-- 🤖 Custom AI model selection
-- 📝 Advanced prompt templates
-- 🎯 Enhanced prompt system for images
+```mermaid
+graph TD
+    A[Telegram] -->|Webhook| B[Flask App]
+    B --> C[Telegram Bot Handler]
+    C --> D[Groq AI]
+    C --> E[Together AI]
+    B --> F[Web Interface]
+    G[Docker] -->|Contains| B
+```
 
-### Version 1.3 🚀
-- 🎭 Custom AI model selection
-- 🗣️ Speech-to-Text integration
-- 🎤 Voice message processing
-- 📝 Image captioning
+### Tech Stack
 
-## ⚡ Quick Navigation
+- **Backend Framework**: Flask
+- **WSGI Server**: Gunicorn
+- **Container**: Docker
+- **AI Services**: 
+  - Groq (Chat)
+  - Together AI (Image Generation)
+- **Database**: SQLite (Coming Soon)
 
-- [🚀 Setup Guide](setup.md) - Get started with NovaChat AI
-- [🛠️ Commands](commands.md) - Learn all available commands
-- [📝 Changelog](changelog.md) - View version history
+## Quick Access
 
-## 🌟 Current Features
+You can start using AIFusionBot immediately by accessing our Telegram bot:
 
-### 💬 AI Chat
-Engage in intelligent conversations powered by Groq's advanced language models:
-- 🤝 Natural language understanding
-- 🧩 Context-aware responses
-- ⚙️ Customizable AI parameters
+👉 [Access AIFusionBot on Telegram](https://t.me/A_iFusion_bot)
 
-### 🎨 Image Generation
-Create stunning visuals with dual image generation capabilities:
-- 🖼️ Basic quick images
-- 🎭 High-quality artistic creations
-- 🎯 Multiple style options
+Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin chatting with our AI assistant.
 
-### 📝 Chat Management
-Efficiently manage your conversations:
-- 📤 Export chat history
-- 🗑️ Clear conversations
-- ⚙️ Customize settings
+### Getting Started
 
-### 🔐 Security
-Your data's security is our priority:
-- 🔑 Secure API key handling
-- 💾 No persistent storage
-- 🔒 Private conversations
+1. Click the bot link: [https://t.me/A_iFusion_bot](https://t.me/A_iFusion_bot)
+2. Start the bot by clicking the "Start" button or sending `/start`
+3. Begin chatting or generating images right away!
 
-## 🔑 Getting Your API Keys
+## API Keys Setup
 
-### Telegram Bot Token
-1. Open Telegram and search for [@BotFather](https://t.me/botfather)
-2. Send `/newbot` command
-3. Follow instructions to create your bot
-4. Copy the provided API token
-5. Keep this token secure!
+To run your own instance of AIFusionBot, you'll need the following API keys:
 
 ### Groq API Key
-1. Visit [Groq Cloud Console](https://console.groq.com)
-2. Sign up or log in to your account
-3. Go to API Keys section
-4. Click "Create New API Key"
-5. Copy your API key
-6. In NovaChat AI, use `/setgroqkey your_key_here`
-
-### Together AI Key
-1. Go to [Together AI Platform](https://together.ai)
-2. Create an account or sign in
-3. Navigate to API section
-4. Generate a new API key
-5. Copy the key
-6. Use `/settogetherkey your_key_here` in NovaChat AI
-
-### Replicate API Key (Coming in v1.1)
-1. Visit [Replicate](https://replicate.com)
+1. Visit [Groq's website](https://console.groq.com)
 2. Sign up for an account
-3. Go to Account Settings
-4. Find API Tokens section
-5. Generate new token
-6. Will be used with upcoming video generation feature
+3. Navigate to API Keys section
+4. Generate a new API key
+5. Copy and save your API key securely
 
-For detailed setup instructions, visit our [Setup Guide](setup.md).
+### Together AI API Key
+1. Go to [Together AI Platform](https://api.together.xyz)
+2. Create an account
+3. Navigate to Settings → API Keys
+4. Generate a new API key
+5. Store your API key safely
 
-## 🆘 Support
+⚠️ **Important Security Notes:**
+- Never share your API keys publicly
+- Store API keys in environment variables or `.env` file
+- Don't commit API keys to version control
+- Rotate keys periodically for better security
 
-Need help? Check these resources:
-- 📚 [Setup Guide](setup.md)
-- 🎮 [Command Reference](commands.md)
-- 📋 [Version History](changelog.md)
+## Getting Started
 
-## 📄 License
+1. [Setup Instructions](setup.md)
+2. [Command Reference](commands.md)
+3. [Changelog](changelog.md)
 
-NovaChat AI is licensed under the MIT License. See the [LICENSE](../LICENSE) file for details.
+## Future Releases
+
+Stay tuned for exciting new features coming to AIFusionBot! Here's our development roadmap:
+
+### Version 1.1 (Q2 2024)
+{: .text-purple-200 }
+- 🔄 Real-time chat synchronization
+- 🎨 Additional image generation models
+- 🎨 Text to Vedio (Replicate) 
+### Version 1.2 (Q3 2024)
+{: .text-blue-200 }
+- 👥 Multi-user support
+- 🔐 Enhanced security features
+- 📊 Usage analytics dashboard
+- 🌐 Multi-language support
+
+### Version 1.3 (Q4 2024)
+{: .text-green-200 }
+- 🎵 Audio message processing
+- 📹 Video generation capabilities
+- 🔗 API integration for third-party apps
+
+*Note: Release timeline is tentative and may be adjusted based on development progress and user feedback.*
+
+## Contributing
+
+We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md) for details.
+
+## Support
+
+Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharate/AIFusionBot/issues).

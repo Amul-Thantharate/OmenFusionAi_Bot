@@ -1,146 +1,185 @@
-# 🤖 NovaChat AI
+# AiFusionBot - Flask Telegram Bot
 
-## 🌟 Welcome to NovaChat AI - Your Advanced AI-Powered Telegram Assistant!
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Flask](https://img.shields.io/badge/Flask-3.0.0-lightgrey.svg)](https://flask.palletsprojects.com/)
+[![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
+[![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://t.me/A_iFusion_bot)
+[![Groq](https://img.shields.io/badge/Groq-Powered-orange.svg)](https://console.groq.com)
+[![Together AI](https://img.shields.io/badge/Together_AI-Enabled-purple.svg)](https://api.together.xyz)
+[![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
 
-Transform your Telegram experience with NovaChat AI, an advanced AI assistant that brings the power of intelligent conversations and creative imagery right to your chat! Powered by Groq's cutting-edge language models and state-of-the-art image generation, NovaChat AI is your gateway to the future of digital interaction.
+AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's advanced language models and Together AI's image generation capabilities. Built with Flask and Docker, it offers seamless chat interactions, stunning image creation, and upcoming video generation features. Perfect for both casual users and developers, it provides an intuitive interface for AI-powered conversations, creative image generation, and robust chat management—all within your Telegram app. Whether you're looking to have engaging conversations, create unique images, or build upon the platform, AIFusionBot offers a complete AI assistant experience.
 
-### ✨ Why Choose NovaChat AI?
+🤖 **Try the bot now**: [A_iFusion_bot](https://t.me/A_iFusion_bot)
 
-- 🧠 **Advanced AI Chat**: Engage in natural, context-aware conversations
-- 🎨 **Dual Image Generation**: Create stunning visuals with both quick and high-quality options
-- 🔐 **Security First**: Your data's privacy is our top priority
-- ⚡ **Lightning Fast**: Powered by Groq's high-performance AI models
-- 🎯 **User-Focused**: Intuitive commands and customizable settings
+## Features
 
-## 🔑 Getting Your API Keys
+- 🤖 Advanced AI Chat using Groq
+- 🎨 Image Generation (Basic and High-Quality)
+- 💾 Chat History Management
+- 🔧 Customizable Settings
+- 📤 Export Chat History (Markdown/PDF)
+- 🌐 Flask Web Interface
+- 🔄 Webhook Support
 
-### Groq API Key
-1. Visit [Groq Cloud Console](https://console.groq.com)
-2. Sign up or log in to your account
-3. Go to API Keys section
-4. Click "Create New API Key"
-5. Copy your API key
-6. In NovaChat AI, use `/setgroqkey your_key_here`
+## Commands
 
-### Together AI Key
-1. Go to [Together AI Platform](https://together.ai)
-2. Create an account or sign in
-3. Navigate to API section
-4. Generate a new API key
-5. Copy the key
-6. Use `/settogetherkey your_key_here` in NovaChat AI
+- `/start` - Start NovaChat AI
+- `/help` - Show available commands
+- `/chat` - Start AI conversation
+- `/image` - Generate a basic image
+- `/imagine` - Create high-quality image
+- `/setgroqkey` - Set Groq API key
+- `/settogetherkey` - Set Together AI key
+- `/settings` - View current settings
+- `/export` - Export chat history
+- `/clear` - Clear chat history
+- `/temperature` - Adjust response creativity
+- `/tokens` - Set maximum response length
 
-### Replicate API Key (Coming in v1.1)
-1. Visit [Replicate](https://replicate.com)
-2. Sign up for an account
-3. Go to Account Settings
-4. Find API Tokens section
-5. Generate new token
-6. Will be used with upcoming video generation feature
+## Requirements
 
-## 🚀 Key Features
+- Python 3.12+
+- Telegram Bot Token
+- Groq API Key (for chat)
+- Together AI API Key (for high-quality images)
+- Flask & Gunicorn (for web server)
 
-### 💬 Intelligent Chat
-- Advanced language understanding with Groq's Llama3-8b-8192
-- Context-aware responses
-- Customizable AI parameters
-- Chat history management
-
-### 🎨 Image Generation
-- `/image` - Quick image generation
-- `/imagine` - High-quality artistic creations
-- Multiple style options
-- Progress tracking
-
-### ⚙️ Powerful Controls
-- Customizable settings
-- Chat history export (PDF/Markdown)
-- API key management
-- User session handling
-
-## 📦 Prerequisites
-
-- Python 3.8+
-- Telegram Bot Token (from [@BotFather](https://t.me/botfather))
-- Groq API Key (optional)
-- Together AI Key (optional)
-
-## 🛠️ Installation
+## Installation
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/NovaChat-AI.git
-cd NovaChat-AI
+git clone https://github.com/Amul-Thantharate/AIFusionBot.git
+cd AIFusionBot
 ```
 
-2. Install dependencies:
+2. Create and configure your environment file:
+```bash
+cp .env.example .env
+# Edit .env with your tokens and API keys
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Configure environment variables:
+## Running the Bot
+
+### Development Mode
+
 ```bash
-cp .env.example .env
-# Edit .env with your tokens and settings
+# Run Flask development server
+flask run
 ```
 
-## 🎮 Quick Start
+### Production Mode
 
-1. Set up your bot with [@BotFather](https://t.me/botfather)
-2. Configure your `.env` file
-3. Run the bot:
+Using Docker (recommended):
+
+1. Build and run with docker-compose:
 ```bash
-python app/main.py
+docker-compose up -d
 ```
 
-## 📚 Documentation
+2. View logs:
+```bash
+docker-compose logs -f
+```
 
-Visit our comprehensive documentation:
-- [📘 Setup Guide](docs/setup.md)
-- [🎮 Command Reference](docs/commands.md)
-- [📋 Changelog](docs/changelog.md)
+3. Check container status:
+```bash
+docker-compose ps
+```
 
-## 🔒 Security
+Manual Production Setup:
 
-- Secure API key handling
-- No persistent storage of sensitive data
-- Private conversation handling
-- Auto-deletion of sensitive messages
+```bash
+# Run with Gunicorn
+gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app
+```
 
-## 🎯 Roadmap
+## Configuration
 
-### Version 1.1
-- Multi-language support
-- Voice message processing
-- Custom image styles
-- Chat summarization
-- Video generation Using (Replicate)
+Set the following environment variables in your `.env` file:
 
-### Version 1.2
-- Group chat support
-- Image editing capabilities
-- Custom AI model selection
-- Advanced prompt templates
-- Prompt Enhancements for image generation
+```env
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+GROQ_API_KEY=your_groq_api_key
+TOGETHER_API_KEY=your_together_api_key
+PORT=5000  # Optional, defaults to 5000
+```
 
-### Version 1.3
-- Custom AI model selection
-- Speech-to-Text integration
-- Voice message processing
-- Image captioning
+## Development
 
-## 🤝 Contributing
+1. Create a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+venv\Scripts\activate     # Windows
+```
 
-We welcome contributions! Please read our contribution guidelines before submitting pull requests.
+2. Install development dependencies:
+```bash
+pip install -r requirements.txt
+```
 
-## 📄 License
+3. Set up pre-commit hooks:
+```bash
+pre-commit install
+```
 
-NovaChat AI is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+## Architecture
 
-## 🌟 Show Your Support
+- Flask web application (`app.py`)
+- Telegram bot integration (`telegram_bot.py`)
+- AI services integration (`main.py`)
+- Gunicorn production server
+- Docker containerization
 
-If you find NovaChat AI helpful, please give it a star! ⭐
+## API Endpoints
 
----
+- `/` - Bot status check
+- `/webhook` - Telegram webhook endpoint (POST)
 
-Made with ❤️ by the NovaChat AI Team
+## Future Releases
+
+Here's what's coming in future versions of AIFusionBot:
+
+### Version 1.1 (Upcoming)
+- 🔄 Real-time chat synchronization
+- 🎨 Additional image generation models
+- 🎨 Text to vedio conversion (Replicate)
+- Multi modal support for Chat and Image
+
+### Version 1.2 (Planned)
+- 👥 Multi-user support
+- 🔐 Enhanced security features
+- 📊 Usage analytics dashboard
+- 🌐 Multi-language support
+
+### Version 1.3 (Planned)
+- 🎵 Audio message processing
+- 📹 Video generation capabilities
+- 🔗 API integration for third-party apps
+- 📱 Voice message processing
+
+## Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Security
+
+- Never share your API keys
+- Bot commands automatically delete messages containing API keys
+- API keys are stored securely in environment variables
+- HTTPS recommended for production deployment
+
+## Support
+
+For support, please open an issue in the GitHub repository.

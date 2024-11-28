@@ -8,7 +8,7 @@ import logging
 from groq import Groq
 from fpdf import FPDF
 from typing import Optional
-from together import Together  # Import Together library
+from together import Together
 
 # Set up logging
 logging.basicConfig(
@@ -206,3 +206,11 @@ def save_chat_history(history: list, format: str = "markdown") -> tuple[bool, st
     except Exception as e:
         logger.error(f"Error saving chat history: {str(e)}")
         return False, f"Error saving chat history: {str(e)}", None
+
+def run_app():
+    """Run the main application - starts the Telegram bot"""
+    from telegram_bot import run_telegram_bot
+    run_telegram_bot()
+
+if __name__ == "__main__":
+    run_app()
