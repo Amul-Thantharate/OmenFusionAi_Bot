@@ -33,8 +33,8 @@ Before you begin, ensure you have:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/Amul-Thantharte/NovaChat-AI.git
-cd NovaChat-AI
+git clone https://github.com/Amul-Thantharate/AIFusionBot.git
+cd AIFusionBot
 ```
 
 ### 2. Set Up Environment
@@ -188,7 +188,7 @@ curl -F "url=https://your-domain.com/webhook" \
 
 ### Getting Help
 
-- Check [GitHub Issues](https://github.com/Amul-Thantharte/NovaChat-AI/issues)
+- Check [GitHub Issues](https://github.com/Amul-Thantharate/AIFusionBot/issues)
 - Review error logs
 - Contact support team
 
@@ -196,4 +196,4 @@ curl -F "url=https://your-domain.com/webhook" \
 
 - [Learn available commands](commands.md)
 - [View changelog](changelog.md)
-- [Contribute to development](https://github.com/Amul-Thantharte/NovaChat-AI/blob/main/CONTRIBUTING.md)
+- [Contribute to development](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md)

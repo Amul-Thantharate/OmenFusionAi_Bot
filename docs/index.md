@@ -13,7 +13,7 @@ A comprehensive Flask-based Telegram bot that combines advanced AI chat capabili
 {: .fs-6 .fw-300 }
 
 [Get Started](setup.md){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View on GitHub](https://github.com/Amul-Thantharte/NovaChat-AI){: .btn .fs-5 .mb-4 .mb-md-0 }
+[View on GitHub](https://github.com/Amul-Thantharate/AIFusionBot){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ---
 
@@ -23,12 +23,12 @@ NovaChat AI is a powerful Telegram bot built with Flask that integrates multiple
 
 ### Key Features
 
-- 🤖 **Advanced AI Chat**: Powered by Groq's Llama3-8b-8192 model
-- 🎨 **Dual Image Generation**: Basic and high-quality options
-- 🌐 **Flask Web Interface**: Professional grade web server
-- 🔄 **Webhook Support**: Real-time Telegram updates
-- 💾 **Chat Management**: Export and clear chat history
-- 🔧 **Customizable Settings**: Adjust AI parameters
+- **Advanced AI Chat**: Powered by Groq's Llama3-8b-8192 model
+- **Dual Image Generation**: Basic and high-quality options
+- **Flask Web Interface**: Professional grade web server
+- **Webhook Support**: Real-time Telegram updates
+- **Chat Management**: Export and clear chat history
+- **Customizable Settings**: Adjust AI parameters
 
 ### Architecture
 
@@ -60,8 +60,8 @@ graph TD
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharte/NovaChat-AI/blob/main/CONTRIBUTING.md) for details.
+We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md) for details.
 
 ## Support
 
-Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharte/NovaChat-AI/issues).
+Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharate/AIFusionBot/issues).

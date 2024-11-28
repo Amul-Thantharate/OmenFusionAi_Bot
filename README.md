@@ -1,4 +1,4 @@
-# NovaChat AI - Flask Telegram Bot
+# AiFusionBot - Flask Telegram Bot
 
 A powerful Flask-based Telegram bot powered by Groq and Together AI for chat and image generation.
 
@@ -39,8 +39,8 @@ A powerful Flask-based Telegram bot powered by Groq and Together AI for chat and
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/NovaChat-AI.git
-cd NovaChat-AI
+git clone https://github.com/Amul-Thantharate/AIFusionBot.git
+cd AIFusionBot
 ```
 
 2. Create and configure your environment file:
