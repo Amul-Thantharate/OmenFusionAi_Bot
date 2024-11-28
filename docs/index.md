@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 layout: default
 title: AIFusionBot Documentation
@@ -68,6 +69,54 @@ Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin 
 
 ## API Keys Setup
 
+=======
+# AIFusionBot Documentation
+
+A comprehensive Flask-based Telegram bot that combines advanced AI chat capabilities with image generation.
+
+[Get Started](#getting-started)
+[View on GitHub](https://github.com/Amul-Thantharate/AIFusionBot)
+
+## Overview
+
+AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's advanced language models and Together AI's image generation capabilities. Built with Flask, it offers seamless chat interactions, stunning image creation, and upcoming video generation features. Perfect for both casual users and developers, it provides an intuitive interface for AI-powered conversations, creative image generation, and robust chat management—all within your Telegram app. Whether you're looking to have engaging conversations, create unique images, or build upon the platform, AIFusionBot offers a complete AI assistant experience.
+
+### Key Features
+
+- Advanced AI Chat using Groq
+- Image Generation (Basic and High-Quality)
+- Chat History Management
+- Customizable Settings
+- Export Chat History (Markdown/PDF)
+- Flask Web Interface
+- Webhook Support
+
+### Technology Stack
+
+- **Framework**: Flask
+- **Language**: Python 3.12+
+- **AI Services**:
+  - Groq (Chat)
+  - Together AI (Image Generation)
+- **Database**: SQLite (Coming Soon)
+
+## Quick Access
+
+You can start using AIFusionBot immediately by accessing our Telegram bot:
+
+👉 [Access AIFusionBot on Telegram](https://t.me/A_iFusion_bot)
+
+Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin chatting with our AI assistant.
+
+### Getting Started
+
+1. Click the bot link: [https://t.me/A_iFusion_bot](https://t.me/A_iFusion_bot)
+2. Start the bot by clicking the "Start" button or sending `/start`
+3. Begin chatting or generating images right away!
+
+## API Keys Setup
+
+>>>>>>> feature/docker-improvements
 To run your own instance of AIFusionBot, you'll need the following API keys:
 
 ### Groq API Key
@@ -123,7 +172,10 @@ Stay tuned for exciting new features coming to AIFusionBot! Here's our developme
 ## Contributing
 
 We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md) for details.
+<<<<<<< HEAD
 
 ## Support
 
 Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharate/AIFusionBot/issues).
+=======
+>>>>>>> feature/docker-improvements
