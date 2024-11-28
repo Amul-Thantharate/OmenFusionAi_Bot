@@ -21,7 +21,7 @@ from io import BytesIO
 import time
 from typing import Optional
 from dotenv import load_dotenv
-from main import interactive_chat, save_chat_history, generate_image, generate_image_together
+from main import interactive_chat, save_chat_history, generate_image
 from flask import Flask, request, jsonify
 
 # Configure logging
@@ -39,7 +39,6 @@ COMMANDS = {
     'start': 'Start AIFusionBot',
     'help': 'Show available commands',
     'chat': 'Start AI conversation',
-    'image': 'Generate a basic image',
     'imagine': 'Create high-quality image',
     'setgroqkey': 'Set Groq API key',
     'settogetherkey': 'Set Together AI key',
@@ -47,7 +46,8 @@ COMMANDS = {
     'export': 'Export chat history',
     'clear': 'Clear chat history',
     'temperature': 'Adjust response creativity',
-    'tokens': 'Set maximum response length'
+    'tokens': 'Set maximum response length',
+    'uploadenv': 'Upload .env file to set all API keys'
 }
 
 class UserSession:
@@ -105,7 +105,7 @@ async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await update.message.reply_text(
         "✅ Groq API key set successfully!\n"
         "You can now use all bot features.\n"
-        "Try `/chat Hello!` or `/image sunset`",
+        "Try `/chat Hello!` or `/imagine sunset`",
         parse_mode='Markdown'
     )
 
@@ -172,50 +172,8 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in chat_command: {str(e)}")
         await update.message.reply_text(f"Sorry, an error occurred: {str(e)}")
 
-async def image_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /image command."""
-    if not update.message:
-        return
-
-    if not context.args:
-        await update.message.reply_text(
-            "Please provide a description after /image\n"
-            "Example: `/image sunset over mountains`",
-            parse_mode='Markdown'
-        )
-        return
-
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-
-    prompt = ' '.join(context.args)
-
-    # Send a message indicating that image generation has started
-    progress_message = await update.message.reply_text("🎨 Generating your image... Please wait.")
-
-    try:
-        success, image_bytes, message = generate_image(prompt)
-
-        if success and image_bytes:
-            # Send the generated image directly from bytes
-            await update.message.reply_photo(
-                photo=BytesIO(image_bytes),
-                caption=f"🎨 Generated image for: {prompt}\n⏱️ {message}"
-            )
-        else:
-            await update.message.reply_text(f"❌ Failed to generate image: {message}")
-    except Exception as e:
-        logger.error(f"Error in image generation: {str(e)}")
-        await update.message.reply_text(
-            "❌ Sorry, something went wrong while generating the image. Please try again later."
-        )
-    finally:
-        # Delete the progress message
-        await progress_message.delete()
-
 async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /imagine command for Together AI image generation."""
+    """Handle the /imagine command for image generation."""
     if not update.message:
         return
 
@@ -243,11 +201,11 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Send a message indicating that image generation has started
     progress_message = await update.message.reply_text(
-        "🎨 Generating your high-quality image with Together AI... Please wait."
+        "🎨 Generating your high-quality image... Please wait."
     )
 
     try:
-        success, image_bytes, message = generate_image_together(
+        success, image_bytes, message = generate_image(
             prompt,
             api_key=user_sessions[user_id].together_api_key
         )
@@ -256,12 +214,12 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Send the generated image directly from bytes
             await update.message.reply_photo(
                 photo=BytesIO(image_bytes),
-                caption=f"✨ Generated with Together AI:\n{prompt}\n\n⏱️ {message}"
+                caption=f"✨ Generated image:\n{prompt}\n\n⏱️ {message}"
             )
         else:
             await update.message.reply_text(f"❌ Failed to generate image: {message}")
     except Exception as e:
-        logger.error(f"Error in Together image generation: {str(e)}")
+        logger.error(f"Error in image generation: {str(e)}")
         await update.message.reply_text(
             "❌ Sorry, something went wrong while generating the image. Please try again later."
         )
@@ -428,6 +386,91 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Delete the processing message
         await processing_msg.delete()
 
+async def uploadenv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /uploadenv command."""
+    if not update.message:
+        return
+
+    await update.message.reply_text(
+        "Please upload your .env file. It should contain your API keys in this format:\n\n"
+        "```\n"
+        "GROQ_API_KEY=your_groq_key\n"
+        "TOGETHER_API_KEY=your_together_key\n"
+        "```\n"
+        "⚠️ The file will be processed securely and deleted immediately.",
+        parse_mode='Markdown'
+    )
+
+async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle uploaded documents."""
+    if not update.message or not update.message.document:
+        return
+
+    # Check if the file is a .env file
+    if not update.message.document.file_name.endswith('.env'):
+        await update.message.reply_text("❌ Please upload a .env file.")
+        return
+
+    try:
+        # Download the file
+        file = await context.bot.get_file(update.message.document.file_id)
+        env_content = BytesIO()
+        await file.download_to_memory(env_content)
+        
+        # Process the .env file content
+        env_content.seek(0)
+        env_text = env_content.read().decode('utf-8')
+        
+        # Parse the environment variables
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+            
+        session = user_sessions[user_id]
+        success_msg = []
+        
+        for line in env_text.split('\n'):
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
+                
+            try:
+                key, value = line.split('=', 1)
+                key = key.strip()
+                value = value.strip().strip("'").strip('"')
+                
+                if key == 'GROQ_API_KEY':
+                    session.groq_api_key = value
+                    success_msg.append("✅ Groq API key set successfully")
+                elif key == 'TOGETHER_API_KEY':
+                    session.together_api_key = value
+                    success_msg.append("✅ Together API key set successfully")
+            except ValueError:
+                continue
+        
+        # Delete the message containing the .env file
+        await update.message.delete()
+        
+        if success_msg:
+            await update.message.reply_text(
+                "🔑 API Keys updated:\n" + "\n".join(success_msg) + "\n\n"
+                "Try the following commands:\n"
+                "• `/chat Hello!` - Test chat with Groq\n"
+                "• `/imagine sunset` - Generate image with Together AI",
+                parse_mode='Markdown'
+            )
+        else:
+            await update.message.reply_text(
+                "❌ No valid API keys found in the .env file.\n"
+                "Make sure your file contains GROQ_API_KEY and/or TOGETHER_API_KEY."
+            )
+            
+    except Exception as e:
+        logger.error(f"Error processing .env file: {str(e)}")
+        await update.message.reply_text(
+            "❌ Error processing the .env file. Please make sure it's properly formatted."
+        )
+
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle errors in the telegram bot."""
     logger.error(f"Exception while handling an update: {context.error}")
@@ -453,12 +496,15 @@ def setup_bot(token: str) -> Application:
         app.add_handler(CommandHandler('setgroqkey', setgroqkey_command))
         app.add_handler(CommandHandler('settogetherkey', settogetherkey_command))
         app.add_handler(CommandHandler('chat', chat_command))
-        app.add_handler(CommandHandler('image', image_command))
         app.add_handler(CommandHandler('imagine', imagine_command))
         app.add_handler(CommandHandler('settings', settings_command))
         app.add_handler(CommandHandler('export', export_command))
         app.add_handler(CommandHandler('temperature', temperature_command))
         app.add_handler(CommandHandler('clear', clear_command))
+        app.add_handler(CommandHandler('uploadenv', uploadenv_command))
+        
+        # Add document handler for .env files
+        app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
 
         # Add callback query handler for buttons
         app.add_handler(CallbackQueryHandler(button_callback))

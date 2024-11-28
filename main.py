@@ -9,6 +9,7 @@ from groq import Groq
 from fpdf import FPDF
 from typing import Optional
 from together import Together
+import base64
 
 # Set up logging
 logging.basicConfig(
@@ -19,52 +20,23 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-def generate_image(prompt: str) -> tuple[bool, bytes, str]:
+def generate_image(prompt: str, api_key: str = None) -> tuple[bool, bytes, str]:
     """
-    Generate an image using the configured API.
-    
-    Args:
-        prompt (str): The description of the image to generate
-    
-    Returns:
-        tuple[bool, bytes, str]: (success, image_bytes, message) where success is True if image was generated,
-                                image_bytes contains the raw image data, and message contains status info
-    """
-    try:
-        url = "https://api.airforce/v1/imagine2"
-        headers = {
-            "Content-Type": "application/json"
-        }
-        
-        params = {'prompt': prompt}
-        start = time.time()
-        
-        response = requests.get(url, params=params, headers=headers)
-        
-        if response.status_code != 200:
-            return False, None, f"API request failed with status code: {response.status_code}"
-
-        elapsed_time = time.time() - start
-        return True, response.content, f"Image generated in {elapsed_time:.2f} seconds"
-
-    except Exception as e:
-        logger.error(f"Error generating image: {str(e)}")
-        return False, None, f"Error generating image: {str(e)}"
-
-def generate_image_together(prompt: str, api_key: str = None) -> tuple[bool, bytes, str]:
-    """
-    Generate an image using Together's API.
+    Generate an image using Together AI's service.
     
     Args:
         prompt (str): The description of the image to generate
         api_key (str): The Together API key for authentication
     
     Returns:
-        tuple[bool, bytes, str]: (success, image_bytes, message)
+        tuple[bool, bytes, str]: (success, image_bytes, message) where success is True if image was generated,
+                                image_bytes contains the raw image data, and message contains status info
     """
     try:
         if not api_key:
-            return False, None, "Please set your Together API key using /settogetherkey command"
+            api_key = os.getenv('TOGETHER_API_KEY')
+            if not api_key:
+                return False, None, "Please set your Together API key using /settogetherkey command or in .env file"
 
         client = Together(api_key=api_key)
         start = time.time()
@@ -79,14 +51,13 @@ def generate_image_together(prompt: str, api_key: str = None) -> tuple[bool, byt
             response_format="b64_json"
         )
         
-        import base64
         image_bytes = base64.b64decode(response.data[0].b64_json)
         
         elapsed_time = time.time() - start
         return True, image_bytes, f"Image generated in {elapsed_time:.2f} seconds using Together AI"
 
     except Exception as e:
-        logger.error(f"Error generating image with Together: {str(e)}")
+        logger.error(f"Error generating image: {str(e)}")
         if "Invalid API key" in str(e):
             return False, None, "Invalid Together API key. Please check your key and try again."
         return False, None, f"Error generating image: {str(e)}"

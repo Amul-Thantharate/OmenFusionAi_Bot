@@ -26,21 +26,21 @@ Bot: *Provides detailed explanation of quantum computing*
 
 ### Landscape Generation
 ```
-You: /image A beautiful sunset over mountains with a lake reflection
+You: /imagine A beautiful sunset over mountains with a lake reflection
 Bot: 🎨 Generating your image... Please wait.
 Bot: *Sends generated image*
 ```
 
 ### Character Design
 ```
-You: /image An anime-style character with blue hair and cyberpunk clothing
+You: /imagine An anime-style character with blue hair and cyberpunk clothing
 Bot: 🎨 Generating your image... Please wait.
 Bot: *Sends generated image*
 ```
 
 ### Abstract Art
 ```
-You: /image Abstract digital art representing the concept of time
+You: /imagine Abstract digital art representing the concept of time
 Bot: 🎨 Generating your image... Please wait.
 Bot: *Sends generated image*
 ```

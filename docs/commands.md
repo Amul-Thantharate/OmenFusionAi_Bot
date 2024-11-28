@@ -18,16 +18,18 @@ Complete list of NovaChat AI bot commands and their usage.
 
 ---
 
+## Bot Commands
+
 ## Basic Commands
 
 ### /start
-Start the bot and receive a welcome message.
+Initialize the bot and get started.
 ```
 /start
 ```
 
 ### /help
-Display all available commands and their descriptions.
+View all available commands and their descriptions.
 ```
 /help
 ```
@@ -35,9 +37,9 @@ Display all available commands and their descriptions.
 ## Chat Commands
 
 ### /chat
-Start a conversation with the AI.
+Start or continue an AI conversation.
 ```
-/chat Hello, how are you today?
+/chat What is artificial intelligence?
 ```
 
 ### /clear
@@ -45,62 +47,67 @@ Clear your chat history.
 ```
 /clear
 ```
-Requires confirmation via inline buttons.
 
 ### /export
-Export your chat history in different formats.
+Export your chat history in Markdown or PDF format.
 ```
-/export markdown  # Export as Markdown
-/export pdf      # Export as PDF
+/export markdown
+/export pdf
 ```
 
 ## Image Generation
 
-### /image
-Generate a basic image quickly.
-```
-/image sunset over mountains
-```
-
 ### /imagine
-Create high-quality images using Together AI.
+Generate high-quality images using Together AI.
 ```
 /imagine beautiful sunset over mountains, realistic, 4k, detailed
 ```
 
 ## Settings & Configuration
 
+### /uploadenv
+Upload a .env file to set all API keys securely.
+```
+/uploadenv
+# Then attach your .env file
+```
+
 ### /setgroqkey
 Set your Groq API key for chat functionality.
 ```
 /setgroqkey your_api_key_here
 ```
-Note: Message will be deleted immediately for security.
 
 ### /settogetherkey
-Set your Together AI key for high-quality image generation.
+Set your Together AI key for image generation.
 ```
 /settogetherkey your_api_key_here
 ```
-Note: Message will be deleted immediately for security.
 
 ### /settings
-View current bot settings.
+View your current bot settings.
 ```
 /settings
 ```
 
 ### /temperature
-Adjust the AI's response creativity (0.0-1.0).
+Adjust the creativity level of AI responses (0.0 to 1.0).
 ```
 /temperature 0.7
 ```
 
 ### /tokens
-Set maximum response length.
+Set the maximum length of AI responses.
 ```
-/tokens 1024
+/tokens 2000
 ```
+
+## Security Notes
+
+- API keys are stored securely in user sessions
+- Keys are never logged or stored permanently
+- Use /uploadenv for secure key configuration
+- Messages containing API keys are automatically deleted
 
 ## Response Examples
 
