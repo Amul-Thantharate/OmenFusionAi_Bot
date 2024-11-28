@@ -1,6 +1,15 @@
 # AiFusionBot - Flask Telegram Bot
 
-A powerful Flask-based Telegram bot powered by Groq and Together AI for chat and image generation.
+[![Python](https://img.shields.io/badge/Python-3.12%2B-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Flask](https://img.shields.io/badge/Flask-3.0.0-lightgrey.svg)](https://flask.palletsprojects.com/)
+[![Docker](https://img.shields.io/badge/Docker-Supported-blue.svg)](https://www.docker.com/)
+[![Telegram](https://img.shields.io/badge/Telegram-Bot-blue.svg)](https://t.me/A_iFusion_bot)
+[![Groq](https://img.shields.io/badge/Groq-Powered-orange.svg)](https://console.groq.com)
+[![Together AI](https://img.shields.io/badge/Together_AI-Enabled-purple.svg)](https://api.together.xyz)
+[![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's advanced language models and Together AI's image generation capabilities. Built with Flask and Docker, it offers seamless chat interactions, stunning image creation, and upcoming video generation features. Perfect for both casual users and developers, it provides an intuitive interface for AI-powered conversations, creative image generation, and robust chat management—all within your Telegram app. Whether you're looking to have engaging conversations, create unique images, or build upon the platform, AIFusionBot offers a complete AI assistant experience.
 
 🤖 **Try the bot now**: [A_iFusion_bot](https://t.me/A_iFusion_bot)
 
@@ -133,6 +142,28 @@ pre-commit install
 
 - `/` - Bot status check
 - `/webhook` - Telegram webhook endpoint (POST)
+
+## Future Releases
+
+Here's what's coming in future versions of AIFusionBot:
+
+### Version 1.1 (Upcoming)
+- 🔄 Real-time chat synchronization
+- 🎨 Additional image generation models
+- 🎨 Text to vedio conversion (Replicate)
+- Multi modal support for Chat and Image
+
+### Version 1.2 (Planned)
+- 👥 Multi-user support
+- 🔐 Enhanced security features
+- 📊 Usage analytics dashboard
+- 🌐 Multi-language support
+
+### Version 1.3 (Planned)
+- 🎵 Audio message processing
+- 📹 Video generation capabilities
+- 🔗 API integration for third-party apps
+- 📱 Voice message processing
 
 ## Contributing
 
