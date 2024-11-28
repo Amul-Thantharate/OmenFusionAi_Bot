@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-NovaChat AI - Telegram Bot Implementation
+AIFusionBot - Telegram Bot Implementation
 Handles all bot commands and interactions
 """
 
@@ -36,7 +36,7 @@ user_sessions = {}
 
 # Bot command descriptions
 COMMANDS = {
-    'start': 'Start NovaChat AI',
+    'start': 'Start AIFusionBot',
     'help': 'Show available commands',
     'chat': 'Start AI conversation',
     'image': 'Generate a basic image',
@@ -63,7 +63,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
     logger.info(f"Start command received from user {update.effective_user.id}")
     welcome_message = (
-        "👋 Welcome to NovaChat AI!\n\n"
+        "👋 Welcome to AIFusionBot!\n\n"
         "I'm your advanced AI assistant powered by Groq and Together AI. "
         "I can help you with:\n\n"
         "🗣️ Natural conversations\n"
@@ -76,7 +76,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /help command"""
     logger.info(f"Help command received from user {update.effective_user.id}")
-    help_text = "🤖 NovaChat AI Commands:\n\n"
+    help_text = "🤖 AIFusionBot Commands:\n\n"
     for cmd, desc in COMMANDS.items():
         help_text += f"/{cmd} - {desc}\n"
     await update.message.reply_text(help_text)
@@ -436,7 +436,7 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         await update.effective_message.reply_text(text)
 
 def setup_bot(token: str) -> Application:
-    """Initialize and configure the NovaChat AI bot"""
+    """Initialize and configure the AIFusionBot bot"""
     try:
         logger.info("Setting up bot application...")
         # Create application with specific defaults for polling
@@ -470,7 +470,7 @@ def setup_bot(token: str) -> Application:
         return app
 
     except Exception as e:
-        logger.error(f"Failed to setup NovaChat AI bot: {str(e)}")
+        logger.error(f"Failed to setup AIFusionBot bot: {str(e)}")
         raise
 
 if __name__ == "__main__":

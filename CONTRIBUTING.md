@@ -1,8 +1,8 @@
-# Contributing to NovaChat AI
+# Contributing to AIFusionBot
 
 ## 🌟 Welcome
 
-Thank you for considering contributing to NovaChat AI! This document provides guidelines and steps for contributing to make the process smooth and effective.
+Thank you for considering contributing to AIFusionBot! This document provides guidelines and steps for contributing to make the process smooth and effective.
 
 ## 📋 Table of Contents
 
@@ -28,8 +28,8 @@ By participating in this project, you agree to abide by our Code of Conduct:
 1. Fork the repository
 2. Clone your fork:
 ```bash
-git clone https://github.com/your-username/NovaChat-AI.git
-cd NovaChat-AI
+git clone https://github.com/Amul-Thantharate/AIFusionBot.git
+cd AIFusionBot
 ```
 3. Create a virtual environment:
 ```bash
@@ -136,14 +136,6 @@ Types:
 ```bash
 cp .env.example .env
 ```
-2. Configure your environment variables
-
-## 🤝 Community
-
-- Join our [Telegram Group](https://t.me/novachat_community)
-- Follow us on [Twitter](https://twitter.com/novachat_ai)
-- Star the repository
-- Share your feedback
 
 ## 🎯 Future Goals
 
@@ -158,4 +150,4 @@ cp .env.example .env
 - Join our community
 - Contact maintainers
 
-Thank you for contributing to NovaChat AI! 🚀
+Thank you for contributing to AIFusionBot! 🚀
