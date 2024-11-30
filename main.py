@@ -10,6 +10,7 @@ from fpdf import FPDF
 from typing import Optional
 from together import Together
 import base64
+from image_generator import AIImageGenerator
 
 # Set up logging
 logging.basicConfig(
@@ -20,47 +21,32 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-def generate_image(prompt: str, api_key: str = None) -> tuple[bool, bytes, str]:
+def generate_image(prompt: str, user_id: str = None) -> tuple[bool, bytes, str, str]:
     """
-    Generate an image using Together AI's service.
+    Generate an image using Together AI's service with prompt enhancement.
     
     Args:
         prompt (str): The description of the image to generate
-        api_key (str): The Together API key for authentication
+        user_id (str): Optional user ID for session management
     
     Returns:
-        tuple[bool, bytes, str]: (success, image_bytes, message) where success is True if image was generated,
-                                image_bytes contains the raw image data, and message contains status info
+        tuple[bool, bytes, str, str]: (success, image_data, error_message, enhanced_prompt)
     """
     try:
-        if not api_key:
-            api_key = os.getenv('TOGETHER_API_KEY')
-            if not api_key:
-                return False, None, "Please set your Together API key using /settogetherkey command or in .env file"
-
-        client = Together(api_key=api_key)
-        start = time.time()
-        
-        response = client.images.generate(
-            prompt=prompt,
-            model="black-forest-labs/FLUX.1-schnell-Free",
-            width=1024,
-            height=768,
-            steps=1,
-            n=1,
-            response_format="b64_json"
-        )
-        
-        image_bytes = base64.b64decode(response.data[0].b64_json)
-        
-        elapsed_time = time.time() - start
-        return True, image_bytes, f"Image generated in {elapsed_time:.2f} seconds using Together AI"
-
+        generator = AIImageGenerator()
+        enhanced_prompt = generator.enhance_prompt(prompt)
+        if not enhanced_prompt:
+            return False, None, "Failed to enhance prompt", None
+            
+        success, image_data, error_msg = generator.generate_image(enhanced_prompt)
+        if not success:
+            return False, None, error_msg, None
+            
+        return True, base64.b64decode(image_data), "", enhanced_prompt
     except Exception as e:
-        logger.error(f"Error generating image: {str(e)}")
-        if "Invalid API key" in str(e):
-            return False, None, "Invalid Together API key. Please check your key and try again."
-        return False, None, f"Error generating image: {str(e)}"
+        error_msg = f"Error in image generation: {str(e)}"
+        logger.error(error_msg)
+        return False, None, error_msg, None
 
 def interactive_chat(text: str, temperature: float = 0.7, max_tokens: int = 1024, 
                     model_type: str = "groq", stream: bool = False, api_key: str = None):

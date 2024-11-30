@@ -1,103 +1,94 @@
-# O-Chat AI Assistant Demo 🎮
+# NovaChat AI v2.0 Demo Guide 🚀
 
-This document provides examples and demonstrations of O-Chat's features.
+This document showcases the enhanced features and capabilities of NovaChat AI v2.0.
 
-## Chat Examples 💬
+## Enhanced Chat Examples 💬
 
-### Basic Conversation
+### Advanced Conversation
 ```
-You: /chat What is artificial intelligence?
-Bot: AI is a field of computer science focused on creating intelligent machines...
-```
-
-### Creative Writing
-```
-You: /chat Write a short poem about technology
-Bot: *Generates a creative poem about technology*
+You: /chat Tell me about recent developments in AI
+Bot: *Provides detailed, nuanced response about current AI trends and breakthroughs*
 ```
 
-### Knowledge Query
+### Creative Writing with Style Enhancement
 ```
-You: /chat Explain quantum computing
-Bot: *Provides detailed explanation of quantum computing*
-```
-
-## Image Generation Examples 🎨
-
-### Landscape Generation
-```
-You: /imagine A beautiful sunset over mountains with a lake reflection
-Bot: 🎨 Generating your image... Please wait.
-Bot: *Sends generated image*
+You: /chat Write a professional email to a client
+You: /enhance *previous response*
+Bot: *Generates enhanced, more polished version with improved tone and style*
 ```
 
-### Character Design
+### Technical Explanations
 ```
-You: /imagine An anime-style character with blue hair and cyberpunk clothing
-Bot: 🎨 Generating your image... Please wait.
-Bot: *Sends generated image*
-```
-
-### Abstract Art
-```
-You: /imagine Abstract digital art representing the concept of time
-Bot: 🎨 Generating your image... Please wait.
-Bot: *Sends generated image*
+You: /chat Explain quantum computing for a technical audience
+Bot: *Delivers comprehensive technical explanation with relevant terminology*
 ```
 
-## Settings Customization ⚙️
+## Advanced Image Generation 🎨
 
-### Adjusting Temperature
+### Detailed Scene Generation
+```
+You: /imagine A cyberpunk cityscape at sunset with neon signs and flying vehicles
+Bot: 🎨 Enhancing your prompt...
+Bot: Enhanced prompt: "Hyper-detailed cyberpunk megalopolis during golden hour, massive holographic advertisements floating between towering skyscrapers, flying vehicles creating light trails, ray-traced lighting, cinematic composition, 8K resolution"
+Bot: *Generates high-quality image based on enhanced prompt*
+```
+
+### Artistic Style Specification
+```
+You: /imagine A portrait in the style of Van Gogh's Starry Night
+Bot: 🎨 Enhancing your prompt...
+Bot: *Generates artistic interpretation with enhanced style elements*
+```
+
+## Advanced Settings ⚙️
+
+### Fine-tuning Response Style
 ```
 You: /temperature 0.8
-Bot: Temperature set to: 0.8
+Bot: Temperature set to 0.8 - Responses will be more creative while maintaining coherence
 
-You: /chat Tell me a creative story
-Bot: *Generates more creative, varied response*
+You: /tokens 2048
+Bot: Max tokens set to 2048 - Allowing for more detailed responses
 ```
 
-### Setting Max Tokens
-```
-You: /tokens 2000
-Bot: Max tokens set to: 2000
+## Pro Tips 💡
 
-You: /chat Write a detailed analysis...
-Bot: *Generates longer, more detailed response*
-```
+1. **Maximizing Chat Quality:**
+   - Use specific, detailed prompts
+   - Leverage the /enhance command for better output
+   - Adjust temperature based on task (0.3 for factual, 0.8 for creative)
 
-## Tips & Tricks 💡
+2. **Optimal Image Generation:**
+   - Provide detailed scene descriptions
+   - Specify desired artistic style
+   - Include lighting and composition details
+   - Let the AI enhance your prompts automatically
 
-1. **For Better Chat Responses:**
-   - Be specific in your questions
-   - Use clear, well-structured prompts
-   - Adjust temperature based on needed creativity level
+3. **Efficient Workflow:**
+   - Use `/export` for important conversations
+   - Utilize `/clear` for fresh context
+   - Monitor settings with `/settings`
+   - Save API keys securely with `/uploadenv`
 
-2. **For Better Image Generation:**
-   - Include detailed descriptions
-   - Specify art style if desired
-   - Mention lighting, colors, and composition
+## Use Cases 🎯
 
-3. **Managing History:**
-   - Use `/clear` to start fresh
-   - Use `/save` to keep important conversations
-   - Review settings with `/settings`
-
-## Common Use Cases 🎯
-
-1. **Educational:**
-   - Homework help
-   - Concept explanations
-   - Research assistance
+1. **Professional:**
+   - Document drafting with enhancement
+   - Technical documentation
+   - Code explanation and analysis
+   - Business communication improvement
 
 2. **Creative:**
-   - Story writing
-   - Art generation
-   - Brainstorming
+   - Advanced story writing
+   - Professional art generation
+   - Creative concept development
+   - Style enhancement
 
-3. **Professional:**
-   - Technical explanations
-   - Code understanding
-   - Problem-solving
+3. **Educational:**
+   - Detailed concept explanations
+   - Interactive learning
+   - Research assistance
+   - Technical writing improvement
 
 ## Performance Notes 📊
 

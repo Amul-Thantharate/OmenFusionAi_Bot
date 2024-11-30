@@ -37,18 +37,20 @@ Track NovaChat AI's version history and updates.
 - Secure API key management
 
 ### Commands
-- `/start` - Bot initialization
-- `/help` - Command reference
-- `/chat` - AI conversations
-- `/image` - Basic image generation
-- `/imagine` - High-quality images
-- `/setgroqkey` - Groq API configuration
-- `/settogetherkey` - Together AI setup
-- `/settings` - Bot configuration
-- `/export` - History export
-- `/clear` - History management
-- `/temperature` - Response creativity
-- `/tokens` - Response length
+
+- `/start` - Start NovaChat AI v2.0
+- `/help` - Show available commands and features
+- `/chat` - Start AI conversation with enhanced LLM models
+- `/imagine` - Create high-quality images using latest AI models
+- `/enhance` - Enhance text using advanced language models
+- `/setgroqkey` - Set Groq API key for LLM access
+- `/settogetherkey` - Set Together AI key for image generation
+- `/settings` - View and configure bot settings
+- `/export` - Export complete chat history
+- `/clear` - Clear current chat history
+- `/temperature` - Adjust response creativity (0.1-1.0)
+- `/tokens` - Set maximum response length (100-4096)
+- `/uploadenv` - Upload .env file to configure API keys
 
 ### Technical
 - Python 3.12 support
@@ -59,6 +61,36 @@ Track NovaChat AI's version history and updates.
 - Async bot operations
 - Error handling system
 - Logging implementation
+
+## [v2.0.0] - 2024-03-XX
+
+### Added
+- Enhanced prompt engineering system for improved image generation
+- Advanced text enhancement capabilities with `/enhance` command
+- More detailed command descriptions and help system
+- Improved error handling and user feedback
+- Real-time response enhancement for chat
+
+### Enhanced
+- Updated Groq LLM integration for better response quality
+- Improved Together AI image generation with enhanced prompts
+- More detailed settings configuration options
+- Better temperature and token control with specific ranges
+- Enhanced chat history management
+
+### Changed
+- Updated all command descriptions for clarity
+- Improved system messages for better AI responses
+- Enhanced prompt engineering for image generation
+- Updated documentation with new features
+- Refined user interaction flows
+
+### Technical
+- Updated model versions for better performance
+- Improved error handling and recovery
+- Enhanced API key management
+- Better session handling
+- Improved webhook reliability
 
 ## Upcoming Features
 

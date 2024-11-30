@@ -1,31 +1,34 @@
-# NovaChat AI 
+# NovaChat AI v2.0
 
-A powerful Telegram bot that combines Groq's language model and Together AI's image generation capabilities.
+A powerful Telegram bot that combines Groq's advanced language models and Together AI's state-of-the-art image generation capabilities.
 
 ## Features
 
-- Advanced AI Chat using Groq
-- High-Quality Image Generation with Together AI
-- Chat History Management
-- Customizable Settings
-- Export Chat History (Markdown/PDF)
-- Flask Web Interface
-- Webhook Support
+- Advanced AI Chat using Groq's latest LLM models
+- High-Quality Image Generation with Together AI's newest models
+- Enhanced Prompt Engineering for better image generation
+- Intelligent Chat History Management
+- Advanced Customizable Settings
+- Multi-format Export (Markdown/PDF)
+- High-Performance Flask Web Interface
+- Secure Webhook Support
+- Real-time Response Enhancement
 
 ## Commands
 
-- `/start` - Start NovaChat AI
-- `/help` - Show available commands
-- `/chat` - Start AI conversation
-- `/imagine` - Generate high-quality images
-- `/setgroqkey` - Set Groq API key
-- `/settogetherkey` - Set Together AI key
-- `/settings` - View current settings
-- `/export` - Export chat history
-- `/clear` - Clear chat history
-- `/temperature` - Adjust response creativity
-- `/tokens` - Set maximum response length
-- `/uploadenv` - Upload .env file to set API keys
+- `/start` - Start NovaChat AI v2.0
+- `/help` - Show available commands and features
+- `/chat` - Start AI conversation with enhanced LLM models
+- `/imagine` - Create high-quality images using latest AI models
+- `/enhance` - Enhance text using advanced language models
+- `/setgroqkey` - Set Groq API key for LLM access
+- `/settogetherkey` - Set Together AI key for image generation
+- `/settings` - View and configure bot settings
+- `/export` - Export complete chat history
+- `/clear` - Clear current chat history
+- `/temperature` - Adjust response creativity (0.1-1.0)
+- `/tokens` - Set maximum response length (100-4096)
+- `/uploadenv` - Upload .env file to configure API keys
 
 ## Requirements
 

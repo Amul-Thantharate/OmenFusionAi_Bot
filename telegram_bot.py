@@ -36,18 +36,19 @@ user_sessions = {}
 
 # Bot command descriptions
 COMMANDS = {
-    'start': 'Start AIFusionBot',
-    'help': 'Show available commands',
-    'chat': 'Start AI conversation',
-    'imagine': 'Create high-quality image',
-    'setgroqkey': 'Set Groq API key',
-    'settogetherkey': 'Set Together AI key',
-    'settings': 'View current settings',
-    'export': 'Export chat history',
-    'clear': 'Clear chat history',
-    'temperature': 'Adjust response creativity',
-    'tokens': 'Set maximum response length',
-    'uploadenv': 'Upload .env file to set all API keys'
+    'start': 'Start AIFusionBot v2.0',
+    'help': 'Show available commands and features',
+    'chat': 'Start AI conversation with enhanced LLM models',
+    'imagine': 'Create high-quality image using latest AI models',
+    'enhance': 'Enhance text using advanced language models',
+    'setgroqkey': 'Set Groq API key for LLM access',
+    'settogetherkey': 'Set Together AI key for image generation',
+    'settings': 'View and configure bot settings',
+    'export': 'Export complete chat history',
+    'clear': 'Clear current chat history',
+    'temperature': 'Adjust response creativity (0.1-1.0)',
+    'tokens': 'Set maximum response length (100-4096)',
+    'uploadenv': 'Upload .env file to configure API keys'
 }
 
 class UserSession:
@@ -56,8 +57,9 @@ class UserSession:
         self.temperature = 0.5
         self.max_tokens = 1024
         self.chat_history = []
-        self.groq_api_key = None
-        self.together_api_key = None
+        self.groq_api_key = os.getenv('GROQ_API_KEY')
+        self.together_api_key = os.getenv('TOGETHER_API_KEY')
+        self.last_enhanced_prompt = None  # Store the last enhanced prompt
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle /start command"""
@@ -173,7 +175,7 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(f"Sorry, an error occurred: {str(e)}")
 
 async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /imagine command for image generation."""
+    """Handle the /imagine command for image generation with prompt enhancement."""
     if not update.message:
         return
 
@@ -189,7 +191,8 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if user_id not in user_sessions:
         user_sessions[user_id] = UserSession()
 
-    if not user_sessions[user_id].together_api_key:
+    session = user_sessions[user_id]
+    if not session.together_api_key:
         await update.message.reply_text(
             "⚠️ Please set your Together API key first using:\n"
             "`/settogetherkey your_api_key`",
@@ -197,24 +200,43 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
+    if not session.groq_api_key:
+        await update.message.reply_text(
+            "⚠️ Please set your Groq API key first using:\n"
+            "`/setgroqkey your_api_key`",
+            parse_mode='Markdown'
+        )
+        return
+
     prompt = ' '.join(context.args)
 
-    # Send a message indicating that image generation has started
+    # Send a message indicating that prompt enhancement has started
     progress_message = await update.message.reply_text(
-        "🎨 Generating your high-quality image... Please wait."
+        "🎨 Step 1/2: Enhancing your prompt... Please wait."
     )
 
     try:
-        success, image_bytes, message = generate_image(
-            prompt,
-            api_key=user_sessions[user_id].together_api_key
-        )
-
+        start_time = time.time()
+        # Pass the user_id to generate_image
+        success, image_bytes, message, enhanced_prompt = generate_image(prompt, user_id=user_id)
+        total_time = time.time() - start_time
+        
         if success and image_bytes:
-            # Send the generated image directly from bytes
+            # Update progress message for image generation
+            await progress_message.edit_text("🎨 Step 2/2: Generating image from enhanced prompt...")
+            
+            # Use the returned enhanced prompt
+            enhanced_caption = (
+                f"🎯 Original prompt:\n'{prompt}'\n\n"
+                f"✨ Enhanced prompt:\n'{enhanced_prompt}'\n\n"
+                f"⏱️ Total generation time: {total_time:.2f} seconds"
+            )
+            
+            # Send the generated image with the enhanced caption
             await update.message.reply_photo(
                 photo=BytesIO(image_bytes),
-                caption=f"✨ Generated image:\n{prompt}\n\n⏱️ {message}"
+                caption=enhanced_caption,
+                parse_mode='Markdown'
             )
         else:
             await update.message.reply_text(f"❌ Failed to generate image: {message}")
@@ -222,6 +244,65 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logger.error(f"Error in image generation: {str(e)}")
         await update.message.reply_text(
             "❌ Sorry, something went wrong while generating the image. Please try again later."
+        )
+    finally:
+        # Delete the progress message
+        await progress_message.delete()
+
+async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /enhance command for text enhancement."""
+    if not update.message:
+        return
+
+    if not context.args:
+        await update.message.reply_text(
+            "Please provide text after /enhance\n"
+            "Example: `/enhance A boy playing basketball`",
+            parse_mode='Markdown'
+        )
+        return
+
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+
+    session = user_sessions[user_id]
+    if not session.groq_api_key:
+        await update.message.reply_text(
+            "⚠️ Please set your Groq API key first using:\n"
+            "`/setgroqkey your_api_key`",
+            parse_mode='Markdown'
+        )
+        return
+
+    text = ' '.join(context.args)
+
+    # Send a message indicating that enhancement has started
+    progress_message = await update.message.reply_text(
+        "✍️ Enhancing your text... Please wait."
+    )
+
+    try:
+        from tone_enhancer import ToneEnhancer
+        enhancer = ToneEnhancer()
+        
+        start_time = time.time()
+        success, enhanced_text, error = await enhancer.enhance_text(text)
+        total_time = time.time() - start_time
+        
+        if success and enhanced_text:
+            response = (
+                f"🎯 Original text:\n'{text}'\n\n"
+                f"✨ Enhanced version:\n'{enhanced_text}'\n\n"
+                f"⏱️ Enhanced in {total_time:.2f} seconds"
+            )
+            await update.message.reply_text(response, parse_mode='Markdown')
+        else:
+            await update.message.reply_text(f"❌ Failed to enhance text: {error}")
+    except Exception as e:
+        logger.error(f"Error in text enhancement: {str(e)}")
+        await update.message.reply_text(
+            "❌ Sorry, something went wrong while enhancing the text. Please try again later."
         )
     finally:
         # Delete the progress message
@@ -497,6 +578,7 @@ def setup_bot(token: str) -> Application:
         app.add_handler(CommandHandler('settogetherkey', settogetherkey_command))
         app.add_handler(CommandHandler('chat', chat_command))
         app.add_handler(CommandHandler('imagine', imagine_command))
+        app.add_handler(CommandHandler('enhance', enhance_command))
         app.add_handler(CommandHandler('settings', settings_command))
         app.add_handler(CommandHandler('export', export_command))
         app.add_handler(CommandHandler('temperature', temperature_command))

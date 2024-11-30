@@ -4,10 +4,10 @@ title: Command Reference
 nav_order: 3
 ---
 
-# Command Reference
+# NovaChat AI v2.0 Commands
 {: .no_toc }
 
-Complete list of NovaChat AI bot commands and their usage.
+This document details all available commands and their usage in NovaChat AI v2.0.
 {: .fs-6 .fw-300 }
 
 ## Table of Contents
@@ -18,18 +18,16 @@ Complete list of NovaChat AI bot commands and their usage.
 
 ---
 
-## Bot Commands
-
-## Basic Commands
+## Core Commands
 
 ### /start
-Initialize the bot and get started.
+Initializes NovaChat AI v2.0 and displays welcome message with available features.
 ```
 /start
 ```
 
 ### /help
-View all available commands and their descriptions.
+Shows comprehensive list of commands and features with detailed descriptions.
 ```
 /help
 ```
@@ -37,77 +35,81 @@ View all available commands and their descriptions.
 ## Chat Commands
 
 ### /chat
-Start or continue an AI conversation.
+Initiates conversation with advanced Groq LLM models.
 ```
-/chat What is artificial intelligence?
-```
-
-### /clear
-Clear your chat history.
-```
-/clear
+/chat Explain quantum computing
 ```
 
-### /export
-Export your chat history in Markdown or PDF format.
+### /enhance
+Improves the tone and style of the previous message using advanced language models.
 ```
-/export markdown
-/export pdf
+/enhance
 ```
 
 ## Image Generation
 
 ### /imagine
-Generate high-quality images using Together AI.
+Creates high-quality images using latest AI models with enhanced prompt engineering.
 ```
-/imagine beautiful sunset over mountains, realistic, 4k, detailed
+/imagine A cyberpunk city at sunset with neon signs
 ```
 
-## Settings & Configuration
-
-### /uploadenv
-Upload a .env file to set all API keys securely.
-```
-/uploadenv
-# Then attach your .env file
-```
+## Configuration Commands
 
 ### /setgroqkey
-Set your Groq API key for chat functionality.
+Configures Groq API key for LLM access.
 ```
 /setgroqkey your_api_key_here
 ```
 
 ### /settogetherkey
-Set your Together AI key for image generation.
+Sets Together AI key for image generation.
 ```
 /settogetherkey your_api_key_here
 ```
 
 ### /settings
-View your current bot settings.
+Views and manages current bot configuration.
 ```
 /settings
 ```
 
+## Response Customization
+
 ### /temperature
-Adjust the creativity level of AI responses (0.0 to 1.0).
+Adjusts response creativity level (0.1-1.0).
 ```
-/temperature 0.7
+/temperature 0.8
 ```
 
 ### /tokens
-Set the maximum length of AI responses.
+Sets maximum response length for better control.
 ```
-/tokens 2000
+/tokens 2048
 ```
 
-## Security Notes
+## History Management
 
-- API keys are stored securely in user sessions
-- Keys are never logged or stored permanently
-- Use /uploadenv for secure key configuration
-- Messages containing API keys are automatically deleted
+### /export
+Exports complete chat history in chosen format.
+```
+/export pdf
+```
+
+### /clear
+Clears current chat history and starts fresh.
+```
+/clear
+```
+
+## Security
+
+### /uploadenv
+Securely uploads configuration file with API keys.
+```
+/uploadenv
+# Then attach your .env file
+```
 
 ## Response Examples
 

@@ -29,6 +29,9 @@ AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's adv
 - **Webhook Support**: Real-time Telegram updates
 - **Chat Management**: Export and clear chat history
 - **Customizable Settings**: Adjust AI parameters
+- **Export Chat History**: Markdown or PDF
+- **Prompt Engineering**: Enhance image generation
+- **Prompt Enhacment**: For simple prompt enhancement
 
 ### Architecture
 
@@ -50,7 +53,6 @@ graph TD
 - **AI Services**: 
   - Groq (Chat)
   - Together AI (Image Generation)
-- **Database**: SQLite (Coming Soon)
 
 ## Quick Access
 
@@ -83,7 +85,6 @@ AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's adv
 
 - Advanced AI Chat using Groq
 - Image Generation (Basic and High-Quality)
-- Chat History Management
 - Customizable Settings
 - Export Chat History (Markdown/PDF)
 - Flask Web Interface
