@@ -94,3 +94,80 @@
 - Thanks to all contributors
 - Special thanks to beta testers
 - Community feedback and suggestions
+
+## Version History
+
+## Version 1.0.0 (2024-12-31)
+
+### 🎉 Initial Release
+Created by Amul Thantharate
+
+### ✨ New Features
+
+#### Audio Transcription
+- English audio transcription using Groq API
+- Support for multiple audio formats
+- Voice message transcription
+- Audio file transcription
+- Language detection
+- Progress updates during processing
+
+#### Command System
+- Organized command categories
+- Detailed help system
+- Audio-specific commands
+- User-friendly instructions
+
+#### User Interface
+- Clean and modern design
+- Markdown formatting
+- Progress indicators
+- Error handling
+- User feedback
+
+### 🔧 Technical Features
+
+#### Audio Processing
+- Multiple format support:
+  - MP3, WAV, M4A
+  - OGG, OPUS
+  - MP4, WEBM
+- File size limit: 20MB
+- Temporary file management
+- Error handling
+
+#### Bot Framework
+- Python-telegram-bot integration
+- Groq API integration
+- Asynchronous processing
+- Session management
+- Command handlers
+
+#### Security
+- Environment variable management
+- API key protection
+- Secure file handling
+- Temporary file cleanup
+
+### 📝 Documentation
+- Comprehensive README
+- Command documentation
+- Setup instructions
+- Best practices guide
+
+### 🐛 Known Issues
+- None reported
+
+### 🔜 Upcoming Features
+- Multi-language support
+- Batch processing
+- Custom transcription settings
+- Advanced audio analysis
+
+## How to Update
+1. Pull the latest changes
+2. Update dependencies
+3. Restart the bot
+
+## Feedback
+Please report any issues or suggestions on GitHub.

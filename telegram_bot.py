@@ -26,6 +26,8 @@ from main import interactive_chat, save_chat_history, generate_image
 from flask import Flask, request, jsonify
 from groq import Groq
 import asyncio
+import tempfile
+from pathlib import Path
 
 # Configure logging
 logging.basicConfig(
@@ -37,22 +39,26 @@ logger = logging.getLogger(__name__)
 # Global variable for user sessions
 user_sessions = {}
 
-# Bot command descriptions
+# Dictionary of available commands and their descriptions
 COMMANDS = {
-    'start': 'Start AIFusionBot v2.0',
-    'help': 'Show available commands and features',
-    'chat': 'Start AI conversation with enhanced LLM models',
-    'imagine': 'Create high-quality image using latest AI models',
-    'enhance': 'Enhance text using advanced language models',
-    'setgroqkey': 'Set Groq API key for LLM access',
-    'settogetherkey': 'Set Together AI key for image generation',
-    'settings': 'View and configure bot settings',
-    'export': 'Export complete chat history',
-    'clear': 'Clear current chat history',
+    'start': 'Start the bot and get welcome message',
+    'help': 'Show help message with all commands',
+    'chat': 'Start a chat with AI',
+    'imagine': 'Generate an image from text description',
+    'enhance': 'Enhance your text prompt',
+    'settings': 'View and modify bot settings',
+    'save': 'Save current chat history',
     'temperature': 'Adjust response creativity (0.1-1.0)',
     'tokens': 'Set maximum response length (100-4096)',
     'uploadenv': 'Upload .env file to configure API keys',
-    'describe': 'Analyze and describe an image (reply to an image or provide URL)'
+    'describe': 'Analyze and describe an image (reply to an image or provide URL)',
+    'transcribe': 'Convert English audio to text (voice or file)',
+    'formats': 'Show supported audio formats',
+    'clear': 'Clear chat history',
+    'export': 'Export chat history as file',
+    'voice': 'Send a voice message to transcribe',
+    'audio': 'Send an audio file to transcribe',
+    'lang': 'Show supported language (English only)'
 }
 
 class UserSession:
@@ -66,26 +72,53 @@ class UserSession:
         self.last_enhanced_prompt = None  # Store the last enhanced prompt
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /start command"""
-    logger.info(f"Start command received from user {update.effective_user.id}")
+    """Send a message when the command /start is issued."""
     welcome_message = (
-        "👋 Welcome to AIFusionBot!\n\n"
-        "I'm your advanced AI assistant powered by Groq and Together AI. "
-        "I can help you with:\n\n"
-        "🗣️ Natural conversations\n"
-        "🎨 Image generation\n"
-        "📝 Chat management\n\n"
-        "Type /help to see all available commands!"
+        "👋 *Welcome to AIFusionBot!*\n\n"
+        "Created By Amul Thantharate👋 \n\n"
+        "I'm your AI assistant with multiple capabilities:\n\n"
+        "🤖 *AI Chat*\n"
+        "• Use /chat to start a conversation\n"
+        "• Adjust settings with /settings\n\n"
+        "🎨 *Image Generation*\n"
+        "• Create images with /imagine\n"
+        "• Enhance prompts with /enhance\n\n"
+        "🎵 *Audio Transcription*\n"
+        "• Convert English audio to text\n"
+        "• Use /transcribe for help\n"
+        "• Check formats with /formats\n\n"
+        "📷 *Image Analysis*\n"
+        "• Analyze images with /describe\n"
+        "• Send images directly for analysis\n\n"
+        "Use /help to see all available commands!"
     )
-    await update.message.reply_text(welcome_message)
+    await update.message.reply_text(welcome_message, parse_mode='Markdown')
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle /help command"""
-    logger.info(f"Help command received from user {update.effective_user.id}")
-    help_text = "🤖 AIFusionBot Commands:\n\n"
-    for cmd, desc in COMMANDS.items():
-        help_text += f"/{cmd} - {desc}\n"
-    await update.message.reply_text(help_text)
+    """Send a message when the command /help is issued."""
+    help_text = "*Available Commands:*\n\n"
+    
+    # Group commands by category
+    categories = {
+        "🤖 Chat Commands": ['chat', 'temperature', 'tokens', 'clear', 'save', 'export'],
+        "🎨 Image Commands": ['imagine', 'enhance', 'describe'],
+        "🎵 Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
+        "⚙️ Settings": ['settings', 'uploadenv'],
+        "ℹ️ General": ['start', 'help']
+    }
+    
+    for category, cmd_list in categories.items():
+        help_text += f"\n{category}:\n"
+        for cmd in cmd_list:
+            if cmd in COMMANDS:
+                help_text += f"/{cmd} - {COMMANDS[cmd]}\n"
+    
+    help_text += "\n📝 *Tips:*\n"
+    help_text += "• Use /settings to customize bot behavior\n"
+    help_text += "• Only English audio is supported for transcription\n"
+    help_text += "• Clear audio quality gives better results\n"
+    
+    await update.message.reply_text(help_text, parse_mode='Markdown')
 
 async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /setgroqkey command."""
@@ -646,28 +679,254 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle photos sent directly to the bot"""
     await describe_image(update, context)
 
+# Create temp directory for audio files
+TEMP_DIR = Path(tempfile.gettempdir()) / "audio_transcribe"
+TEMP_DIR.mkdir(exist_ok=True)
+
+# Supported audio formats
+SUPPORTED_FORMATS = {'.mp3', '.wav', '.m4a', '.ogg', '.oga', '.opus', '.mp4', '.mpeg', '.mpga', '.webm'}
+
+def get_file_extension(file_name: str) -> str:
+    """Get the file extension from the file name."""
+    return Path(file_name).suffix.lower()
+
+def is_supported_format(file_name: str) -> bool:
+    """Check if the file format is supported."""
+    return get_file_extension(file_name) in SUPPORTED_FORMATS
+
+def transcribe_audio(filename, prompt=None):
+    """Transcribe English audio file using Groq API."""
+    # Initialize the Groq client
+    client = Groq()  # Make sure GROQ_API_KEY is set in your environment variables
+    
+    try:
+        # Open the audio file
+        with open(filename, "rb") as file:
+            # Create a translation of the audio file
+            translation = client.audio.translations.create(
+                file=(filename, file.read()),  # Required audio file
+                model="whisper-large-v3",  # Required model to use for translation
+                prompt=prompt or "This is English audio, transcribe accurately",  # Set English context
+                response_format="json",  # Optional
+                temperature=0.0,  # Optional
+                language="en"  # Specify English language
+            )
+            
+            # Check if the detected language is English
+            if hasattr(translation, 'language') and translation.language.lower() != 'en':
+                logger.warning(f"Non-English audio detected: {translation.language}")
+                return "⚠️ Sorry, this bot only transcribes English audio. Detected language: " + translation.language
+            
+            return translation.text
+    except Exception as e:
+        logger.error(f"Error during transcription: {str(e)}")
+        return None
+
+async def transcribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Send information about audio transcription when /transcribe is issued."""
+    transcribe_text = """
+🎯 *English Audio Transcription Help:*
+
+1️⃣ *Send Voice Message:*
+   • Click the microphone icon
+   • Record your message in English
+   • Send it to me
+
+2️⃣ *Send Audio File:*
+   • Select a file from your device
+   • Make sure it's in English
+   • Make sure it's in a supported format
+   • Send it to me
+
+3️⃣ *Supported Formats:*
+   • Voice Messages (OGG)
+   • Audio Files (MP3, WAV, M4A, OGG, OPUS, MP4, WEBM)
+
+⚠️ *Important Notes:*
+   • Only English audio is supported
+   • Maximum file size is 20MB
+   • Clear audio quality gives better results
+    """
+    await update.message.reply_text(transcribe_text, parse_mode='Markdown')
+
+async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Handle audio messages."""
+    try:
+        # Send initial processing message
+        processing_msg = await update.message.reply_text(
+            "🎵 Receiving your audio...\n⚠️ Note: Only English audio is supported",
+            parse_mode='Markdown'
+        )
+
+        # Get the audio file
+        if update.message.voice:
+            file = await update.message.voice.get_file()
+            file_name = f"voice_{update.message.from_user.id}.ogg"
+        elif update.message.audio:
+            file = await update.message.audio.get_file()
+            file_name = update.message.audio.file_name
+            if not is_supported_format(file_name):
+                await processing_msg.edit_text(
+                    f"❌ Sorry, the format {get_file_extension(file_name)} is not supported.\n"
+                    "Use /formats to see supported formats."
+                )
+                return
+        else:
+            await processing_msg.edit_text("❌ Please send a voice message or audio file.")
+            return
+
+        # Create unique file path
+        file_path = TEMP_DIR / f"{update.message.from_user.id}_{file_name}"
+        
+        # Download the file
+        await file.download_to_drive(str(file_path))
+        
+        # Update processing message
+        await processing_msg.edit_text("🔄 Processing your audio... Please wait.")
+
+        # Transcribe the audio
+        transcription = transcribe_audio(str(file_path))
+
+        if transcription:
+            if transcription.startswith("⚠️ Sorry, this bot only transcribes English audio"):
+                # If non-English audio was detected
+                await processing_msg.edit_text(transcription)
+            else:
+                # Split long messages if needed (Telegram has a 4096 character limit)
+                max_length = 4000
+                messages = [transcription[i:i+max_length] for i in range(0, len(transcription), max_length)]
+                
+                # Send transcription
+                await processing_msg.edit_text("✅ Transcription completed!")
+                for i, msg in enumerate(messages, 1):
+                    if len(messages) > 1:
+                        header = f"*Part {i}/{len(messages)}:*\n\n"
+                    else:
+                        header = "*Transcription:*\n\n"
+                    await update.message.reply_text(f"{header}{msg}", parse_mode='Markdown')
+        else:
+            await processing_msg.edit_text(
+                "❌ Sorry, I couldn't transcribe the audio. Please try again with clear English audio."
+            )
+
+        # Clean up the temporary file
+        if file_path.exists():
+            file_path.unlink()
+
+    except Exception as e:
+        logger.error(f"Error handling audio: {str(e)}")
+        await update.message.reply_text(
+            "❌ Sorry, something went wrong. Please try again with clear English audio."
+        )
+
+async def formats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show supported audio formats."""
+    formats_text = (
+        "📝 *Supported Audio Formats:*\n\n"
+        "• MP3 (.mp3)\n"
+        "• WAV (.wav)\n"
+        "• M4A (.m4a)\n"
+        "• OGG (.ogg, .oga)\n"
+        "• OPUS (.opus)\n"
+        "• MP4 (.mp4)\n"
+        "• MPEG (.mpeg, .mpga)\n"
+        "• WEBM (.webm)\n\n"
+        "✨ Just send me any audio file in these formats!"
+    )
+    await update.message.reply_text(formats_text, parse_mode='Markdown')
+
+async def lang_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show supported language information."""
+    lang_text = (
+        "🌐 *Supported Language for Audio Transcription*\n\n"
+        "Currently, this bot only supports:\n"
+        "• English (US)\n"
+        "• English (UK)\n"
+        "• English (International)\n\n"
+        "⚠️ *Important Notes:*\n"
+        "• Clear pronunciation helps accuracy\n"
+        "• Minimal background noise preferred\n"
+        "• Good audio quality recommended\n\n"
+        "🎯 *Best Practices:*\n"
+        "• Speak clearly and at normal speed\n"
+        "• Avoid heavy accents if possible\n"
+        "• Use good quality recording equipment\n"
+        "• Record in a quiet environment\n\n"
+        "Use /transcribe to start transcribing!"
+    )
+    await update.message.reply_text(lang_text, parse_mode='Markdown')
+
+async def voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show voice message instructions."""
+    voice_text = (
+        "🎤 *Voice Message Instructions*\n\n"
+        "To send a voice message:\n"
+        "1. Click the microphone icon (🎤)\n"
+        "2. Hold to record your message\n"
+        "3. Speak clearly in English\n"
+        "4. Release to send\n\n"
+        "⚠️ *Tips for Best Results:*\n"
+        "• Find a quiet location\n"
+        "• Speak at a normal pace\n"
+        "• Hold phone close to mouth\n"
+        "• Avoid background noise\n\n"
+        "Maximum duration: 20 minutes"
+    )
+    await update.message.reply_text(voice_text, parse_mode='Markdown')
+
+async def audio_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Show audio file instructions."""
+    audio_text = (
+        "🎵 *Audio File Instructions*\n\n"
+        "To send an audio file:\n"
+        "1. Click the attachment icon (📎)\n"
+        "2. Select 'Audio'\n"
+        "3. Choose your English audio file\n"
+        "4. Send the file\n\n"
+        "📝 *Requirements:*\n"
+        "• English audio only\n"
+        "• Maximum size: 20MB\n"
+        "• Supported formats: use /formats\n\n"
+        "⚠️ *Tips:*\n"
+        "• High-quality audio works best\n"
+        "• Clear speech is important\n"
+        "• Minimal background noise\n"
+        "• Single speaker preferred"
+    )
+    await update.message.reply_text(audio_text, parse_mode='Markdown')
+
 def setup_bot(token: str) -> Application:
     """Initialize and configure the AIFusionBot bot"""
     try:
-        # Initialize the bot
+        # Create the Application
         app = Application.builder().token(token).build()
         
         # Add command handlers
         app.add_handler(CommandHandler('start', start_command))
         app.add_handler(CommandHandler('help', help_command))
+        app.add_handler(CommandHandler('setgroqkey', setgroqkey_command))
+        app.add_handler(CommandHandler('settogetherkey', settogetherkey_command))
         app.add_handler(CommandHandler('chat', chat_command))
         app.add_handler(CommandHandler('imagine', imagine_command))
         app.add_handler(CommandHandler('enhance', enhance_command))
         app.add_handler(CommandHandler('settings', settings_command))
-        app.add_handler(CommandHandler('export', export_command))
-        app.add_handler(CommandHandler('clear', clear_command))
+        app.add_handler(CommandHandler('save', save_command))
         app.add_handler(CommandHandler('temperature', temperature_command))
-        app.add_handler(CommandHandler('describe', describe_image))
+        app.add_handler(CommandHandler('clear', clear_command))
+        app.add_handler(CommandHandler('export', export_command))
         app.add_handler(CommandHandler('uploadenv', uploadenv_command))
+        app.add_handler(CommandHandler('describe', describe_image))
+        app.add_handler(CommandHandler('transcribe', transcribe_command))
+        app.add_handler(CommandHandler('formats', formats_command))
+        app.add_handler(CommandHandler('lang', lang_command))
+        app.add_handler(CommandHandler('voice', voice_command))
+        app.add_handler(CommandHandler('audio', audio_command))
         
         # Add message handlers
         app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
         app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+        app.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_audio))
+        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_command))
         
         # Add callback query handler
         app.add_handler(CallbackQueryHandler(button_callback))
@@ -677,6 +936,7 @@ def setup_bot(token: str) -> Application:
         
         logger.info("Bot setup completed successfully")
         return app
+        
     except Exception as e:
         logger.error(f"Error setting up bot: {str(e)}")
         raise

@@ -1,106 +1,108 @@
-# NovaChat AI v2.0
+# AIFusionBot - Telegram Audio Transcription Bot
 
-A powerful Telegram bot that combines Groq's advanced language models and Together AI's state-of-the-art image generation capabilities.
+Created by Amul Thantharate 👋
 
 ## Features
 
-- Advanced AI Chat using Groq's latest LLM models
-- High-Quality Image Generation with Together AI's newest models
-- Image Analysis and Description using Groq Vision API
-- Enhanced Prompt Engineering for better image generation
-- Intelligent Chat History Management
-- Advanced Customizable Settings
-- Multi-format Export (Markdown/PDF)
-- High-Performance Flask Web Interface
-- Secure Webhook Support
-- Real-time Response Enhancement
+### 🎵 Audio Transcription
+- Transcribes English audio to text
+- Supports multiple audio formats
+- Voice messages and audio files
+- Real-time progress updates
+- Smart language detection
+
+### 🤖 AI Chat
+- Natural language conversations
+- Adjustable response creativity
+- Chat history management
+- Export conversations
+
+### 🎨 Image Generation
+- Create AI-generated images
+- Prompt enhancement
+- Image analysis and description
+
+## Supported Audio Formats
+- MP3 (.mp3)
+- WAV (.wav)
+- M4A (.m4a)
+- OGG (.ogg, .oga)
+- OPUS (.opus)
+- MP4 (.mp4)
+- MPEG (.mpeg, .mpga)
+- WEBM (.webm)
 
 ## Commands
+### General
+- `/start` - Start the bot
+- `/help` - Show all commands
 
-- `/start` - Start NovaChat AI v2.0
-- `/help` - Show available commands and features
-- `/chat` - Start AI conversation with enhanced LLM models
-- `/imagine` - Create high-quality images using latest AI models
-- `/describe` - Analyze and describe images using Groq Vision
-- `/enhance` - Enhance text using advanced language models
-- `/setgroqkey` - Set Groq API key for LLM access
-- `/settogetherkey` - Set Together AI key for image generation
-- `/settings` - View and configure bot settings
-- `/export` - Export complete chat history
-- `/clear` - Clear current chat history
-- `/temperature` - Adjust response creativity (0.1-1.0)
-- `/tokens` - Set maximum response length (100-4096)
-- `/uploadenv` - Upload .env file to configure API keys
+### Audio Commands
+- `/transcribe` - Convert English audio to text
+- `/formats` - Show supported formats
+- `/voice` - Voice message guide
+- `/audio` - Audio file guide
+- `/lang` - Language support info
 
-## Image Analysis Features
+### Chat Commands
+- `/chat` - Start AI conversation
+- `/temperature` - Adjust creativity
+- `/tokens` - Set response length
+- `/clear` - Clear chat history
+- `/save` - Save chat history
+- `/export` - Export as file
 
-The bot supports three ways to analyze images:
-1. Send any image directly to the bot
-2. Reply to any image with `/describe`
-3. Use `/describe [URL]` with an image URL
+### Image Commands
+- `/imagine` - Generate images
+- `/enhance` - Enhance prompts
+- `/describe` - Analyze images
 
-## Requirements
+### Settings
+- `/settings` - Bot configuration
+- `/uploadenv` - Configure API keys
 
-- Python 3.12+
-- Telegram Bot Token
-- Groq API Key (for chat and image analysis)
-- Together AI API Key (for image generation)
-- Flask & Gunicorn (for web server)
-
-## Installation
+## Setup
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/NovaChat-AI.git
-cd NovaChat-AI
+git clone https://github.com/yourusername/AIFusionBot.git
+cd AIFusionBot
 ```
 
-2. Create and configure your environment file:
-```bash
-cp .env.example .env
-# Edit .env with your tokens and API keys
-```
-
-3. Install dependencies:
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Configuration
-
-Set the following environment variables in your `.env` file:
-
+3. Create a `.env` file:
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 GROQ_API_KEY=your_groq_api_key
-TOGETHER_API_KEY=your_together_api_key
 ```
 
-You can also use the `/uploadenv` command in Telegram to set your API keys securely.
-
-## Running the Bot
-
-### Development Mode
+4. Run the bot:
 ```bash
-python app.py
+python main.py
 ```
 
-### Production Mode
-```bash
-gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app
-```
+## Requirements
+- Python 3.8+
+- Telegram Bot Token
+- Groq API Key
+- Internet connection
 
-## Security Features
-
-- Secure API key management
-- Immediate deletion of uploaded configuration files
-- In-memory file processing
-- Session-based user settings
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.
+## Best Practices
+- Use clear audio quality
+- Speak English clearly
+- Minimize background noise
+- Use supported formats only
+- Keep files under 20MB
 
 ## License
+MIT License - See LICENSE file for details
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+## Author
+Created by Amul Thantharate
+
+## Support
+For issues and feature requests, please create an issue on GitHub.
