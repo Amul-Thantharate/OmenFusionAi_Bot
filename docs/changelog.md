@@ -92,6 +92,29 @@ Track NovaChat AI's version history and updates.
 - Better session handling
 - Improved webhook reliability
 
+## [v2.1.0] - 2024-12-31
+
+### Added
+- Image analysis functionality using Groq Vision API
+  - New `/describe` command for image analysis
+  - Support for direct image uploads
+  - Support for image URL analysis
+  - Reply-to-image functionality
+- Enhanced error handling for image processing
+- Improved API key validation and error messages
+- Better user feedback during image analysis
+
+### Changed
+- Updated help system with image analysis examples
+- Enhanced command documentation
+- Improved session state management
+- Optimized image processing pipeline
+
+### Fixed
+- Event loop handling in async operations
+- API key validation feedback
+- Error message clarity
+
 ## Upcoming Features
 
 ### [1.1.0] - Planned

@@ -19,10 +19,13 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from datetime import datetime
 from io import BytesIO
 import time
+import base64
 from typing import Optional
 from dotenv import load_dotenv
 from main import interactive_chat, save_chat_history, generate_image
 from flask import Flask, request, jsonify
+from groq import Groq
+import asyncio
 
 # Configure logging
 logging.basicConfig(
@@ -48,7 +51,8 @@ COMMANDS = {
     'clear': 'Clear current chat history',
     'temperature': 'Adjust response creativity (0.1-1.0)',
     'tokens': 'Set maximum response length (100-4096)',
-    'uploadenv': 'Upload .env file to configure API keys'
+    'uploadenv': 'Upload .env file to configure API keys',
+    'describe': 'Analyze and describe an image (reply to an image or provide URL)'
 }
 
 class UserSession:
@@ -559,59 +563,142 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
         text = "Sorry, an error occurred while processing your request."
         await update.effective_message.reply_text(text)
 
+async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /describe command and direct photo messages for image analysis"""
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+    
+    # Get photo from different possible sources
+    photo = None
+    image_url = None
+    
+    if update.message.photo:
+        # Direct photo message
+        photo = update.message.photo[-1]  # Get highest quality photo
+    elif update.message.reply_to_message and update.message.reply_to_message.photo:
+        # Reply to photo with /describe
+        photo = update.message.reply_to_message.photo[-1]
+    else:
+        # Check if URL was provided with /describe command
+        args = context.args
+        if args:
+            image_url = args[0]
+        else:
+            await update.message.reply_text(
+                "Please either:\n"
+                "1. Send a photo directly\n"
+                "2. Reply to a photo with /describe\n"
+                "3. Provide an image URL: `/describe https://example.com/image.jpg`",
+                parse_mode='Markdown'
+            )
+            return
+    
+    try:
+        # Initialize Groq client
+        groq = Groq(api_key=user_sessions[user_id].groq_api_key)
+        
+        # If we have a photo, download it and convert to base64
+        if photo:
+            await update.message.reply_text("Downloading image...")
+            file = await context.bot.get_file(photo.file_id)
+            photo_data = await file.download_as_bytearray()
+            base64_image = base64.b64encode(photo_data).decode('utf-8')
+            image_url = f"data:image/jpeg;base64,{base64_image}"
+        
+        # Create chat completion with image
+        await update.message.reply_text("Analyzing image...")
+        chat_completion = groq.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "What's in this image? Provide a detailed description."},
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": image_url
+                            }
+                        }
+                    ]
+                }
+            ],
+            model="llama-3.2-11b-vision-preview",
+            temperature=user_sessions[user_id].temperature,
+            max_tokens=user_sessions[user_id].max_tokens
+        )
+        
+        description = chat_completion.choices[0].message.content
+        await update.message.reply_text(description)
+        
+    except Exception as e:
+        error_message = str(e)
+        if "api_key" in error_message.lower():
+            await update.message.reply_text(
+                "Please set your Groq API key first using the /setgroqkey command.\n"
+                "You can get an API key from https://console.groq.com"
+            )
+        else:
+            await update.message.reply_text(f"Error analyzing image: {error_message}")
+            logger.error(f"Error in describe_image: {error_message}")
+
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle photos sent directly to the bot"""
+    await describe_image(update, context)
+
 def setup_bot(token: str) -> Application:
     """Initialize and configure the AIFusionBot bot"""
     try:
-        logger.info("Setting up bot application...")
-        # Create application with specific defaults for polling
-        app = (
-            Application.builder()
-            .token(token)
-            .concurrent_updates(True)
-            .build()
-        )
-
+        # Initialize the bot
+        app = Application.builder().token(token).build()
+        
         # Add command handlers
         app.add_handler(CommandHandler('start', start_command))
         app.add_handler(CommandHandler('help', help_command))
-        app.add_handler(CommandHandler('setgroqkey', setgroqkey_command))
-        app.add_handler(CommandHandler('settogetherkey', settogetherkey_command))
         app.add_handler(CommandHandler('chat', chat_command))
         app.add_handler(CommandHandler('imagine', imagine_command))
         app.add_handler(CommandHandler('enhance', enhance_command))
         app.add_handler(CommandHandler('settings', settings_command))
         app.add_handler(CommandHandler('export', export_command))
-        app.add_handler(CommandHandler('temperature', temperature_command))
         app.add_handler(CommandHandler('clear', clear_command))
+        app.add_handler(CommandHandler('temperature', temperature_command))
+        app.add_handler(CommandHandler('describe', describe_image))
         app.add_handler(CommandHandler('uploadenv', uploadenv_command))
         
-        # Add document handler for .env files
+        # Add message handlers
         app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
-
-        # Add callback query handler for buttons
+        app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+        
+        # Add callback query handler
         app.add_handler(CallbackQueryHandler(button_callback))
-
+        
         # Add error handler
         app.add_error_handler(error_handler)
-
+        
         logger.info("Bot setup completed successfully")
         return app
-
     except Exception as e:
-        logger.error(f"Failed to setup AIFusionBot bot: {str(e)}")
+        logger.error(f"Error setting up bot: {str(e)}")
+        raise
+
+def run_telegram_bot():
+    """Main function to run the Telegram bot"""
+    try:
+        # Load environment variables
+        load_dotenv()
+        
+        # Get bot token from environment
+        token = os.getenv('TELEGRAM_BOT_TOKEN')
+        if not token:
+            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
+        
+        # Setup and run the bot
+        app = setup_bot(token)
+        logger.info("Starting bot in polling mode...")
+        app.run_polling(allowed_updates=Update.ALL_TYPES)
+    except Exception as e:
+        logger.error(f"Failed to start bot: {str(e)}")
         raise
 
 if __name__ == "__main__":
-    # Load environment variables
-    load_dotenv()
-    TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
-    
-    if not TELEGRAM_BOT_TOKEN:
-        logger.error("TELEGRAM_BOT_TOKEN not found in environment variables")
-        print("Error: Please set TELEGRAM_BOT_TOKEN in your .env file")
-        exit(1)
-    
-    # Create and run the bot in polling mode
-    application = setup_bot(TELEGRAM_BOT_TOKEN)
-    print("Starting Telegram bot in polling mode...")
-    application.run_polling(allowed_updates=Update.ALL_TYPES)
+    run_telegram_bot()

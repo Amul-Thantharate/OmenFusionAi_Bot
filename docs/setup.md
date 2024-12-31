@@ -76,6 +76,29 @@ You can also configure API keys through the bot using:
 2. **Groq API Key**:
    - Sign up at [Groq Console](https://console.groq.com)
    - Generate an API key
+   The Groq API key is required for both chat functionality and image analysis. You can obtain it from [Groq Console](https://console.groq.com):
+
+   1. Sign up for a Groq account
+   2. Navigate to API Keys section
+   3. Create a new API key
+   4. Set the key in the bot using:
+   ```
+   /setgroqkey YOUR_API_KEY
+   ```
+   The same API key will be used for both:
+   - Chat functionality with LLM models
+   - Image analysis with Groq Vision API
+
+3. **Groq Vision Setup**:
+   To use Groq Vision, you need to set up a Groq Vision API key. You can do this by following these steps:
+   1. Go to the Groq Console and navigate to the API Keys section
+   2. Click on "Create a new API key"
+   3. Select "Groq Vision" as the API type
+   4. Set the key in the bot using:
+   ```
+   /setgroqvisionkey YOUR_API_KEY
+   ```
+   Note: You need to have a separate API key for Groq Vision.
 
 3. **Together AI Key**:
    - Register at [Together AI](https://api.together.xyz)

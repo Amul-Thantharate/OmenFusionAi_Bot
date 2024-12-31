@@ -46,13 +46,44 @@ Improves the tone and style of the previous message using advanced language mode
 /enhance
 ```
 
-## Image Generation
+## Image Commands
 
 ### /imagine
-Creates high-quality images using latest AI models with enhanced prompt engineering.
+Creates high-quality images using Together AI's state-of-the-art models.
 ```
-/imagine A cyberpunk city at sunset with neon signs
+/imagine <prompt>
+Example: /imagine a serene lake at sunset with mountains in the background
 ```
+
+### /describe
+Analyzes and provides detailed descriptions of images using Groq Vision API. Supports three ways to analyze images:
+
+1. Direct Upload:
+```
+Simply send any image to the bot
+```
+
+2. Reply to Image:
+```
+Reply to any image with /describe
+```
+
+3. URL Analysis:
+```
+/describe <image_url>
+Example: /describe https://example.com/image.jpg
+```
+
+The bot will analyze the image and provide a detailed description of its contents, including:
+- Main subjects and objects
+- Scene description
+- Visual details and context
+- Notable features or characteristics
+
+Requirements:
+- Valid Groq API key (set using `/setgroqkey`)
+- Supported image formats: JPEG, PNG
+- For URLs: publicly accessible image links
 
 ## Configuration Commands
 

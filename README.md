@@ -6,6 +6,7 @@ A powerful Telegram bot that combines Groq's advanced language models and Togeth
 
 - Advanced AI Chat using Groq's latest LLM models
 - High-Quality Image Generation with Together AI's newest models
+- Image Analysis and Description using Groq Vision API
 - Enhanced Prompt Engineering for better image generation
 - Intelligent Chat History Management
 - Advanced Customizable Settings
@@ -20,6 +21,7 @@ A powerful Telegram bot that combines Groq's advanced language models and Togeth
 - `/help` - Show available commands and features
 - `/chat` - Start AI conversation with enhanced LLM models
 - `/imagine` - Create high-quality images using latest AI models
+- `/describe` - Analyze and describe images using Groq Vision
 - `/enhance` - Enhance text using advanced language models
 - `/setgroqkey` - Set Groq API key for LLM access
 - `/settogetherkey` - Set Together AI key for image generation
@@ -30,11 +32,18 @@ A powerful Telegram bot that combines Groq's advanced language models and Togeth
 - `/tokens` - Set maximum response length (100-4096)
 - `/uploadenv` - Upload .env file to configure API keys
 
+## Image Analysis Features
+
+The bot supports three ways to analyze images:
+1. Send any image directly to the bot
+2. Reply to any image with `/describe`
+3. Use `/describe [URL]` with an image URL
+
 ## Requirements
 
 - Python 3.12+
 - Telegram Bot Token
-- Groq API Key (for chat)
+- Groq API Key (for chat and image analysis)
 - Together AI API Key (for image generation)
 - Flask & Gunicorn (for web server)
 

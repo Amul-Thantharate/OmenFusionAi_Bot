@@ -1,74 +1,59 @@
-# NovaChat AI v1.2.0 Release Notes
+# NovaChat AI v2.1.0 Release Notes
 
 ## 🚀 Major Enhancements
 
-### Enhanced Prompt Engineering System
-- Advanced prompt enhancement for improved image generation
-- Real-time prompt optimization for better visual results
-- Intelligent context preservation in image descriptions
+### New Image Analysis System
+- Added image-to-text functionality using Groq Vision API
+- Support for direct image uploads and URL analysis
+- Intelligent image description with detailed context
+- Three convenient ways to analyze images:
+  - Direct image uploads
+  - Reply to images with `/describe`
+  - URL analysis with `/describe [URL]`
 
-### New Text Enhancement Features
-- Added `/enhance` command for text improvement
-- Advanced tone and style adjustments
-- Professional writing enhancement capabilities
+### Enhanced Error Handling
+- Improved API key validation and error messages
+- Better feedback during image processing
+- Graceful handling of various image formats
 
-### Improved Command System
-- Updated all command descriptions for better clarity
-- Added parameter ranges for better control
-  - Temperature: 0.1-1.0
-  - Tokens: 100-4096
-- Enhanced help system with detailed examples
+### Command System Updates
+- Added new `/describe` command for image analysis
+- Updated help system with image analysis examples
+- Enhanced command documentation
 
 ## 🛠️ Technical Improvements
 
 ### Core Updates
-- Added new `image_generator.py` for enhanced image generation
-- Implemented `tone_enhancer.py` for text improvements
-- Updated Groq LLM integration
-- Improved Together AI implementation
+- Integrated Groq Vision API for image analysis
+- Improved async/await handling
+- Enhanced session management for image processing
+- Better error handling and user feedback
 
 ### Performance & Reliability
-- Enhanced error handling system
-- Improved user feedback mechanisms
-- Better session management
-- Optimized API interactions
+- Optimized image processing pipeline
+- Improved error reporting
+- Enhanced session state management
+- Better API interaction handling
 
 ## 📚 Documentation Updates
 
-### Updated Documentation
-- Comprehensive command reference
-- New examples and use cases
-- Enhanced setup instructions
-- Improved troubleshooting guides
+### New Documentation
+- Image analysis usage guide
+- Command reference for `/describe`
+- Best practices for image analysis
+- Troubleshooting guide for image processing
 
-### New Guides
-- Advanced prompt engineering guide
-- Text enhancement best practices
+### Updated Guides
+- Installation instructions for Groq Vision
+- API key setup guide
 - Configuration optimization tips
 
 ## 🔧 Configuration Changes
 
-### Settings Improvements
-- More granular temperature control
-- Extended token limit options
-- Enhanced API key management
-- Better configuration validation
-
-## 🎨 UI/UX Improvements
-
-### User Experience
-- Clearer command responses
-- Better error messages
-- Enhanced feedback for long operations
-- Improved help system navigation
-
-## 🔒 Security Enhancements
-
-### API & Data Security
-- Enhanced API key handling
-- Improved session security
-- Better error masking
-- Secure configuration management
+### New Environment Variables
+- Added support for Groq Vision API
+- Updated API key validation
+- Enhanced error messages for missing keys
 
 ## 📋 Requirements
 
@@ -79,7 +64,7 @@
 
 ## 🔄 Migration Guide
 
-### Upgrading from v1.1.x
+### Upgrading from v1.2.0
 1. Update your Python environment
 2. Run `pip install -r requirements.txt`
 3. Update your `.env` configuration
