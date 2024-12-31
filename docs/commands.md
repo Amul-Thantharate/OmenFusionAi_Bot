@@ -35,13 +35,13 @@ Shows comprehensive list of commands and features with detailed descriptions.
 ## Chat Commands
 
 ### /chat
-Initiates conversation with advanced Groq LLM models.
+Initiates conversation with advanced Groq LLM models. Now with voice responses.
 ```
 /chat Explain quantum computing
 ```
 
 ### /enhance
-Improves the tone and style of the previous message using advanced language models.
+Improves the tone and style of the previous message using advanced language models. Enhances the provided text to make it more engaging and professional.
 ```
 /enhance
 ```
@@ -84,6 +84,21 @@ Requirements:
 - Valid Groq API key (set using `/setgroqkey`)
 - Supported image formats: JPEG, PNG
 - For URLs: publicly accessible image links
+
+## New Commands
+
+### /togglevoice
+Toggles voice responses on or off for the bot.
+```
+/togglevoice
+```
+
+### /describe
+Analyzes an image sent to the bot and provides a detailed description in text and voice formats.
+```
+/describe <image_url>
+Example: /describe https://example.com/image.jpg
+```
 
 ## Configuration Commands
 

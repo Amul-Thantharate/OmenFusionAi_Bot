@@ -22,6 +22,15 @@ Created by Amul Thantharate 👋
 - Prompt enhancement
 - Image analysis and description
 
+### 🎤 Text-to-Speech Functionality
+- The bot can now convert text responses into audio messages.
+- Use the `/chat` command to receive voice messages along with text responses.
+- Voice responses can be toggled on or off with the `/togglevoice` command.
+
+### 📸 Image Description
+- The bot can analyze images and provide detailed descriptions.
+- Use the `/describe` command to send an image and receive a description in text and voice formats.
+
 ## Supported Audio Formats
 - MP3 (.mp3)
 - WAV (.wav)
@@ -43,9 +52,11 @@ Created by Amul Thantharate 👋
 - `/voice` - Voice message guide
 - `/audio` - Audio file guide
 - `/lang` - Language support info
+- `/togglevoice` - Toggle voice responses on/off
 
 ### Chat Commands
 - `/chat` - Start AI conversation
+- `/enhance` - Enhance the provided text
 - `/temperature` - Adjust creativity
 - `/tokens` - Set response length
 - `/clear` - Clear chat history
@@ -53,7 +64,8 @@ Created by Amul Thantharate 👋
 - `/export` - Export as file
 
 ### Image Commands
-- `/imagine` - Generate images
+- `/describe` - Analyze an image and provide a description
+- `/imagine` - Generate images from prompts
 - `/enhance` - Enhance prompts
 - `/describe` - Analyze images
 

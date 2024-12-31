@@ -115,22 +115,25 @@ Track NovaChat AI's version history and updates.
 - API key validation feedback
 - Error message clarity
 
+## [1.1.0] - 2024-12-31
+
+### Added
+- Text-to-speech functionality for AI responses.
+- Image description feature that analyzes images and provides detailed descriptions.
+
+### Commands
+- `/togglevoice` - Toggle voice responses on/off.
+- `/describe` - Analyze an image and provide a description in text and voice formats.
+
 ## Upcoming Features
 
-### [1.1.0] - Planned
+### [1.2.0] - Planned
 - Multi-language support
 - Voice message processing
 - Custom image styles
 - Chat summarization
 - Video generation (Replicate)
 - Database integration
-
-### [1.2.0] - Planned
-- Group chat support
-- Image editing capabilities
-- Custom AI model selection
-- Advanced prompt templates
-- Enhanced image generation
 
 ### [1.3.0] - Planned
 - Speech-to-Text integration

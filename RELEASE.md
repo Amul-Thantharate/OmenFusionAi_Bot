@@ -97,6 +97,39 @@
 
 ## Version History
 
+## Version 2.1.0 - 2024-12-31
+
+### New Features
+- **Text-to-Speech Functionality**: The bot can now convert text responses into audio messages, enhancing user interaction.
+- **Image Description**: The bot can analyze images and provide detailed descriptions, now supporting both text and voice outputs.
+
+### Commands Added
+- `/togglevoice`: Toggles voice responses on or off for the bot.
+- `/describe`: Analyzes an image sent to the bot and provides a detailed description in text and voice formats.
+
+### Improvements
+- Enhanced error handling and logging for better debugging and user feedback.
+- Updated documentation to reflect new features and commands.
+
+## Version 1.1.0 - 2024-12-31
+
+### New Features
+- **Text-to-Speech Functionality**: The bot can now convert text responses into audio messages, enhancing user interaction.
+- **Image Description**: The bot can analyze images and provide detailed descriptions, now supporting both text and voice outputs.
+
+### Commands Added
+- `/togglevoice`: Toggles voice responses on or off for the bot.
+- `/describe`: Analyzes an image sent to the bot and provides a detailed description in text and voice formats.
+
+### Improvements
+- Enhanced error handling and logging for better debugging and user feedback.
+- Updated documentation to reflect new features and commands.
+
+## Version 1.0.0 - 2024-03-20
+
+### Initial Release
+- Launched AIFusionBot with core functionalities including AI chat, audio transcription, and image generation.
+
 ## Version 1.0.0 (2024-12-31)
 
 ### 🎉 Initial Release

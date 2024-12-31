@@ -6,6 +6,8 @@ Handles all bot commands and interactions
 
 import os
 import logging
+import tempfile
+from pathlib import Path
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -26,8 +28,7 @@ from main import interactive_chat, save_chat_history, generate_image
 from flask import Flask, request, jsonify
 from groq import Groq
 import asyncio
-import tempfile
-from pathlib import Path
+from gtts import gTTS
 
 # Configure logging
 logging.basicConfig(
@@ -35,6 +36,10 @@ logging.basicConfig(
     level=logging.INFO
 )
 logger = logging.getLogger(__name__)
+
+# Create temp directory for files
+TEMP_DIR = Path(tempfile.gettempdir()) / "aifusionbot_temp"
+TEMP_DIR.mkdir(exist_ok=True, parents=True)
 
 # Global variable for user sessions
 user_sessions = {}
@@ -58,7 +63,8 @@ COMMANDS = {
     'export': 'Export chat history as file',
     'voice': 'Send a voice message to transcribe',
     'audio': 'Send an audio file to transcribe',
-    'lang': 'Show supported language (English only)'
+    'lang': 'Show supported language (English only)',
+    'togglevoice': 'Toggle voice responses on/off'
 }
 
 class UserSession:
@@ -69,7 +75,8 @@ class UserSession:
         self.chat_history = []
         self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.together_api_key = os.getenv('TOGETHER_API_KEY')
-        self.last_enhanced_prompt = None  # Store the last enhanced prompt
+        self.last_enhanced_prompt = None
+        self.voice_response = True
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
@@ -103,7 +110,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🤖 Chat Commands": ['chat', 'temperature', 'tokens', 'clear', 'save', 'export'],
         "🎨 Image Commands": ['imagine', 'enhance', 'describe'],
         "🎵 Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
-        "⚙️ Settings": ['settings', 'uploadenv'],
+        "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice'],
         "ℹ️ General": ['start', 'help']
     }
     
@@ -178,21 +185,26 @@ async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_T
 
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /chat command."""
-    if not context.args:
-        await update.message.reply_text("Please provide a message after /chat")
-        return
-
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-
-    session = user_sessions[user_id]
-    message = ' '.join(context.args)
-
     try:
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+            
+        session = user_sessions[user_id]
+        
+        if not session.groq_api_key:
+            await update.message.reply_text(
+                "Please set your Groq API key first using the /setgroqkey command"
+            )
+            return
+            
+        # Get the message text after the /chat command
+        message = ' '.join(context.args) if context.args else "Hello! How can I help you today?"
+        
         # Send typing action
-        await update.message.chat.send_action(action="typing")
-
+        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+        
+        # Get AI response with proper API key
         response = interactive_chat(
             text=message,
             temperature=session.temperature,
@@ -201,15 +213,46 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             stream=False,
             api_key=session.groq_api_key
         )
-
-        # Store in chat history
-        session.chat_history.append({"role": "user", "content": message})
-        session.chat_history.append({"role": "assistant", "content": response})
-
+        
+        # Send text response
         await update.message.reply_text(response)
+        
+        # Handle voice response
+        try:
+            # Send recording action to show progress
+            await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
+            status_message = await update.message.reply_text("🎙️ Converting text to speech...")
+            
+            # Create voice file
+            voice_path = os.path.join(tempfile.gettempdir(), f'response_{user_id}.mp3')
+            success = await text_to_speech_chunk(response, voice_path)
+            
+            if success and os.path.exists(voice_path):
+                # Update status
+                await status_message.edit_text("📤 Sending voice message...")
+                
+                # Send the voice message
+                with open(voice_path, 'rb') as voice:
+                    await update.message.reply_voice(
+                        voice=voice,
+                        caption="🎙️ Voice Message"
+                    )
+                
+                # Clean up
+                os.remove(voice_path)
+                await status_message.delete()
+            else:
+                await status_message.edit_text("❌ Could not generate voice message.")
+            
+        except Exception as voice_error:
+            logger.error(f"Voice message error: {str(voice_error)}")
+            await update.message.reply_text("Note: Voice message could not be generated.")
+            
     except Exception as e:
         logger.error(f"Error in chat_command: {str(e)}")
-        await update.message.reply_text(f"Sorry, an error occurred: {str(e)}")
+        await update.message.reply_text(
+            "Sorry, I encountered an error. Please try again or check your input."
+        )
 
 async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /imagine command for image generation with prompt enhancement."""
@@ -323,21 +366,27 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         from tone_enhancer import ToneEnhancer
         enhancer = ToneEnhancer()
         
+        # Set the API key from session
+        enhancer.groq_api_key = session.groq_api_key
+        
         start_time = time.time()
         success, enhanced_text, error = await enhancer.enhance_text(text)
         total_time = time.time() - start_time
         
         if success and enhanced_text:
             response = (
-                f"🎯 Original text:\n'{text}'\n\n"
-                f"✨ Enhanced version:\n'{enhanced_text}'\n\n"
+                f"🎯 Original text:\n`{text}`\n\n"
+                f"✨ Enhanced version:\n`{enhanced_text}`\n\n"
                 f"⏱️ Enhanced in {total_time:.2f} seconds"
             )
             await update.message.reply_text(response, parse_mode='Markdown')
         else:
-            await update.message.reply_text(f"❌ Failed to enhance text: {error}")
+            error_msg = f"❌ Failed to enhance text: {error}"
+            logger.error(error_msg)
+            await update.message.reply_text(error_msg)
     except Exception as e:
-        logger.error(f"Error in text enhancement: {str(e)}")
+        error_msg = f"Error in text enhancement: {str(e)}"
+        logger.error(error_msg)
         await update.message.reply_text(
             "❌ Sorry, something went wrong while enhancing the text. Please try again later."
         )
@@ -359,6 +408,7 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         f"Max Tokens: {session.max_tokens}\n"
         f"Groq API Key: {'✅ Set' if session.groq_api_key else '❌ Not Set'}\n"
         f"Together API Key: {'✅ Set' if session.together_api_key else '❌ Not Set'}\n"
+        f"Voice Response: {'✅ Enabled' if session.voice_response else '❌ Disabled'}\n"
     )
     await update.message.reply_text(settings_text, parse_mode='Markdown')
 
@@ -598,90 +648,115 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 
 async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /describe command and direct photo messages for image analysis"""
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-    
-    # Get photo from different possible sources
-    photo = None
-    image_url = None
-    
-    if update.message.photo:
-        # Direct photo message
-        photo = update.message.photo[-1]  # Get highest quality photo
-    elif update.message.reply_to_message and update.message.reply_to_message.photo:
-        # Reply to photo with /describe
-        photo = update.message.reply_to_message.photo[-1]
-    else:
-        # Check if URL was provided with /describe command
-        args = context.args
-        if args:
-            image_url = args[0]
-        else:
+    try:
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+            
+        session = user_sessions[user_id]
+        
+        if not session.groq_api_key:
             await update.message.reply_text(
-                "Please either:\n"
-                "1. Send a photo directly\n"
-                "2. Reply to a photo with /describe\n"
-                "3. Provide an image URL: `/describe https://example.com/image.jpg`",
-                parse_mode='Markdown'
+                "Please set your Groq API key first using the /setgroqkey command"
             )
             return
-    
-    try:
-        # Initialize Groq client
-        groq = Groq(api_key=user_sessions[user_id].groq_api_key)
-        
-        # If we have a photo, download it and convert to base64
-        if photo:
-            await update.message.reply_text("Downloading image...")
-            file = await context.bot.get_file(photo.file_id)
-            photo_data = await file.download_as_bytearray()
-            base64_image = base64.b64encode(photo_data).decode('utf-8')
-            image_url = f"data:image/jpeg;base64,{base64_image}"
-        
-        # Create chat completion with image
-        await update.message.reply_text("Analyzing image...")
-        chat_completion = groq.chat.completions.create(
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "What's in this image? Provide a detailed description."},
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": image_url
-                            }
+
+        # Get the photo file
+        if update.message.photo:
+            photo = update.message.photo[-1]  # Get the largest size
+        else:
+            await update.message.reply_text("Please send an image to describe.")
+            return
+
+        # Download the photo
+        photo_file = await context.bot.get_file(photo.file_id)
+        photo_bytes = await photo_file.download_as_bytearray()
+
+        # Convert to base64
+        photo_base64 = base64.b64encode(photo_bytes).decode('utf-8')
+
+        # Send typing action
+        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+
+        # Create the client
+        client = Groq(api_key=session.groq_api_key)
+
+        # Create the message with the image - using correct format for vision model
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{photo_base64}"
                         }
-                    ]
-                }
-            ],
-            model="llama-3.2-11b-vision-preview",
-            temperature=user_sessions[user_id].temperature,
-            max_tokens=user_sessions[user_id].max_tokens
+                    },
+                    {
+                        "type": "text",
+                        "text": "As a helpful assistant that describes images in detail, please describe this image. Focus on the main elements, colors, composition, and any notable features. Provide a clear and comprehensive description."
+                    }
+                ]
+            }
+        ]
+
+        # Get the response
+        response = client.chat.completions.create(
+            messages=messages,
+            model="llama-3.2-11b-vision-preview",  # Using vision model
+            temperature=0.7,
+            max_tokens=1024,
+            top_p=1,
+            stream=False
         )
-        
-        description = chat_completion.choices[0].message.content
+
+        # Get the description
+        description = response.choices[0].message.content
+
+        # Send text response
         await update.message.reply_text(description)
         
+        # Handle voice response
+        try:
+            # Send recording action
+            await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
+            status_message = await update.message.reply_text("🎙️ Converting description to speech...")
+            
+            # Create voice file
+            voice_path = os.path.join(tempfile.gettempdir(), f'description_{user_id}.mp3')
+            success = await text_to_speech_chunk(description, voice_path)
+            
+            if success and os.path.exists(voice_path):
+                # Update status
+                await status_message.edit_text("📤 Sending voice description...")
+                
+                # Send the voice message
+                with open(voice_path, 'rb') as voice:
+                    await update.message.reply_voice(
+                        voice=voice,
+                        caption="🎙️ Image Description"
+                    )
+                
+                # Clean up
+                os.remove(voice_path)
+                await status_message.delete()
+            else:
+                await status_message.edit_text("❌ Could not generate voice description.")
+                
+        except Exception as voice_error:
+            logger.error(f"Voice description error: {str(voice_error)}")
+            await update.message.reply_text("Note: Voice description could not be generated.")
+
     except Exception as e:
-        error_message = str(e)
-        if "api_key" in error_message.lower():
-            await update.message.reply_text(
-                "Please set your Groq API key first using the /setgroqkey command.\n"
-                "You can get an API key from https://console.groq.com"
-            )
-        else:
-            await update.message.reply_text(f"Error analyzing image: {error_message}")
-            logger.error(f"Error in describe_image: {error_message}")
+        error_message = f"Error describing image: {str(e)}"
+        logger.error(error_message)
+        await update.message.reply_text(
+            "Sorry, I encountered an error while describing the image. Please try again."
+        )
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle photos sent directly to the bot"""
     await describe_image(update, context)
-
-# Create temp directory for audio files
-TEMP_DIR = Path(tempfile.gettempdir()) / "audio_transcribe"
-TEMP_DIR.mkdir(exist_ok=True)
 
 # Supported audio formats
 SUPPORTED_FORMATS = {'.mp3', '.wav', '.m4a', '.ogg', '.oga', '.opus', '.mp4', '.mpeg', '.mpga', '.webm'}
@@ -895,51 +970,154 @@ async def audio_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     )
     await update.message.reply_text(audio_text, parse_mode='Markdown')
 
-def setup_bot(token: str) -> Application:
-    """Initialize and configure the AIFusionBot bot"""
+async def text_to_speech_chunk(text: str, file_path: str, max_length: int = 500) -> bool:
+    """Convert text to speech in smaller chunks for better performance."""
     try:
-        # Create the Application
-        app = Application.builder().token(token).build()
+        # Split text into smaller chunks at sentence boundaries
+        sentences = text.split('. ')
+        chunks = []
+        current_chunk = []
+        current_length = 0
         
-        # Add command handlers
-        app.add_handler(CommandHandler('start', start_command))
-        app.add_handler(CommandHandler('help', help_command))
-        app.add_handler(CommandHandler('setgroqkey', setgroqkey_command))
-        app.add_handler(CommandHandler('settogetherkey', settogetherkey_command))
-        app.add_handler(CommandHandler('chat', chat_command))
-        app.add_handler(CommandHandler('imagine', imagine_command))
-        app.add_handler(CommandHandler('enhance', enhance_command))
-        app.add_handler(CommandHandler('settings', settings_command))
-        app.add_handler(CommandHandler('save', save_command))
-        app.add_handler(CommandHandler('temperature', temperature_command))
-        app.add_handler(CommandHandler('clear', clear_command))
-        app.add_handler(CommandHandler('export', export_command))
-        app.add_handler(CommandHandler('uploadenv', uploadenv_command))
-        app.add_handler(CommandHandler('describe', describe_image))
-        app.add_handler(CommandHandler('transcribe', transcribe_command))
-        app.add_handler(CommandHandler('formats', formats_command))
-        app.add_handler(CommandHandler('lang', lang_command))
-        app.add_handler(CommandHandler('voice', voice_command))
-        app.add_handler(CommandHandler('audio', audio_command))
+        for sentence in sentences:
+            if current_length + len(sentence) > max_length:
+                chunks.append('. '.join(current_chunk) + '.')
+                current_chunk = [sentence]
+                current_length = len(sentence)
+            else:
+                current_chunk.append(sentence)
+                current_length += len(sentence)
         
-        # Add message handlers
-        app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
-        app.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-        app.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_audio))
-        app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, chat_command))
+        if current_chunk:
+            chunks.append('. '.join(current_chunk))
         
-        # Add callback query handler
-        app.add_handler(CallbackQueryHandler(button_callback))
+        # Convert each chunk to speech
+        for i, chunk in enumerate(chunks):
+            tts = gTTS(text=chunk, lang='en', slow=False)
+            chunk_path = f"{file_path}.part{i}"
+            tts.save(chunk_path)
         
-        # Add error handler
-        app.add_error_handler(error_handler)
+        # Combine all chunks (if multiple)
+        if len(chunks) > 1:
+            with open(file_path, 'wb') as outfile:
+                for i in range(len(chunks)):
+                    chunk_path = f"{file_path}.part{i}"
+                    with open(chunk_path, 'rb') as infile:
+                        outfile.write(infile.read())
+                    os.remove(chunk_path)
+        else:
+            # If only one chunk, just rename it
+            os.rename(f"{file_path}.part0", file_path)
+            
+        return True
+    except Exception as e:
+        logger.error(f"Error in text_to_speech_chunk: {str(e)}")
+        return False
+
+async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle text messages and respond with both voice and text."""
+    try:
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
         
-        logger.info("Bot setup completed successfully")
-        return app
+        session = user_sessions[user_id]
+        
+        # Send typing action
+        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+        
+        # Get AI response
+        response = interactive_chat(update.message.text, session)
+        
+        # Send text response
+        await update.message.reply_text(response)
+        
+        # Handle voice response
+        try:
+            # Create voice file
+            tts = gTTS(text=response, lang='en', slow=False)
+            voice_path = os.path.join(tempfile.gettempdir(), f'response_{user_id}.mp3')
+            
+            # Save the audio file
+            logger.info(f"Saving voice to: {voice_path}")
+            tts.save(voice_path)
+            logger.info("Voice file saved successfully")
+            
+            # Send the voice message
+            with open(voice_path, 'rb') as voice:
+                await update.message.reply_voice(
+                    voice=voice,
+                    caption="🎙️ Voice Message"
+                )
+            logger.info("Voice message sent successfully")
+            
+            # Clean up
+            os.remove(voice_path)
+            logger.info("Voice file cleaned up")
+            
+        except Exception as voice_error:
+            logger.error(f"Voice message error: {str(voice_error)}")
+            await update.message.reply_text("Note: Voice message could not be generated.")
         
     except Exception as e:
-        logger.error(f"Error setting up bot: {str(e)}")
-        raise
+        logger.error(f"Message handling error: {str(e)}")
+        await update.message.reply_text("Sorry, I encountered an error while processing your message.")
+
+async def toggle_voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Toggle voice responses on/off."""
+    try:
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+        
+        session = user_sessions[user_id]
+        session.voice_response = not session.voice_response
+        
+        status = "enabled ✅" if session.voice_response else "disabled ❌"
+        await update.message.reply_text(
+            f"Voice responses are now {status}",
+            parse_mode='HTML'
+        )
+    except Exception as e:
+        logger.error(f"Error in toggle_voice_command: {str(e)}")
+        await update.message.reply_text("Sorry, I encountered an error while toggling voice responses.")
+
+def setup_bot(token: str):
+    """Initialize and configure the AIFusionBot"""
+    application = Application.builder().token(token).build()
+
+    # Add command handlers
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("chat", chat_command))
+    application.add_handler(CommandHandler("imagine", imagine_command))
+    application.add_handler(CommandHandler("enhance", enhance_command))
+    application.add_handler(CommandHandler("settings", settings_command))
+    application.add_handler(CommandHandler("save", save_command))
+    application.add_handler(CommandHandler("temperature", temperature_command))
+    application.add_handler(CommandHandler("clear", clear_command))
+    application.add_handler(CommandHandler("export", export_command))
+    application.add_handler(CommandHandler("uploadenv", uploadenv_command))
+    application.add_handler(CommandHandler("transcribe", transcribe_command))
+    application.add_handler(CommandHandler("formats", formats_command))
+    application.add_handler(CommandHandler("lang", lang_command))
+    application.add_handler(CommandHandler("voice", voice_command))
+    application.add_handler(CommandHandler("audio", audio_command))
+    application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
+
+    # Add message handlers
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
+    application.add_handler(MessageHandler(filters.Document.ALL, handle_document))
+    application.add_handler(MessageHandler(filters.PHOTO, describe_image))
+    application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_audio))
+
+    # Add callback query handler
+    application.add_handler(CallbackQueryHandler(button_callback))
+
+    # Add error handler
+    application.add_error_handler(error_handler)
+
+    return application
 
 def run_telegram_bot():
     """Main function to run the Telegram bot"""

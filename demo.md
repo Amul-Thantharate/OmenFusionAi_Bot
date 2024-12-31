@@ -23,6 +23,31 @@ You: /chat Explain quantum computing for a technical audience
 Bot: *Delivers comprehensive technical explanation with relevant terminology*
 ```
 
+## Text Enhancement Examples ✍️
+
+### Enhancing Text
+```
+You: /enhance A boy playing basketball in the park
+Bot: *Generates enhanced version with improved tone and style*
+```
+
+## Image Description Examples 📸
+
+### Describing an Image
+```
+You: /describe
+*Send an image*
+Bot: *Provides a detailed description of the image*
+Bot: *Converts the description to speech and sends it*
+```
+
+### Example of Image Analysis
+```
+You: /describe A photo of a sunset over the mountains
+Bot: *Describes the colors, elements, and features of the sunset image*
+Bot: *Converts the description to speech and sends it*
+```
+
 ## Advanced Image Generation 🎨
 
 ### Detailed Scene Generation

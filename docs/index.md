@@ -143,6 +143,17 @@ To run your own instance of AIFusionBot, you'll need the following API keys:
 2. [Command Reference](commands.md)
 3. [Changelog](changelog.md)
 
+## New Features
+
+### Text-to-Speech Functionality
+- The bot can now convert text responses into audio messages.
+- Use the `/chat` command to receive voice messages along with text responses.
+- Voice responses can be toggled on or off with the `/togglevoice` command.
+
+### Image Description
+- The bot can analyze images and provide detailed descriptions.
+- Use the `/describe` command to send an image and receive a description in text and voice formats.
+
 ## Future Releases
 
 Stay tuned for exciting new features coming to AIFusionBot! Here's our development roadmap:

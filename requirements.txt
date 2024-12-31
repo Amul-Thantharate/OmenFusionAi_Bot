@@ -9,6 +9,8 @@ together>=0.2.11
 fpdf2>=2.7.8
 python-magic>=0.4.27
 markdown>=3.5.2
+gTTS>=2.5.0
+moviepy>=1.0.3
 
 # Development dependencies
 pytest>=8.0.0

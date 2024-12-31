@@ -17,12 +17,11 @@ DEFAULT_PROMPT = "Make this text more attractive and professional in tone while 
 class ToneEnhancer:
     def __init__(self):
         load_dotenv(override=True)  # Force reload environment variables
-        groq_api_key = os.getenv('GROQ_API_KEY')
+        self.groq_api_key = os.getenv('GROQ_API_KEY')
         
-        if not groq_api_key:
+        if not self.groq_api_key:
             raise ValueError("Groq API key not found. Please set GROQ_API_KEY in your .env file")
-            
-        self.groq_client = AsyncGroq(api_key=groq_api_key)
+        
         self.last_enhanced_text = None
 
     async def enhance_text(self, text: str, prompt: str = DEFAULT_PROMPT) -> tuple[bool, str, str]:
@@ -45,8 +44,11 @@ class ToneEnhancer:
 
             logger.info(f"Enhancing text: {text[:100]}...")
             
+            # Create Groq client for this request
+            groq_client = AsyncGroq(api_key=self.groq_api_key)
+            
             # Create the streaming response
-            response = await self.groq_client.chat.completions.create(
+            response = await groq_client.chat.completions.create(
                 model="llama3-8b-8192",
                 messages=[
                     {
@@ -60,7 +62,7 @@ class ToneEnhancer:
                 ],
                 stream=True,
                 max_tokens=1024,
-                temperature=0
+                temperature=0.7
             )
 
             # Process the streaming response
