@@ -7,7 +7,7 @@ nav_order: 4
 # Changelog
 {: .no_toc }
 
-Track NovaChat AI's version history and updates.
+Track AIFusionBot's version history and updates.
 {: .fs-6 .fw-300 }
 
 ## Table of Contents
@@ -18,149 +18,72 @@ Track NovaChat AI's version history and updates.
 
 ---
 
-## [2.0.0] - 2025-01-04
-
+## [3.0.0] - 2025-01-04
 ### Added
-- Maintenance mode with auto-recovery
-- Status notification system
-- User subscription system
-- Enhanced voice response system
-- Improved image generation capabilities
+- Migrated to Groq API with Mixtral-8x7b model
+- Enhanced text-to-speech functionality
+- Improved error handling and user feedback
+- Better API key management through environment variables
 
 ### Changed
-- Switched from Groq to OpenAI for chat functionality
-- Improved error handling and logging
-- Enhanced command structure
-- Better chat history management
-- Improved voice message handling
+- Switched from OpenAI to Groq for main chat functionality
+- Updated model selection to use Mixtral-8x7b
+- Improved chat command structure
+- Enhanced error messages and user guidance
 
 ### Removed
-- Admin system for simplicity
-- User ID display from messages
-- Groq API integration
+- OpenAI integration and related commands
+- Legacy API key handling methods
 
-### Fixed
-- Voice message handling
-- Error messages
-- API timeout handling
-- Maintenance mode timing
-
-## [1.1.0] - 2024-12-31
-
+## [2.0.0] - 2024-12-15
 ### Added
-- Text-to-speech functionality for AI responses.
-- Image description feature that analyzes images and provides detailed descriptions.
-
-### Commands
-- `/togglevoice` - Toggle voice responses on/off.
-- `/describe` - Analyze an image and provide a description in text and voice formats.
-
-## [1.0.0] - 2024-03-20
-
-### Added
-- Flask web application integration
-- Telegram bot with webhook support
-- Advanced AI chat using Groq's Llama3-8b-8192
-- Basic and high-quality image generation
-- Chat history management
-- Docker containerization
-- Gunicorn production server
-
-### Features
-- Intelligent chat with context awareness
-- Dual image generation systems
-- Chat history export (Markdown/PDF)
-- Customizable AI parameters
-- Secure API key management
-
-### Commands
-
-- `/start` - Start NovaChat AI v2.0
-- `/help` - Show available commands and features
-- `/chat` - Start AI conversation with enhanced LLM models
-- `/imagine` - Create high-quality images using latest AI models
-- `/enhance` - Enhance text using advanced language models
-- `/setgroqkey` - Set Groq API key for LLM access
-- `/settogetherkey` - Set Together AI key for image generation
-- `/settings` - View and configure bot settings
-- `/export` - Export complete chat history
-- `/clear` - Clear current chat history
-- `/temperature` - Adjust response creativity (0.1-1.0)
-- `/tokens` - Set maximum response length (100-4096)
-- `/uploadenv` - Upload .env file to configure API keys
-
-### Technical
-- Python 3.12 support
-- Flask web framework
-- Gunicorn WSGI server
-- Docker deployment
-- Webhook integration
-- Async bot operations
-- Error handling system
-- Logging implementation
-
-## [v2.0.0] - 2024-03-XX
-
-### Added
-- Enhanced prompt engineering system for improved image generation
-- Advanced text enhancement capabilities with `/enhance` command
-- More detailed command descriptions and help system
-- Improved error handling and user feedback
-- Real-time response enhancement for chat
-
-### Enhanced
-- Updated Groq LLM integration for better response quality
-- Improved Together AI image generation with enhanced prompts
-- More detailed settings configuration options
-- Better temperature and token control with specific ranges
-- Enhanced chat history management
+- Together AI integration for image generation
+- Voice response capabilities
+- YouTube video processing
+- Maintenance mode features
+- Status monitoring and subscriptions
 
 ### Changed
-- Updated all command descriptions for clarity
-- Improved system messages for better AI responses
-- Enhanced prompt engineering for image generation
-- Updated documentation with new features
-- Refined user interaction flows
-
-### Technical
-- Updated model versions for better performance
-- Improved error handling and recovery
-- Enhanced API key management
-- Better session handling
-- Improved webhook reliability
-
-## [v2.1.0] - 2024-12-31
-
-### Added
-- Image analysis functionality using Groq Vision API
-  - New `/describe` command for image analysis
-  - Support for direct image uploads
-  - Support for image URL analysis
-  - Reply-to-image functionality
-- Enhanced error handling for image processing
-- Improved API key validation and error messages
-- Better user feedback during image analysis
-
-### Changed
-- Updated help system with image analysis examples
-- Enhanced command documentation
-- Improved session state management
-- Optimized image processing pipeline
+- Improved chat history management
+- Enhanced error handling
+- Updated command structure
+- Better documentation
 
 ### Fixed
-- Event loop handling in async operations
-- API key validation feedback
-- Error message clarity
+- Audio processing issues
+- File handling bugs
+- Command response delays
+
+## [1.0.0] - 2024-11-30
+### Added
+- Initial release
+- Basic chat functionality
+- Simple command structure
+- Text-only responses
+
+## Migration Guides
+
+### Migrating to v3.0.0
+1. Update your `.env` file to include `GROQ_API_KEY`
+2. Remove any OpenAI-related configurations
+3. Update to latest dependencies
+4. Restart the bot
+
+### Migrating to v2.0.0
+1. Add Together AI configuration
+2. Set up voice processing requirements
+3. Update command permissions
+4. Configure maintenance settings
 
 ## Upcoming Features
 
-### [2.1.0] - Planned
+### [3.1.0] - Planned
 - Enhanced audio processing
 - Better image generation
 - Improved chat context
 - More maintenance features
 
-### [2.2.0] - Planned
+### [3.2.0] - Planned
 - Multi-language support
 - Advanced image editing
 - Better YouTube integration
@@ -188,15 +111,6 @@ Track NovaChat AI's version history and updates.
 - Legacy image generation endpoint
 - Basic text-only responses
 - Simple command structure
-
-## Migration Guides
-
-### To Version 1.0.0
-1. Update Python to 3.12+
-2. Install new dependencies
-3. Configure Flask application
-4. Set up webhook
-5. Update API keys
 
 ## Security Updates
 
