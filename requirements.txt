@@ -12,6 +12,7 @@ markdown>=3.5.2
 gTTS>=2.5.0
 moviepy>=1.0.3
 yt-dlp>=2023.12.30
+psutil>=5.9.7
 
 # Development dependencies
 pytest>=8.0.0
