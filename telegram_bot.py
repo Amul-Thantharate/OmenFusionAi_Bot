@@ -54,7 +54,8 @@ COMMANDS = {
     'maintenance': 'Set bot maintenance mode',
     'status': 'Check bot status',
     'subscribe': 'Subscribe to bot status updates',
-    'unsubscribe': 'Unsubscribe from bot status updates'
+    'unsubscribe': 'Unsubscribe from bot status updates',
+    'setgroqkey': 'Set Groq API key'
 }
 
 class UserSession:
@@ -63,8 +64,8 @@ class UserSession:
         self.last_response = None
         self.last_image_prompt = None
         self.last_image_url = None
-        self.selected_model = "gpt-3.5-turbo"
-        self.openai_api_key = os.getenv('OPENAI_API_KEY')
+        self.selected_model = "mistral-7b-instruct"
+        self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.together_api_key = os.getenv('TOGETHER_API_KEY')
         self.last_enhanced_prompt = None
         self.voice_response = True
@@ -124,15 +125,15 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(help_message)
 
-async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /setopenaikey command."""
+async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /setgroqkey command."""
     # Delete the message containing the API key for security
     await update.message.delete()
 
     if not context.args:
         await update.message.reply_text(
-            "Please provide your OpenAI API key after /setopenaikey\n"
-            "Example: `/setopenaikey your_api_key`\n"
+            "Please provide your Groq API key after /setgroqkey\n"
+            "Example: `/setgroqkey your_api_key`\n"
             "⚠️ Your message will be deleted immediately for security.",
             parse_mode='Markdown'
         )
@@ -143,12 +144,12 @@ async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYP
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    session.openai_api_key = context.args[0]
+    session.groq_api_key = context.args[0]
 
     await update.message.reply_text(
-        "✅ OpenAI API key set successfully!\n"
-        "You can now use all bot features.\n"
-        "Try `/chat Hello!` or `/imagine sunset`",
+        "✅ Groq API key set successfully!\n"
+        "You can now use all chat features.\n"
+        "Try `/chat Hello!`",
         parse_mode='Markdown'
     )
 
@@ -189,9 +190,9 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         session = user_sessions[user_id]
         
-        if not session.openai_api_key:
+        if not session.groq_api_key:
             await update.message.reply_text(
-                "Please set your OpenAI API key first using the /setopenaikey command"
+                "Please set your Groq API key first using the /setgroqkey command"
             )
             return
             
@@ -204,8 +205,8 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Get AI response with proper API key
         response = interactive_chat(
             text=message,
-            model_type="gpt-3.5-turbo",
-            api_key=session.openai_api_key
+            model_type="mistral-7b-instruct",
+            api_key=session.together_api_key
         )
         
         # Send text response
@@ -274,14 +275,6 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if not session.openai_api_key:
-        await update.message.reply_text(
-            "⚠️ Please set your OpenAI API key first using:\n"
-            "`/setopenaikey your_api_key`",
-            parse_mode='Markdown'
-        )
-        return
-
     prompt = ' '.join(context.args)
 
     # Send a message indicating that prompt enhancement has started
@@ -341,10 +334,10 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    if not session.openai_api_key:
+    if not session.together_api_key:
         await update.message.reply_text(
-            "⚠️ Please set your OpenAI API key first using:\n"
-            "`/setopenaikey your_api_key`",
+            "⚠️ Please set your Together API key first using:\n"
+            "`/settogetherkey your_api_key`",
             parse_mode='Markdown'
         )
         return
@@ -361,7 +354,7 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         enhancer = ToneEnhancer()
         
         # Set the API key from session
-        enhancer.openai_api_key = session.openai_api_key
+        enhancer.together_api_key = session.together_api_key
         
         start_time = time.time()
         success, enhanced_text, error = await enhancer.enhance_text(text)
@@ -390,19 +383,17 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /settings command."""
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-
-    session = user_sessions[user_id]
+    session = context.user_data.get('session', UserSession())
+    
     settings_text = (
-        f"*Current Settings:*\n"
-        f"Model: {session.selected_model}\n"
-        f"OpenAI API Key: {'✅ Set' if session.openai_api_key else '❌ Not Set'}\n"
+        "🔧 Current Settings:\n\n"
+        f"Groq API Key: {'✅ Set' if session.groq_api_key else '❌ Not Set'}\n"
         f"Together API Key: {'✅ Set' if session.together_api_key else '❌ Not Set'}\n"
         f"Voice Response: {'✅ Enabled' if session.voice_response else '❌ Disabled'}\n"
+        f"Selected Model: {session.selected_model}"
     )
-    await update.message.reply_text(settings_text, parse_mode='Markdown')
+    
+    await update.message.reply_text(settings_text)
 
 async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /save command."""
@@ -420,7 +411,7 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Save chat history
         filename = save_chat_history(
             messages=session.conversation_history,
-            model_type="gpt-3.5-turbo",
+            model_type="mistral-7b-instruct",
             export_format='json'  # You can make this configurable
         )
         await update.message.reply_text(f"Chat history saved to: {filename}")
@@ -548,88 +539,70 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def uploadenv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /uploadenv command."""
-    if not update.message:
-        return
-
     await update.message.reply_text(
-        "Please upload your .env file. It should contain your API keys in this format:\n\n"
+        "📤 Please upload a .env file containing your API keys.\n\n"
+        "Format:\n"
         "```\n"
-        "OPENAI_API_KEY=your_openai_key\n"
+        "GROQ_API_KEY=your_groq_key\n"
         "TOGETHER_API_KEY=your_together_key\n"
-        "```\n"
-        "⚠️ The file will be processed securely and deleted immediately.",
+        "```\n\n"
+        "Make sure to send the file as a document.",
         parse_mode='Markdown'
     )
 
 async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle uploaded documents."""
-    if not update.message or not update.message.document:
-        return
-
+    session = context.user_data.get('session', UserSession())
+    
     # Check if the file is a .env file
     if not update.message.document.file_name.endswith('.env'):
-        await update.message.reply_text("❌ Please upload a .env file.")
+        await update.message.reply_text("❌ Please upload a .env file")
         return
 
     try:
-        # Download the file
         file = await context.bot.get_file(update.message.document.file_id)
-        env_content = BytesIO()
-        await file.download_to_memory(env_content)
         
-        # Process the .env file content
-        env_content.seek(0)
-        env_text = env_content.read().decode('utf-8')
-        
-        # Parse the environment variables
-        user_id = update.effective_user.id
-        if user_id not in user_sessions:
-            user_sessions[user_id] = UserSession()
-            
-        session = user_sessions[user_id]
+        # Create a temporary file to store the downloaded content
+        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+            await file.download_to_memory(temp_file)
+            temp_file_path = temp_file.name
+
+        # Read and parse the .env file
         success_msg = []
-        
-        for line in env_text.split('\n'):
-            line = line.strip()
-            if not line or line.startswith('#'):
-                continue
-                
-            try:
-                key, value = line.split('=', 1)
-                key = key.strip()
-                value = value.strip().strip("'").strip('"')
-                
-                if key == 'OPENAI_API_KEY':
-                    session.openai_api_key = value
-                    success_msg.append("✅ OpenAI API key set successfully")
-                elif key == 'TOGETHER_API_KEY':
-                    session.together_api_key = value
-                    success_msg.append("✅ Together API key set successfully")
-            except ValueError:
-                continue
-        
-        # Delete the message containing the .env file
-        await update.message.delete()
-        
+        with open(temp_file_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    try:
+                        key, value = line.split('=', 1)
+                        key = key.strip()
+                        value = value.strip()
+
+                        if key == 'GROQ_API_KEY':
+                            session.groq_api_key = value
+                            success_msg.append("✅ Groq API key set successfully")
+                        elif key == 'TOGETHER_API_KEY':
+                            session.together_api_key = value
+                            success_msg.append("✅ Together API key set successfully")
+                    except ValueError:
+                        continue
+
+        # Clean up the temporary file
+        os.unlink(temp_file_path)
+
         if success_msg:
-            await update.message.reply_text(
-                "🔑 API Keys updated:\n" + "\n".join(success_msg) + "\n\n"
-                "Try the following commands:\n"
-                "• `/chat Hello!` - Test chat with OpenAI\n"
-                "• `/imagine sunset` - Generate image with Together AI",
-                parse_mode='Markdown'
-            )
+            await update.message.reply_text("\n".join(success_msg))
         else:
             await update.message.reply_text(
-                "❌ No valid API keys found in the .env file.\n"
-                "Make sure your file contains OPENAI_API_KEY and/or TOGETHER_API_KEY."
+                "❌ No valid API keys found in the file.\n"
+                "Make sure your file contains GROQ_API_KEY and/or TOGETHER_API_KEY."
             )
-            
+
+        # Update the session in user_data
+        context.user_data['session'] = session
+
     except Exception as e:
-        logger.error(f"Error processing .env file: {str(e)}")
-        await update.message.reply_text(
-            "❌ Error processing the .env file. Please make sure it's properly formatted."
-        )
+        await update.message.reply_text(f"❌ Error processing file: {str(e)}")
 
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle errors in the telegram bot."""
@@ -647,9 +620,9 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         session = user_sessions[user_id]
         
-        if not session.openai_api_key:
+        if not session.groq_api_key:
             await update.message.reply_text(
-                "Please set your OpenAI API key first using the /setopenaikey command"
+                "Please set your Groq API key first using the /setgroqkey command"
             )
             return
 
@@ -671,7 +644,7 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
 
         # Create the client
-        client = Groq(api_key=session.openai_api_key)
+        client = Groq(api_key=session.groq_api_key)
 
         # Create the message with the image - using correct format for vision model
         messages = [
@@ -1226,6 +1199,8 @@ def setup_bot(token: str):
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("setgroqkey", setgroqkey_command))
+    application.add_handler(CommandHandler("settogetherkey", settogetherkey_command))
     application.add_handler(CommandHandler("chat", chat_command))
     application.add_handler(CommandHandler("imagine", imagine_command))
     application.add_handler(CommandHandler("enhance", enhance_command))

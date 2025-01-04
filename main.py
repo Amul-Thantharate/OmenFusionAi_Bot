@@ -8,7 +8,7 @@ import logging
 from groq import Groq
 from fpdf import FPDF
 from typing import Optional
-from together import Together
+import together
 import base64
 from image_generator import AIImageGenerator
 
