@@ -1,34 +1,25 @@
-#!/usr/bin/env python3
-"""
-AIFusionBot - Telegram Bot Implementation
-Handles all bot commands and interactions
-"""
-
-import os
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import logging
+import os
 import tempfile
 from pathlib import Path
-from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    ContextTypes,
-    filters,
-    CallbackQueryHandler
-)
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from datetime import datetime
 from io import BytesIO
 import time
-import base64
-from typing import Optional
+import json
 from dotenv import load_dotenv
 from main import interactive_chat, save_chat_history, generate_image
 from flask import Flask, request, jsonify
 from groq import Groq
 import asyncio
 from gtts import gTTS
+from youtube_utils import (
+    download_and_compress_video,
+    clear_videos,
+    get_downloaded_videos
+)
+from tone_enhancer import ToneEnhancer
 
 # Configure logging
 logging.basicConfig(
@@ -46,25 +37,20 @@ user_sessions = {}
 
 # Dictionary of available commands and their descriptions
 COMMANDS = {
-    'start': 'Start the bot and get welcome message',
-    'help': 'Show help message with all commands',
-    'chat': 'Start a chat with AI',
-    'imagine': 'Generate an image from text description',
-    'enhance': 'Enhance your text prompt',
-    'settings': 'View and modify bot settings',
-    'save': 'Save current chat history',
-    'temperature': 'Adjust response creativity (0.1-1.0)',
-    'tokens': 'Set maximum response length (100-4096)',
-    'uploadenv': 'Upload .env file to configure API keys',
-    'describe': 'Analyze and describe an image (reply to an image or provide URL)',
-    'transcribe': 'Convert English audio to text (voice or file)',
+    'start': 'Start the bot',
+    'help': 'Show this help message',
+    'chat': 'Chat with the bot',
+    'imagine': 'Generate an image',
+    'enhance': 'Enhance text',
+    'describe': 'Describe an image',
+    'transcribe': 'Transcribe audio or YouTube video',
     'formats': 'Show supported audio formats',
-    'clear': 'Clear chat history',
-    'export': 'Export chat history as file',
     'voice': 'Send a voice message to transcribe',
     'audio': 'Send an audio file to transcribe',
     'lang': 'Show supported language (English only)',
-    'togglevoice': 'Toggle voice responses on/off'
+    'togglevoice': 'Toggle voice responses on/off',
+    'videos': 'List downloaded videos',
+    'clear': 'Clear all downloaded videos'
 }
 
 class UserSession:
@@ -783,46 +769,50 @@ def transcribe_audio(filename, prompt=None):
                 model="whisper-large-v3",  # Required model to use for translation
                 prompt=prompt or "This is English audio, transcribe accurately",  # Set English context
                 response_format="json",  # Optional
-                temperature=0.0,  # Optional
-                language="en"  # Specify English language
+                temperature=0.0  # Optional
             )
-            
-            # Check if the detected language is English
-            if hasattr(translation, 'language') and translation.language.lower() != 'en':
-                logger.warning(f"Non-English audio detected: {translation.language}")
-                return "⚠️ Sorry, this bot only transcribes English audio. Detected language: " + translation.language
-            
             return translation.text
     except Exception as e:
         logger.error(f"Error during transcription: {str(e)}")
-        return None
+        raise
 
 async def transcribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Send information about audio transcription when /transcribe is issued."""
-    transcribe_text = """
-🎯 *English Audio Transcription Help:*
+    """Handle the /transcribe command for both YouTube videos and audio files."""
+    if not context.args:
+        await update.message.reply_text(
+            "Please provide a YouTube link or reply to an audio message to transcribe."
+        )
+        return
 
-1️⃣ *Send Voice Message:*
-   • Click the microphone icon
-   • Record your message in English
-   • Send it to me
-
-2️⃣ *Send Audio File:*
-   • Select a file from your device
-   • Make sure it's in English
-   • Make sure it's in a supported format
-   • Send it to me
-
-3️⃣ *Supported Formats:*
-   • Voice Messages (OGG)
-   • Audio Files (MP3, WAV, M4A, OGG, OPUS, MP4, WEBM)
-
-⚠️ *Important Notes:*
-   • Only English audio is supported
-   • Maximum file size is 20MB
-   • Clear audio quality gives better results
-    """
-    await update.message.reply_text(transcribe_text, parse_mode='Markdown')
+    url = context.args[0]
+    if "youtube.com" in url or "youtu.be" in url:
+        # Handle YouTube URL
+        status_message = await update.message.reply_text("⏳ Downloading and processing YouTube video...")
+        
+        try:
+            video_path, error = download_and_compress_video(url)
+            if error:
+                await status_message.edit_text(f"❌ Error: {error}")
+                return
+                
+            await status_message.edit_text("🎵 Transcribing audio...")
+            transcription = transcribe_audio(video_path)
+            
+            if transcription:
+                # Send video file first
+                with open(video_path, 'rb') as video_file:
+                    await update.message.reply_video(
+                        video=video_file,
+                        caption="Downloaded video (will be saved until /clear is used)"
+                    )
+                # Then send transcription
+                await status_message.edit_text(f"✅ Transcription:\n\n{transcription}")
+            else:
+                await status_message.edit_text("❌ Failed to transcribe the audio.")
+        except Exception as e:
+            await status_message.edit_text(f"❌ Error: {str(e)}")
+    else:
+        await update.message.reply_text("Please provide a valid YouTube link.")
 
 async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Handle audio messages."""
@@ -929,7 +919,7 @@ async def lang_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "• Record in a quiet environment\n\n"
         "Use /transcribe to start transcribing!"
     )
-    await update.message.reply_text(lang_text, parse_mode='Markdown')
+    await update.message.reply_text(lang_text)
 
 async def voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Show voice message instructions."""
@@ -947,7 +937,7 @@ async def voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         "• Avoid background noise\n\n"
         "Maximum duration: 20 minutes"
     )
-    await update.message.reply_text(voice_text, parse_mode='Markdown')
+    await update.message.reply_text(voice_text)
 
 async def audio_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Show audio file instructions."""
@@ -968,7 +958,7 @@ async def audio_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         "• Minimal background noise\n"
         "• Single speaker preferred"
     )
-    await update.message.reply_text(audio_text, parse_mode='Markdown')
+    await update.message.reply_text(audio_text)
 
 async def text_to_speech_chunk(text: str, file_path: str, max_length: int = 500) -> bool:
     """Convert text to speech in smaller chunks for better performance."""
@@ -1082,6 +1072,26 @@ async def toggle_voice_command(update: Update, context: ContextTypes.DEFAULT_TYP
         logger.error(f"Error in toggle_voice_command: {str(e)}")
         await update.message.reply_text("Sorry, I encountered an error while toggling voice responses.")
 
+async def videos_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """List all downloaded videos."""
+    videos = get_downloaded_videos()
+    if not videos:
+        await update.message.reply_text("No videos have been downloaded yet.")
+        return
+
+    message = "📺 Downloaded Videos:\n\n"
+    for video in videos:
+        message += f"🎥 {video['name']}\n"
+        message += f"📊 Size: {video['size']}\n\n"
+    
+    message += "\nUse /clear to delete all videos."
+    await update.message.reply_text(message)
+
+async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    """Clear all downloaded videos."""
+    result = clear_videos()
+    await update.message.reply_text(result)
+
 def setup_bot(token: str):
     """Initialize and configure the AIFusionBot"""
     application = Application.builder().token(token).build()
@@ -1092,18 +1102,14 @@ def setup_bot(token: str):
     application.add_handler(CommandHandler("chat", chat_command))
     application.add_handler(CommandHandler("imagine", imagine_command))
     application.add_handler(CommandHandler("enhance", enhance_command))
-    application.add_handler(CommandHandler("settings", settings_command))
-    application.add_handler(CommandHandler("save", save_command))
-    application.add_handler(CommandHandler("temperature", temperature_command))
-    application.add_handler(CommandHandler("clear", clear_command))
-    application.add_handler(CommandHandler("export", export_command))
-    application.add_handler(CommandHandler("uploadenv", uploadenv_command))
+    application.add_handler(CommandHandler("describe", describe_image))
     application.add_handler(CommandHandler("transcribe", transcribe_command))
     application.add_handler(CommandHandler("formats", formats_command))
-    application.add_handler(CommandHandler("lang", lang_command))
     application.add_handler(CommandHandler("voice", voice_command))
     application.add_handler(CommandHandler("audio", audio_command))
     application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
+    application.add_handler(CommandHandler("videos", videos_command))
+    application.add_handler(CommandHandler("clear", clear_command))
 
     # Add message handlers
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))

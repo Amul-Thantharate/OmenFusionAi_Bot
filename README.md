@@ -1,77 +1,15 @@
-# AIFusionBot - Telegram Audio Transcription Bot
+# AIFusionBot
 
-Created by Amul Thantharate 👋
+A versatile Telegram bot powered by AI that can chat, transcribe audio, manage videos, enhance text, and generate images.
 
 ## Features
 
-### 🎵 Audio Transcription
-- Transcribes English audio to text
-- Supports multiple audio formats
-- Voice messages and audio files
-- Real-time progress updates
-- Smart language detection
-
-### 🤖 AI Chat
-- Natural language conversations
-- Adjustable response creativity
-- Chat history management
-- Export conversations
-
-### 🎨 Image Generation
-- Create AI-generated images
-- Prompt enhancement
-- Image analysis and description
-
-### 🎤 Text-to-Speech Functionality
-- The bot can now convert text responses into audio messages.
-- Use the `/chat` command to receive voice messages along with text responses.
-- Voice responses can be toggled on or off with the `/togglevoice` command.
-
-### 📸 Image Description
-- The bot can analyze images and provide detailed descriptions.
-- Use the `/describe` command to send an image and receive a description in text and voice formats.
-
-## Supported Audio Formats
-- MP3 (.mp3)
-- WAV (.wav)
-- M4A (.m4a)
-- OGG (.ogg, .oga)
-- OPUS (.opus)
-- MP4 (.mp4)
-- MPEG (.mpeg, .mpga)
-- WEBM (.webm)
-
-## Commands
-### General
-- `/start` - Start the bot
-- `/help` - Show all commands
-
-### Audio Commands
-- `/transcribe` - Convert English audio to text
-- `/formats` - Show supported formats
-- `/voice` - Voice message guide
-- `/audio` - Audio file guide
-- `/lang` - Language support info
-- `/togglevoice` - Toggle voice responses on/off
-
-### Chat Commands
-- `/chat` - Start AI conversation
-- `/enhance` - Enhance the provided text
-- `/temperature` - Adjust creativity
-- `/tokens` - Set response length
-- `/clear` - Clear chat history
-- `/save` - Save chat history
-- `/export` - Export as file
-
-### Image Commands
-- `/describe` - Analyze an image and provide a description
-- `/imagine` - Generate images from prompts
-- `/enhance` - Enhance prompts
-- `/describe` - Analyze images
-
-### Settings
-- `/settings` - Bot configuration
-- `/uploadenv` - Configure API keys
+- 💬 **AI Chat**: Engage in natural conversations with AI
+- 🎵 **Audio Transcription**: Convert voice messages and audio files to text
+- 📺 **YouTube Integration**: Download and transcribe YouTube videos
+- 🖼️ **Image Generation**: Create images from text descriptions
+- ✨ **Text Enhancement**: Improve your text prompts
+- 🔍 **Image Analysis**: Get detailed descriptions of images
 
 ## Setup
 
@@ -81,40 +19,82 @@ git clone https://github.com/yourusername/AIFusionBot.git
 cd AIFusionBot
 ```
 
-2. Install dependencies:
+2. Create and activate a virtual environment:
+```bash
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# or
+.\venv\Scripts\activate  # Windows
+```
+
+3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Create a `.env` file:
+4. Create a `.env` file with your API keys:
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 GROQ_API_KEY=your_groq_api_key
 ```
 
-4. Run the bot:
+5. Run the bot:
 ```bash
 python main.py
 ```
 
+## Key Commands
+
+- `/start` - Begin using the bot
+- `/help` - View all available commands
+- `/chat` - Start a conversation
+- `/transcribe` - Convert audio/video to text
+- `/imagine` - Generate images
+- `/enhance` - Improve text
+- `/describe` - Analyze images
+- `/videos` - List downloaded videos
+- `/clear` - Delete saved videos
+
+## Video Management
+
+The bot can download and transcribe YouTube videos:
+
+1. Download and transcribe:
+```
+/transcribe https://www.youtube.com/watch?v=VIDEO_ID
+```
+
+2. View downloaded videos:
+```
+/videos
+```
+
+3. Clear video storage:
+```
+/clear
+```
+
+## Documentation
+
+Detailed documentation is available in the `docs` folder:
+- [Commands Guide](docs/commands.md)
+- [Setup Instructions](docs/setup.md)
+
 ## Requirements
+
 - Python 3.8+
+- Dependencies listed in `requirements.txt`
 - Telegram Bot Token
 - Groq API Key
-- Internet connection
 
-## Best Practices
-- Use clear audio quality
-- Speak English clearly
-- Minimize background noise
-- Use supported formats only
-- Keep files under 20MB
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
-MIT License - See LICENSE file for details
 
-## Author
-Created by Amul Thantharate
-
-## Support
-For issues and feature requests, please create an issue on GitHub.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

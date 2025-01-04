@@ -159,3 +159,45 @@ For issues and feature requests:
 - [Learn available commands](commands.md)
 - [View changelog](changelog.md)
 - [Contribute to development](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md)
+
+## Video Management
+
+### Video Download
+
+- The bot will automatically download videos from YouTube
+- Videos are stored in the `downloaded_videos/` directory
+
+### Video Storage
+
+- The bot will store videos in the `downloaded_videos/` directory
+- You can configure the storage directory in the `.env` file
+
+### Video Deletion
+
+- The bot will automatically delete videos after a certain period of time
+- You can configure the deletion period in the `.env` file
+
+## Maintenance
+
+### Regular Tasks
+
+1. Clear downloaded videos:
+```
+/clear
+```
+
+2. Check storage usage:
+```
+/videos
+```
+
+3. Update dependencies:
+```bash
+pip install -r requirements.txt --upgrade
+```
+
+### Storage Management
+
+- Ensure sufficient disk space
+- Use `/clear` to remove old videos
+- Check directory permissions

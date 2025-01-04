@@ -85,6 +85,25 @@ Requirements:
 - Supported image formats: JPEG, PNG
 - For URLs: publicly accessible image links
 
+## Audio and Video Commands
+
+### Transcription Commands
+- `/transcribe [YouTube URL]` - Transcribe audio from:
+  - YouTube videos (provide URL)
+  - Voice messages (reply to a voice message)
+  - Audio files (reply to an audio file)
+- `/formats` - Show supported audio formats
+- `/voice` - Get instructions for voice message transcription
+- `/audio` - Get instructions for audio file transcription
+- `/lang` - Show supported languages (English only)
+
+### Video Management
+- `/videos` - List all downloaded YouTube videos
+- `/clear` - Delete all downloaded videos
+
+### Voice Response Settings
+- `/togglevoice` - Toggle voice responses on/off
+
 ## New Commands
 
 ### /togglevoice
@@ -186,6 +205,42 @@ beautiful sunset at beach, realistic, 4k
 
 ⏱️ Image generated in 5.23 seconds
 ```
+
+### Transcribing YouTube Videos
+1. Use the `/transcribe` command with a YouTube URL:
+   ```
+   /transcribe https://www.youtube.com/watch?v=VIDEO_ID
+   ```
+2. The bot will:
+   - Download the video (max size 20MB)
+   - Send the video file in chat
+   - Provide the transcription
+   - Save the video for later use
+
+### Managing Downloaded Videos
+1. View all downloaded videos:
+   ```
+   /videos
+   ```
+   Shows a list of saved videos with their sizes
+
+2. Clear all videos:
+   ```
+   /clear
+   ```
+   Deletes all downloaded videos from storage
+
+## Notes
+- Downloaded videos are preserved until explicitly cleared with `/clear`
+- Maximum video size: 20MB
+- Supported audio formats for transcription:
+  - MP3
+  - WAV
+  - OGG
+  - M4A
+  - AAC
+- Voice messages are automatically processed for transcription
+- Currently supports English language only
 
 ## Error Handling
 
