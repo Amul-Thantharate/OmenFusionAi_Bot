@@ -68,6 +68,7 @@ class UserSession:
         self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.last_enhanced_prompt = None
         self.voice_response = True
+        self.subscribed_to_status = False  # New field for status subscription
 
 BOT_STATUS = {
     "is_maintenance": False,
@@ -78,6 +79,8 @@ BOT_STATUS = {
     "last_offline_message": None,
     "notified_users": set()
 }
+
+subscribed_users = {}
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
@@ -1133,31 +1136,30 @@ async def end_maintenance(bot, duration):
                 logger.error(f"Failed to notify user {user_id} about maintenance end: {str(e)}")
 
 async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /subscribe command."""
-    try:
-        user_id = update.effective_user.id
-        if user_id not in BOT_STATUS["notified_users"]:
-            BOT_STATUS["notified_users"].add(user_id)
-            await update.message.reply_text(
-                "✅ You have subscribed to bot status updates.\n"
-                "You will be notified about maintenance and status changes."
-            )
-        else:
-            await update.message.reply_text("You are already subscribed to status updates.")
-    except Exception as e:
-        await update.message.reply_text(f"Error subscribing: {str(e)}")
+    """Subscribe to bot status notifications."""
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+    
+    user_sessions[user_id].subscribed_to_status = True
+    subscribed_users[user_id] = update.effective_chat.id
+    
+    await update.message.reply_text(
+        "✅ You are now subscribed to bot status notifications.\n"
+        "You will receive alerts when the bot goes offline or comes back online."
+    )
 
 async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /unsubscribe command."""
-    try:
-        user_id = update.effective_user.id
-        if user_id in BOT_STATUS["notified_users"]:
-            BOT_STATUS["notified_users"].remove(user_id)
-            await update.message.reply_text("✅ You have unsubscribed from bot status updates.")
-        else:
-            await update.message.reply_text("You are not subscribed to status updates.")
-    except Exception as e:
-        await update.message.reply_text(f"Error unsubscribing: {str(e)}")
+    """Unsubscribe from bot status notifications."""
+    user_id = update.effective_user.id
+    if user_id in user_sessions:
+        user_sessions[user_id].subscribed_to_status = False
+    if user_id in subscribed_users:
+        del subscribed_users[user_id]
+    
+    await update.message.reply_text(
+        "❌ You are now unsubscribed from bot status notifications."
+    )
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /status command."""
@@ -1195,61 +1197,70 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Continue with normal message handling
     await handle_text_message(update, context)
 
-def setup_bot(token: str):
-    """Initialize and configure the AIFusionBot"""
-    application = Application.builder().token(token).build()
+async def notify_subscribers(application: Application, message: str):
+    """Send notification to all subscribed users."""
+    for chat_id in subscribed_users.values():
+        try:
+            await application.bot.send_message(
+                chat_id=chat_id,
+                text=message,
+                parse_mode='Markdown'
+            )
+        except Exception as e:
+            logger.error(f"Failed to send notification to {chat_id}: {str(e)}")
 
-    # Add command handlers
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("chat", chat_command))
-    application.add_handler(CommandHandler("imagine", imagine_command))
-    application.add_handler(CommandHandler("enhance", enhance_command))
-    application.add_handler(CommandHandler("describe", describe_image))
-    application.add_handler(CommandHandler("transcribe", transcribe_command))
-    application.add_handler(CommandHandler("formats", formats_command))
-    application.add_handler(CommandHandler("voice", voice_command))
-    application.add_handler(CommandHandler("audio", audio_command))
-    application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
-    application.add_handler(CommandHandler("videos", videos_command))
-    application.add_handler(CommandHandler("clear", clear_command))
-    application.add_handler(CommandHandler("maintenance", maintenance_command))
-    application.add_handler(CommandHandler("status", status_command))
-    application.add_handler(CommandHandler("subscribe", subscribe_command))
-    application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
+    """Handle errors and notify subscribers."""
+    logger.error("Exception while handling an update:", exc_info=context.error)
+    
+    error_message = (
+        "🔴 *Bot Status Alert*\n\n"
+        "The bot is currently experiencing technical difficulties.\n"
+        "Our team has been notified and is working on the issue.\n\n"
+        f"Error: `{str(context.error)}`"
+    )
+    
+    await notify_subscribers(context.application, error_message)
 
-    # Add message handlers
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_handler(MessageHandler(filters.Document.ALL, handle_document))
-    application.add_handler(MessageHandler(filters.PHOTO, describe_image))
-    application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_audio))
+async def on_startup(application: Application):
+    """Notify subscribers when bot starts up."""
+    startup_message = (
+        "🟢 *Bot Status Alert*\n\n"
+        "The bot is now online and ready to use!\n"
+        "All systems are operational."
+    )
+    await notify_subscribers(application, startup_message)
 
-    # Add callback query handler
-    application.add_handler(CallbackQueryHandler(button_callback))
-
-    # Add error handler
-    application.add_error_handler(error_handler)
-
-    return application
-
-def run_telegram_bot():
-    """Main function to run the Telegram bot"""
+def run_bot():
+    """Run the bot."""
     try:
-        # Load environment variables
-        load_dotenv()
+        # Create application
+        application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
+
+        # Add command handlers
+        application.add_handler(CommandHandler("start", start_command))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("chat", chat_command))
+        application.add_handler(CommandHandler("settings", settings_command))
+        application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
+        application.add_handler(CommandHandler("subscribe", subscribe_command))
+        application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
         
-        # Get bot token from environment
-        token = os.getenv('TELEGRAM_BOT_TOKEN')
-        if not token:
-            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
+        # Add error handler
+        application.add_error_handler(error_handler)
         
-        # Setup and run the bot
-        app = setup_bot(token)
-        logger.info("Starting bot in polling mode...")
-        app.run_polling(allowed_updates=Update.ALL_TYPES)
+        # Register startup notification
+        application.job_queue.run_once(
+            lambda context: on_startup(application),
+            when=1
+        )
+        
+        # Start the bot
+        application.run_polling()
+        
     except Exception as e:
         logger.error(f"Failed to start bot: {str(e)}")
-        raise
+        raise e
 
 if __name__ == "__main__":
-    run_telegram_bot()
+    run_bot()

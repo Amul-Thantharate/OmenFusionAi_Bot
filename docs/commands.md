@@ -73,6 +73,18 @@ Show supported languages.
 - Usage: `/lang`
 - Response: List of supported languages
 
+## Status Commands
+
+### /subscribe
+Subscribe to bot status notifications. You will receive alerts when:
+- Bot goes offline due to errors
+- Bot comes back online
+- System maintenance starts/ends
+- Critical updates or changes
+
+### /unsubscribe
+Unsubscribe from bot status notifications.
+
 ## Settings Commands 
 
 ### /settings
