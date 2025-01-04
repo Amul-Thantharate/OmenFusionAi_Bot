@@ -54,8 +54,7 @@ COMMANDS = {
     'maintenance': 'Set bot maintenance mode',
     'status': 'Check bot status',
     'subscribe': 'Subscribe to bot status updates',
-    'unsubscribe': 'Unsubscribe from bot status updates',
-    'setgroqkey': 'Set Groq API key'
+    'unsubscribe': 'Unsubscribe from bot status updates'
 }
 
 class UserSession:
@@ -64,9 +63,9 @@ class UserSession:
         self.last_response = None
         self.last_image_prompt = None
         self.last_image_url = None
-        self.selected_model = "mistral-7b-instruct"
-        self.groq_api_key = os.getenv('GROQ_API_KEY')
+        self.selected_model = "mistral-7b-instruct"  # Default Groq model
         self.together_api_key = os.getenv('TOGETHER_API_KEY')
+        self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.last_enhanced_prompt = None
         self.voice_response = True
 
@@ -125,32 +124,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     await update.message.reply_text(help_message)
 
-async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /setgroqkey command."""
-    # Delete the message containing the API key for security
-    await update.message.delete()
-
-    if not context.args:
-        await update.message.reply_text(
-            "Please provide your Groq API key after /setgroqkey\n"
-            "Example: `/setgroqkey your_api_key`\n"
-            "⚠️ Your message will be deleted immediately for security.",
-            parse_mode='Markdown'
-        )
-        return
-
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-
-    session = user_sessions[user_id]
-    session.groq_api_key = context.args[0]
-
+async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """This command is deprecated."""
     await update.message.reply_text(
-        "✅ Groq API key set successfully!\n"
-        "You can now use all chat features.\n"
-        "Try `/chat Hello!`",
-        parse_mode='Markdown'
+        "⚠️ OpenAI integration has been removed from this bot. "
+        "Please use Groq API instead with the /settogetherkey command."
     )
 
 async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -184,6 +162,14 @@ async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_T
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /chat command."""
     try:
+        if not context.args:
+            await update.message.reply_text(
+                "Please provide a message after /chat\n"
+                "Example: `/chat Hello, how are you?`",
+                parse_mode='Markdown'
+            )
+            return
+            
         user_id = update.effective_user.id
         if user_id not in user_sessions:
             user_sessions[user_id] = UserSession()
@@ -192,61 +178,78 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         if not session.groq_api_key:
             await update.message.reply_text(
-                "Please set your Groq API key first using the /setgroqkey command"
+                "Please set your Groq API key in the .env file"
             )
             return
             
-        # Get the message text after the /chat command
-        message = ' '.join(context.args) if context.args else "Hello! How can I help you today?"
+        # Get the message from arguments
+        message = ' '.join(context.args)
         
-        # Send typing action
+        # Add user message to conversation history
+        session.conversation_history.append({
+            'role': 'user',
+            'content': message
+        })
+        
+        # Show typing indicator
         await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
         
         # Get AI response with proper API key
         response = interactive_chat(
             text=message,
             model_type="mistral-7b-instruct",
-            api_key=session.together_api_key
+            api_key=session.groq_api_key
         )
         
         # Send text response
         await update.message.reply_text(response)
         
-        # Handle voice response
-        try:
-            # Send recording action to show progress
-            await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
-            status_message = await update.message.reply_text("🎙️ Converting text to speech...")
-            
-            # Create voice file
-            voice_path = os.path.join(tempfile.gettempdir(), f'response_{user_id}.mp3')
-            success = await text_to_speech_chunk(response, voice_path)
-            
-            if success and os.path.exists(voice_path):
-                # Update status
-                await status_message.edit_text("📤 Sending voice message...")
+        # Add AI response to conversation history
+        session.conversation_history.append({
+            'role': 'assistant',
+            'content': response
+        })
+        
+        # Store the last response
+        session.last_response = response
+
+        # Handle voice response if enabled
+        if session.voice_response:
+            try:
+                # Send recording action to show progress
+                await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
+                status_message = await update.message.reply_text("🎙️ Converting text to speech...")
                 
-                # Send the voice message
-                with open(voice_path, 'rb') as voice:
-                    await update.message.reply_voice(
-                        voice=voice,
-                        caption="🎙️ Voice Message"
-                    )
+                # Create voice file
+                voice_path = os.path.join(tempfile.gettempdir(), f'response_{user_id}.mp3')
+                success = await text_to_speech_chunk(response, voice_path)
                 
-                # Clean up
-                os.remove(voice_path)
-                await status_message.delete()
-            else:
-                await status_message.edit_text("❌ Could not generate voice message.")
-            
-        except Exception as voice_error:
-            logger.error(f"Voice message error: {str(voice_error)}")
-            await update.message.reply_text("Note: Voice message could not be generated.")
-            
+                if success and os.path.exists(voice_path):
+                    # Update status
+                    await status_message.edit_text("📤 Sending voice message...")
+                    
+                    # Send the voice message
+                    with open(voice_path, 'rb') as voice:
+                        await update.message.reply_voice(
+                            voice=voice,
+                            caption="🎙️ Voice Message"
+                        )
+                    
+                    # Clean up
+                    os.remove(voice_path)
+                    await status_message.delete()
+                else:
+                    await status_message.edit_text("❌ Could not generate voice message.")
+                
+            except Exception as voice_error:
+                logger.error(f"Voice message error: {str(voice_error)}")
+                await update.message.reply_text("Note: Voice message could not be generated.")
+        
     except Exception as e:
-        logger.error(f"Error in chat_command: {str(e)}")
+        logger.error(f"Error in chat: {str(e)}")
         await update.message.reply_text(
-            "Sorry, I encountered an error. Please try again or check your input."
+            f"❌ Error: {str(e)}\n"
+            "Please try again later or contact support if the issue persists."
         )
 
 async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -620,9 +623,9 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         session = user_sessions[user_id]
         
-        if not session.groq_api_key:
+        if not session.together_api_key:
             await update.message.reply_text(
-                "Please set your Groq API key first using the /setgroqkey command"
+                "Please set your Together API key first using the /settogetherkey command"
             )
             return
 
@@ -1199,8 +1202,6 @@ def setup_bot(token: str):
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("setgroqkey", setgroqkey_command))
-    application.add_handler(CommandHandler("settogetherkey", settogetherkey_command))
     application.add_handler(CommandHandler("chat", chat_command))
     application.add_handler(CommandHandler("imagine", imagine_command))
     application.add_handler(CommandHandler("enhance", enhance_command))

@@ -66,40 +66,37 @@ def interactive_chat(text: str, temperature: float = 0.7, max_tokens: int = 1024
     """
     try:
         if not api_key:
-            return "Please set your Groq API key using /setgroqkey command"
-
+            return "Please set your Groq API key in the .env file"
+            
         client = Groq(api_key=api_key)
         
-        response = client.chat.completions.create(
+        # Create the chat completion
+        chat_completion = client.chat.completions.create(
             messages=[
-                {
-                    "role": "system",
-                    "content": "You are a helpful assistant."
-                },
-                {
-                    "role": "user",
-                    "content": text
-                }
+                {"role": "system", "content": "You are a helpful AI assistant."},
+                {"role": "user", "content": text}
             ],
-            model="llama3-8b-8192",
+            model="mixtral-8x7b-32768",  # Using Mixtral model for better performance
             temperature=temperature,
             max_tokens=max_tokens,
-            top_p=1,
             stream=stream
         )
         
+        # Get the response
         if stream:
-            # For streaming responses, return a generator
-            return (chunk.choices[0].delta.content for chunk in response)
+            full_response = ""
+            for chunk in chat_completion:
+                if chunk.choices[0].delta.content is not None:
+                    full_response += chunk.choices[0].delta.content
+            return full_response
         else:
-            # For non-streaming responses, return the complete text
-            return response.choices[0].message.content
+            return chat_completion.choices[0].message.content
             
     except Exception as e:
         logger.error(f"Error in chat: {str(e)}")
-        if "Invalid API key" in str(e):
+        if "Invalid API Key" in str(e):
             return "Invalid Groq API key. Please check your key and try again."
-        return f"Sorry, I encountered an error: {str(e)}"
+        return f"Error: {str(e)}"
 
 def save_chat_history(history: list, format: str = "markdown") -> tuple[bool, str, Optional[bytes]]:
     """
