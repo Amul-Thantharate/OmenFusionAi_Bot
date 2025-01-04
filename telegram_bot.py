@@ -50,7 +50,11 @@ COMMANDS = {
     'lang': 'Show supported language (English only)',
     'togglevoice': 'Toggle voice responses on/off',
     'videos': 'List downloaded videos',
-    'clear': 'Clear all downloaded videos'
+    'clear': 'Clear all downloaded videos',
+    'maintenance': 'Set bot maintenance mode',
+    'status': 'Check bot status',
+    'subscribe': 'Subscribe to bot status updates',
+    'unsubscribe': 'Unsubscribe from bot status updates'
 }
 
 class UserSession:
@@ -63,6 +67,17 @@ class UserSession:
         self.together_api_key = os.getenv('TOGETHER_API_KEY')
         self.last_enhanced_prompt = None
         self.voice_response = True
+        self.is_admin = False
+
+BOT_STATUS = {
+    "is_maintenance": False,
+    "maintenance_message": "",
+    "maintenance_start": None,
+    "maintenance_end": None,
+    "is_online": True,
+    "last_offline_message": None,
+    "notified_users": set()
+}
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
@@ -97,7 +112,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎨 Image Commands": ['imagine', 'enhance', 'describe'],
         "🎵 Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
         "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice'],
-        "ℹ️ General": ['start', 'help']
+        "ℹ️ General": ['start', 'help'],
+        "🔧 Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe']
     }
     
     for category, cmd_list in categories.items():
@@ -1092,6 +1108,154 @@ async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     result = clear_videos()
     await update.message.reply_text(result)
 
+async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /maintenance command for admins."""
+    try:
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+        session = user_sessions[user_id]
+
+        if not session.is_admin:
+            await update.message.reply_text("⚠️ This command is only available for administrators.")
+            return
+
+        if not context.args or len(context.args) < 2:
+            await update.message.reply_text(
+                "Please provide duration and message.\n"
+                "Example: /maintenance 2h System upgrade in progress"
+            )
+            return
+
+        duration_str = context.args[0].lower()
+        message = " ".join(context.args[1:])
+
+        # Parse duration (e.g., 2h, 30m)
+        try:
+            unit = duration_str[-1]
+            value = int(duration_str[:-1])
+            if unit == 'h':
+                duration = timedelta(hours=value)
+            elif unit == 'm':
+                duration = timedelta(minutes=value)
+            else:
+                raise ValueError("Invalid duration unit")
+        except ValueError:
+            await update.message.reply_text(
+                "Invalid duration format. Use format: 2h or 30m"
+            )
+            return
+
+        # Set maintenance mode
+        BOT_STATUS["is_maintenance"] = True
+        BOT_STATUS["maintenance_message"] = message
+        BOT_STATUS["maintenance_start"] = datetime.now()
+        BOT_STATUS["maintenance_end"] = datetime.now() + duration
+
+        # Notify all subscribed users
+        notification = (
+            "🔧 Bot Maintenance Notice\n\n"
+            f"Message: {message}\n"
+            f"Duration: {duration_str}\n"
+            f"Start Time: {BOT_STATUS['maintenance_start'].strftime('%Y-%m-%d %H:%M:%S')}\n"
+            f"Expected End: {BOT_STATUS['maintenance_end'].strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+
+        for subscribed_user in BOT_STATUS["notified_users"]:
+            try:
+                await context.bot.send_message(
+                    chat_id=subscribed_user,
+                    text=notification
+                )
+            except Exception as e:
+                logger.error(f"Failed to notify user {subscribed_user}: {str(e)}")
+
+        await update.message.reply_text("✅ Maintenance mode activated and users notified.")
+
+        # Schedule maintenance end
+        asyncio.create_task(end_maintenance(context.bot, duration))
+
+    except Exception as e:
+        await update.message.reply_text(f"Error setting maintenance mode: {str(e)}")
+
+async def end_maintenance(bot, duration):
+    """Automatically end maintenance after specified duration."""
+    await asyncio.sleep(duration.total_seconds())
+    if BOT_STATUS["is_maintenance"]:
+        BOT_STATUS["is_maintenance"] = False
+        # Notify all subscribed users
+        for user_id in BOT_STATUS["notified_users"]:
+            try:
+                await bot.send_message(
+                    chat_id=user_id,
+                    text="✅ Maintenance completed! Bot is now back online."
+                )
+            except Exception as e:
+                logger.error(f"Failed to notify user {user_id} about maintenance end: {str(e)}")
+
+async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /subscribe command."""
+    try:
+        user_id = update.effective_user.id
+        if user_id not in BOT_STATUS["notified_users"]:
+            BOT_STATUS["notified_users"].add(user_id)
+            await update.message.reply_text(
+                "✅ You have subscribed to bot status updates.\n"
+                "You will be notified about maintenance and status changes."
+            )
+        else:
+            await update.message.reply_text("You are already subscribed to status updates.")
+    except Exception as e:
+        await update.message.reply_text(f"Error subscribing: {str(e)}")
+
+async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /unsubscribe command."""
+    try:
+        user_id = update.effective_user.id
+        if user_id in BOT_STATUS["notified_users"]:
+            BOT_STATUS["notified_users"].remove(user_id)
+            await update.message.reply_text("✅ You have unsubscribed from bot status updates.")
+        else:
+            await update.message.reply_text("You are not subscribed to status updates.")
+    except Exception as e:
+        await update.message.reply_text(f"Error unsubscribing: {str(e)}")
+
+async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /status command."""
+    try:
+        if BOT_STATUS["is_maintenance"]:
+            time_left = BOT_STATUS["maintenance_end"] - datetime.now()
+            message = (
+                "🔧 Bot is currently under maintenance\n\n"
+                f"Reason: {BOT_STATUS['maintenance_message']}\n"
+                f"Started: {BOT_STATUS['maintenance_start'].strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"Expected End: {BOT_STATUS['maintenance_end'].strftime('%Y-%m-%d %H:%M:%S')}\n"
+                f"Time Remaining: {str(time_left).split('.')[0]}"
+            )
+        else:
+            message = "✅ Bot is online and functioning normally."
+        
+        await update.message.reply_text(message)
+    except Exception as e:
+        await update.message.reply_text(f"Error checking status: {str(e)}")
+
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle incoming messages."""
+    if BOT_STATUS["is_maintenance"]:
+        time_left = BOT_STATUS["maintenance_end"] - datetime.now()
+        if time_left.total_seconds() > 0:
+            await update.message.reply_text(
+                "🔧 Bot is currently under maintenance\n\n"
+                f"Message: {BOT_STATUS['maintenance_message']}\n"
+                f"Expected to be back in: {str(time_left).split('.')[0]}"
+            )
+            return
+        else:
+            BOT_STATUS["is_maintenance"] = False
+
+    # Continue with normal message handling
+    await handle_text_message(update, context)
+
 def setup_bot(token: str):
     """Initialize and configure the AIFusionBot"""
     application = Application.builder().token(token).build()
@@ -1110,9 +1274,13 @@ def setup_bot(token: str):
     application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
     application.add_handler(CommandHandler("videos", videos_command))
     application.add_handler(CommandHandler("clear", clear_command))
+    application.add_handler(CommandHandler("maintenance", maintenance_command))
+    application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(CommandHandler("subscribe", subscribe_command))
+    application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
 
     # Add message handlers
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
     application.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     application.add_handler(MessageHandler(filters.PHOTO, describe_image))
     application.add_handler(MessageHandler(filters.VOICE | filters.AUDIO, handle_audio))
