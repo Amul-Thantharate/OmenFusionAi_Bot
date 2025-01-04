@@ -1024,6 +1024,22 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     """Handle text messages and respond with both voice and text."""
     try:
         user_id = update.effective_user.id
+        username = update.effective_user.username
+        full_name = update.effective_user.full_name
+        
+        # Show user info for every message (temporary for admin setup)
+        user_info = (
+            f"👤 User Information:\n"
+            f"ID: {user_id}\n"
+            f"Username: @{username if username else 'Not set'}\n"
+            f"Name: {full_name}\n"
+            f"------------\n"
+            f"Your message: {update.message.text}"
+        )
+        await update.message.reply_text(user_info)
+        
+        # Rest of your message handling code...
+        user_id = update.effective_user.id
         if user_id not in user_sessions:
             user_sessions[user_id] = UserSession()
         
@@ -1227,7 +1243,7 @@ async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             time_left = BOT_STATUS["maintenance_end"] - datetime.now()
             message = (
                 "🔧 Bot is currently under maintenance\n\n"
-                f"Reason: {BOT_STATUS['maintenance_message']}\n"
+                f"Message: {BOT_STATUS['maintenance_message']}\n"
                 f"Started: {BOT_STATUS['maintenance_start'].strftime('%Y-%m-%d %H:%M:%S')}\n"
                 f"Expected End: {BOT_STATUS['maintenance_end'].strftime('%Y-%m-%d %H:%M:%S')}\n"
                 f"Time Remaining: {str(time_left).split('.')[0]}"
