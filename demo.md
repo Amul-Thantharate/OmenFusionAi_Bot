@@ -257,3 +257,159 @@ Created by Amul Thantharate 👋
 - Release notes in RELEASE.md
 - GitHub repository
 - Support channels
+
+# AIFusionBot Demo Guide
+
+This guide demonstrates the main features of AIFusionBot and how to use them effectively.
+
+## Basic Commands 🎯
+
+### Starting the Bot
+```
+/start
+```
+Initiates the bot and shows welcome message with basic instructions.
+
+### Getting Help
+```
+/help
+```
+Displays all available commands organized by category.
+
+## Chat Features 💬
+
+### Basic Chat
+```
+/chat Hello, how are you?
+```
+Start a conversation with the AI. The bot will remember context within the session.
+
+### Voice Responses
+```
+/togglevoice
+```
+Toggle between text-only and voice+text responses.
+
+## Image Features 🎨
+
+### Generating Images
+```
+/imagine a sunset over mountains
+```
+Creates an AI-generated image based on your description.
+
+### Enhancing Prompts
+```
+/enhance
+```
+Improves your last image prompt for better results.
+
+### Image Description
+```
+/describe
+```
+Send an image to get an AI-generated caption.
+
+## Audio Features 🎵
+
+### Text to Speech
+```
+/voice Hello world
+```
+Converts text into spoken audio.
+
+### Speech to Text
+```
+/transcribe
+```
+Send a voice message or audio file to convert it to text.
+
+### YouTube Audio
+```
+/audio https://youtube.com/watch?v=...
+```
+Download audio from YouTube videos.
+
+## Maintenance Features 🔧
+
+### Setting Maintenance Mode
+```
+/maintenance 2h System upgrade in progress
+```
+Puts the bot in maintenance mode for specified duration.
+
+### Checking Status
+```
+/status
+```
+Check if the bot is in maintenance mode or running normally.
+
+### Status Notifications
+```
+/subscribe
+```
+Subscribe to receive bot status updates.
+```
+/unsubscribe
+```
+Stop receiving status notifications.
+
+## Example Usage Scenarios
+
+### 1. Creative Writing Assistant
+```
+/chat Help me write a short story about a magical forest
+```
+
+### 2. Image Creation
+```
+/imagine mystical forest with glowing mushrooms and fairy lights
+/enhance
+```
+
+### 3. Audio Processing
+```
+/audio https://youtube.com/watch?v=...
+/transcribe
+```
+
+### 4. System Maintenance
+```
+/maintenance 30m Bot updates in progress
+/status
+```
+
+## Tips for Best Results 💡
+
+1. **Clear Communication**
+   - Be specific in your requests
+   - Use proper punctuation
+
+2. **Image Generation**
+   - Start with basic prompts
+   - Use /enhance to improve results
+   - Be descriptive but concise
+
+3. **Audio Quality**
+   - Use clear audio for transcription
+   - Avoid background noise
+   - Speak clearly for voice commands
+
+4. **Maintenance**
+   - Subscribe to status updates
+   - Check status before maintenance
+   - Use appropriate duration times
+
+## Error Handling
+
+If you encounter any issues:
+1. Check your command syntax
+2. Verify your API keys are set
+3. Check bot status with /status
+4. Try again after a few moments
+
+## Need Help?
+
+- Use /help for command list
+- Check documentation for detailed guides
+- Report issues on GitHub

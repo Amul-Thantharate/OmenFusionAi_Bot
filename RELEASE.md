@@ -111,6 +111,51 @@
 - Enhanced error handling and logging for better debugging and user feedback.
 - Updated documentation to reflect new features and commands.
 
+## Version 2.0.0 - 2025-01-04
+
+### Major Changes 🚀
+- Switched from Groq to OpenAI for chat functionality
+- Added maintenance mode with auto-recovery
+- Implemented status notification system
+
+### New Features ✨
+- Maintenance mode with duration and custom messages
+- Status subscription system for users
+- Automatic maintenance recovery
+- Enhanced voice response system
+- Improved image generation capabilities
+
+### Improvements 🔧
+- Better error handling and logging
+- Streamlined command structure
+- Enhanced help command with categories
+- Improved chat history management
+- Better voice message handling
+
+### Technical Changes 🛠
+- Updated dependency management
+- Switched to OpenAI GPT for chat
+- Improved async/await implementation
+- Better session management
+- Enhanced error reporting
+
+### Removed Features 🗑
+- Admin system removed for simplicity
+- Removed user ID display from messages
+- Removed Groq API integration
+
+### Bug Fixes 🐛
+- Fixed voice message handling
+- Improved error messages
+- Better handling of API timeouts
+- Fixed maintenance mode timing issues
+
+### Documentation 📚
+- Updated README with new features
+- Added maintenance mode documentation
+- Updated command descriptions
+- Improved setup instructions
+
 ## Version 1.1.0 - 2024-12-31
 
 ### New Features
