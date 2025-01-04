@@ -18,147 +18,198 @@ Learn how to set up and deploy NovaChat AI.
 
 ---
 
-## Prerequisites
+## Prerequisites 📋
 
-- Python 3.12 or higher
-- pip (Python package installer)
+- Python 3.8 or higher
+- pip (Python package manager)
 - Git
-- A Telegram Bot Token
-- Groq API Key
-- Together AI API Key
+- A Telegram account
+- Required API keys:
+  - Telegram Bot Token
+  - OpenAI API Key
+  - Together AI API Key
+  - Groq API Key
 
-## Installation
+## Installation Steps 🚀
 
-1. Clone the repository:
+### 1. Clone the Repository
+
 ```bash
 git clone https://github.com/yourusername/NovaChat-AI.git
 cd NovaChat-AI
 ```
 
-2. Create a virtual environment:
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
+### 2. Install Dependencies
 
-3. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-## Configuration
-
-### Environment Variables
+### 3. Set Up Environment Variables
 
 Create a `.env` file in the project root:
+
 ```env
-# Required
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+OPENAI_API_KEY=your_openai_api_key
 TOGETHER_API_KEY=your_together_api_key
 GROQ_API_KEY=your_groq_api_key
-
-# Optional
-PORT=5000  # Port for Flask web server
-DEBUG=False  # Flask debug mode
 ```
 
-You can also configure API keys through the bot using:
-1. `/uploadenv` command (recommended)
-2. Individual commands (`/setgroqkey`, `/settogetherkey`)
-
-### API Keys
+### 4. Get Required API Keys
 
 1. **Telegram Bot Token**:
-   - Create a bot with [@BotFather](https://t.me/BotFather)
+   - Message [@BotFather](https://t.me/botfather) on Telegram
+   - Use `/newbot` command
+   - Follow instructions to create bot
    - Copy the provided token
 
-2. **Groq API Key**:
+2. **OpenAI API Key**:
+   - Visit [OpenAI](https://platform.openai.com/)
+   - Create an account or log in
+   - Go to API section
+   - Generate new API key
+
+3. **Together AI API Key**:
+   - Visit [Together AI](https://www.together.ai/)
+   - Create an account
+   - Navigate to API section
+   - Generate API key
+
+4. **Groq API Key**:
    - Sign up at [Groq Console](https://console.groq.com)
    - Generate an API key
-   The Groq API key is required for both chat functionality and image analysis. You can obtain it from [Groq Console](https://console.groq.com):
 
-   1. Sign up for a Groq account
-   2. Navigate to API Keys section
-   3. Create a new API key
-   4. Set the key in the bot using:
+### 5. Configure the Bot
+
+1. Set environment variables:
+   ```bash
+   export TELEGRAM_BOT_TOKEN=your_token
+   export OPENAI_API_KEY=your_key
+   export TOGETHER_API_KEY=your_key
+   export GROQ_API_KEY=your_key
    ```
-   /setgroqkey YOUR_API_KEY
+   Or use the `.env` file as shown above.
+
+2. Or use the bot's built-in configuration:
    ```
-   The same API key will be used for both:
-   - Chat functionality with LLM models
-   - Image analysis with Groq Vision API
-
-3. **Groq Vision Setup**:
-   To use Groq Vision, you need to set up a Groq Vision API key. You can do this by following these steps:
-   1. Go to the Groq Console and navigate to the API Keys section
-   2. Click on "Create a new API key"
-   3. Select "Groq Vision" as the API type
-   4. Set the key in the bot using:
+   /uploadenv
    ```
-   /setgroqvisionkey YOUR_API_KEY
-   ```
-   Note: You need to have a separate API key for Groq Vision.
+   Then upload your `.env` file.
 
-3. **Together AI Key**:
-   - Register at [Together AI](https://api.together.xyz)
-   - Create an API key
+### 6. Run the Bot
 
-## Development Setup
-
-1. Install development dependencies:
 ```bash
-pip install -r requirements.txt
+python telegram_bot.py
 ```
 
-2. Set up pre-commit hooks:
-```bash
-pre-commit install
-```
+## Features Setup ⚙️
 
-### Manual Deployment
+### Voice Features
 
-Run with Gunicorn:
-```bash
-gunicorn --bind 0.0.0.0:5000 --workers 4 --timeout 120 app:app
-```
+Voice features are enabled by default. Users can:
+- Toggle voice responses: `/togglevoice`
+- Send voice messages for transcription
+- Convert text to speech
 
-## Security Notes
+### Image Generation
 
-- Never commit your `.env` file
-- Keep API keys secure
-- Use HTTPS in production
-- Regularly rotate API keys
+Image generation is ready to use with Together AI:
+- Generate images: `/imagine <description>`
+- Enhance prompts: `/enhance`
+- Describe images: `/describe`
 
-## Troubleshooting
+### YouTube Integration
 
-1. **API Key Issues**:
-   - Verify keys are set correctly
-   - Check for spaces/newlines
-   - Try `/uploadenv` command
+YouTube features are ready to use:
+- Download audio: `/audio <url>`
+- List downloads: `/videos`
+- Clear downloads: `/clear`
 
-2. **Image Generation**:
-   - Ensure Together AI key is valid
+### Maintenance Mode
+
+Maintenance features are available to all users:
+- Set maintenance: `/maintenance <duration> <message>`
+- Check status: `/status`
+- Subscribe to updates: `/subscribe`
+
+## Troubleshooting 🔧
+
+### Common Issues
+
+1. **Bot Not Responding**
+   - Check if bot is running
+   - Verify Telegram token
+   - Check maintenance status
+
+2. **API Errors**
+   - Verify API keys
    - Check API quotas
-   - Verify network connectivity
+   - Ensure proper formatting
 
-3. **Chat Issues**:
-   - Confirm Groq API key
-   - Check response settings
-   - Try clearing chat history
+3. **Voice Features Not Working**
+   - Check ffmpeg installation
+   - Verify file permissions
+   - Check supported formats
 
-## Support
+### Error Messages
 
-For issues and feature requests:
-1. Check existing GitHub issues
-2. Create a new issue with details
-3. Follow the contribution guidelines
+Common error messages and solutions:
 
-## Next Steps
+```
+Error: API key not found
+Solution: Set API key in .env file or using /uploadenv
+```
 
-- [Learn available commands](commands.md)
-- [View changelog](changelog.md)
-- [Contribute to development](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md)
+```
+Error: Could not connect to Telegram
+Solution: Check internet connection and bot token
+```
+
+```
+Error: File permission denied
+Solution: Check directory permissions
+```
+
+## Security Considerations 🔒
+
+1. **API Keys**
+   - Never share API keys
+   - Use environment variables
+   - Rotate keys regularly
+
+2. **File Uploads**
+   - Limit file sizes
+   - Check file types
+   - Clean up temporary files
+
+3. **User Data**
+   - Handle with care
+   - Clear regularly
+   - Respect privacy
+
+## Updating the Bot 🔄
+
+1. Pull latest changes:
+   ```bash
+   git pull origin main
+   ```
+
+2. Update dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Check for new environment variables
+
+4. Restart the bot
+
+## Need Help? 🆘
+
+- Check documentation
+- Use `/help` command
+- Report issues on GitHub
+- Join support channel
 
 ## Video Management
 

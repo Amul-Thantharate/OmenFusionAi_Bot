@@ -18,6 +18,43 @@ Track NovaChat AI's version history and updates.
 
 ---
 
+## [2.0.0] - 2025-01-04
+
+### Added
+- Maintenance mode with auto-recovery
+- Status notification system
+- User subscription system
+- Enhanced voice response system
+- Improved image generation capabilities
+
+### Changed
+- Switched from Groq to OpenAI for chat functionality
+- Improved error handling and logging
+- Enhanced command structure
+- Better chat history management
+- Improved voice message handling
+
+### Removed
+- Admin system for simplicity
+- User ID display from messages
+- Groq API integration
+
+### Fixed
+- Voice message handling
+- Error messages
+- API timeout handling
+- Maintenance mode timing
+
+## [1.1.0] - 2024-12-31
+
+### Added
+- Text-to-speech functionality for AI responses.
+- Image description feature that analyzes images and provides detailed descriptions.
+
+### Commands
+- `/togglevoice` - Toggle voice responses on/off.
+- `/describe` - Analyze an image and provide a description in text and voice formats.
+
 ## [1.0.0] - 2024-03-20
 
 ### Added
@@ -115,32 +152,19 @@ Track NovaChat AI's version history and updates.
 - API key validation feedback
 - Error message clarity
 
-## [1.1.0] - 2024-12-31
-
-### Added
-- Text-to-speech functionality for AI responses.
-- Image description feature that analyzes images and provides detailed descriptions.
-
-### Commands
-- `/togglevoice` - Toggle voice responses on/off.
-- `/describe` - Analyze an image and provide a description in text and voice formats.
-
 ## Upcoming Features
 
-### [1.2.0] - Planned
-- Multi-language support
-- Voice message processing
-- Custom image styles
-- Chat summarization
-- Video generation (Replicate)
-- Database integration
+### [2.1.0] - Planned
+- Enhanced audio processing
+- Better image generation
+- Improved chat context
+- More maintenance features
 
-### [1.3.0] - Planned
-- Speech-to-Text integration
-- Image captioning
-- Voice commands
-- Advanced security features
-- Performance optimizations
+### [2.2.0] - Planned
+- Multi-language support
+- Advanced image editing
+- Better YouTube integration
+- Enhanced voice features
 
 ## Version History
 

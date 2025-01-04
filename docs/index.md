@@ -7,181 +7,191 @@ permalink: /
 ---
 
 # AIFusionBot Documentation
-{: .fs-9 }
 
-A comprehensive Flask-based Telegram bot that combines advanced AI chat capabilities with image generation.
-{: .fs-6 .fw-300 }
-
-[Get Started](setup.md){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 }
-[View on GitHub](https://github.com/Amul-Thantharate/AIFusionBot){: .btn .fs-5 .mb-4 .mb-md-0 }
-
----
+Welcome to the AIFusionBot documentation! This guide will help you understand and use all the features of our Telegram bot.
 
 ## Overview
 
-AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's advanced language models and Together AI's image generation capabilities. Built with Flask and Docker, it offers seamless chat interactions, stunning image creation, and upcoming video generation features. Perfect for both casual users and developers, it provides an intuitive interface for AI-powered conversations, creative image generation, and robust chat management—all within your Telegram app. Whether you're looking to have engaging conversations, create unique images, or build upon the platform, AIFusionBot offers a complete AI assistant experience.
+AIFusionBot is a versatile Telegram bot that combines multiple AI capabilities:
+- Natural language chat
+- Image generation and analysis
+- Voice interaction
+- YouTube audio processing
+- Maintenance and monitoring
 
-### Key Features
+## Quick Start
 
-- **Advanced AI Chat**: Powered by Groq's Llama3-8b-8192 model
-- **Dual Image Generation**: Basic and high-quality options
-- **Flask Web Interface**: Professional grade web server
-- **Webhook Support**: Real-time Telegram updates
-- **Chat Management**: Export and clear chat history
-- **Customizable Settings**: Adjust AI parameters
-- **Export Chat History**: Markdown or PDF
-- **Prompt Engineering**: Enhance image generation
-- **Prompt Enhacment**: For simple prompt enhancement
+1. **Start the Bot**
+   - Find the bot on Telegram
+   - Send `/start` to begin
+   - Use `/help` to see all commands
 
-### Architecture
+2. **Core Features**
+   - Chat with AI: `/chat`
+   - Generate images: `/imagine`
+   - Process audio: `/transcribe`
+   - Download YouTube audio: `/audio`
 
-```mermaid
-graph TD
-    A[Telegram] -->|Webhook| B[Flask App]
-    B --> C[Telegram Bot Handler]
-    C --> D[Groq AI]
-    C --> E[Together AI]
-    B --> F[Web Interface]
-    G[Docker] -->|Contains| B
-```
+3. **Maintenance Features**
+   - Set maintenance mode: `/maintenance`
+   - Check status: `/status`
+   - Subscribe to updates: `/subscribe`
 
-### Tech Stack
+## Features in Detail
 
-- **Backend Framework**: Flask
-- **WSGI Server**: Gunicorn
-- **Container**: Docker
-- **AI Services**: 
-  - Groq (Chat)
-  - Together AI (Image Generation)
+### Chat System
+- Natural language conversations
+- Context-aware responses
+- Voice message support
+- History management
 
-## Quick Access
+### Image Features
+- Text-to-image generation
+- Image analysis and captioning
+- Prompt enhancement
+- Style customization
 
-You can start using AIFusionBot immediately by accessing our Telegram bot:
+### Audio Processing
+- Speech-to-text conversion
+- Text-to-speech synthesis
+- YouTube audio extraction
+- Multiple format support
 
-👉 [Access AIFusionBot on Telegram](https://t.me/A_iFusion_bot)
+### Maintenance System
+- Scheduled maintenance
+- Status notifications
+- Auto-recovery
+- User subscriptions
 
-Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin chatting with our AI assistant.
+## Command Categories
 
-### Getting Started
+### General Commands
+- `/start` - Begin using the bot
+- `/help` - View all commands
+- `/chat` - Start conversation
 
-1. Click the bot link: [https://t.me/A_iFusion_bot](https://t.me/A_iFusion_bot)
-2. Start the bot by clicking the "Start" button or sending `/start`
-3. Begin chatting or generating images right away!
+### Image Commands
+- `/imagine` - Generate images
+- `/enhance` - Improve prompts
+- `/describe` - Analyze images
 
-## API Keys Setup
+### Audio Commands
+- `/transcribe` - Convert speech to text
+- `/voice` - Convert text to speech
+- `/audio` - Download YouTube audio
+- `/formats` - Show supported formats
 
-# AIFusionBot Documentation
+### Settings & Maintenance
+- `/settings` - View configuration
+- `/maintenance` - Set maintenance mode
+- `/status` - Check bot status
+- `/subscribe` - Get status updates
 
-A comprehensive Flask-based Telegram bot that combines advanced AI chat capabilities with image generation.
+## Setup Guide
 
-[Get Started](#getting-started)
-[View on GitHub](https://github.com/Amul-Thantharate/AIFusionBot)
+### Requirements
+- Python 3.8+
+- Required API keys:
+  - OpenAI API
+  - Together AI API
+  - Telegram Bot Token
 
-## Overview
+### Installation
+1. Clone repository
+2. Install dependencies
+3. Configure API keys
+4. Run the bot
 
-AIFusionBot is a cutting-edge Telegram bot that combines the power of Groq's advanced language models and Together AI's image generation capabilities. Built with Flask, it offers seamless chat interactions, stunning image creation, and upcoming video generation features. Perfect for both casual users and developers, it provides an intuitive interface for AI-powered conversations, creative image generation, and robust chat management—all within your Telegram app. Whether you're looking to have engaging conversations, create unique images, or build upon the platform, AIFusionBot offers a complete AI assistant experience.
+### Configuration
+- Set up environment variables
+- Configure API keys
+- Set up maintenance preferences
 
-### Key Features
+## Best Practices
 
-- Advanced AI Chat using Groq
-- Image Generation (Basic and High-Quality)
-- Customizable Settings
-- Export Chat History (Markdown/PDF)
-- Flask Web Interface
-- Webhook Support
+### Chat Usage
+- Be specific in requests
+- Use clear language
+- Maintain context
 
-### Technology Stack
+### Image Generation
+- Detailed descriptions
+- Use style keywords
+- Try prompt enhancement
 
-- **Framework**: Flask
-- **Language**: Python 3.12+
-- **AI Services**:
-  - Groq (Chat)
-  - Together AI (Image Generation)
-- **Database**: SQLite (Coming Soon)
+### Audio Processing
+- Clear audio input
+- Check format support
+- Use appropriate settings
 
-## Quick Access
+### Maintenance
+- Plan maintenance windows
+- Inform users ahead
+- Set realistic durations
 
-You can start using AIFusionBot immediately by accessing our Telegram bot:
+## Troubleshooting
 
-👉 [Access AIFusionBot on Telegram](https://t.me/A_iFusion_bot)
+### Common Issues
+1. Bot not responding
+   - Check bot status
+   - Verify API keys
+   - Check internet connection
 
-Simply click the link above or search for `@A_iFusion_bot` on Telegram to begin chatting with our AI assistant.
+2. Feature errors
+   - Verify command syntax
+   - Check API quotas
+   - Review error messages
 
-### Getting Started
+### Error Messages
+Common error messages and solutions provided.
 
-1. Click the bot link: [https://t.me/A_iFusion_bot](https://t.me/A_iFusion_bot)
-2. Start the bot by clicking the "Start" button or sending `/start`
-3. Begin chatting or generating images right away!
+## API Integration
 
-## API Keys Setup
+### OpenAI Integration
+- Chat functionality
+- Text processing
+- Content generation
 
-To run your own instance of AIFusionBot, you'll need the following API keys:
+### Together AI
+- Image generation
+- Style transfer
+- Visual effects
 
-### Groq API Key
-1. Visit [Groq's website](https://console.groq.com)
-2. Sign up for an account
-3. Navigate to API Keys section
-4. Generate a new API key
-5. Copy and save your API key securely
+### Telegram API
+- Bot commands
+- File handling
+- User interaction
 
-### Together AI API Key
-1. Go to [Together AI Platform](https://api.together.xyz)
-2. Create an account
-3. Navigate to Settings → API Keys
-4. Generate a new API key
-5. Store your API key safely
+## Security
 
-⚠️ **Important Security Notes:**
-- Never share your API keys publicly
-- Store API keys in environment variables or `.env` file
-- Don't commit API keys to version control
-- Rotate keys periodically for better security
+### Data Protection
+- API key security
+- User data handling
+- File management
 
-## Getting Started
-
-1. [Setup Instructions](setup.md)
-2. [Command Reference](commands.md)
-3. [Changelog](changelog.md)
-
-## New Features
-
-### Text-to-Speech Functionality
-- The bot can now convert text responses into audio messages.
-- Use the `/chat` command to receive voice messages along with text responses.
-- Voice responses can be toggled on or off with the `/togglevoice` command.
-
-### Image Description
-- The bot can analyze images and provide detailed descriptions.
-- Use the `/describe` command to send an image and receive a description in text and voice formats.
-
-## Future Releases
-
-Stay tuned for exciting new features coming to AIFusionBot! Here's our development roadmap:
-
-### Version 1.1 (Q2 2024)
-{: .text-purple-200 }
-- 🔄 Real-time chat synchronization
-- 🎨 Additional image generation models
-- 🎨 Text to Vedio (Replicate) 
-### Version 1.2 (Q3 2024)
-{: .text-blue-200 }
-- 👥 Multi-user support
-- 🔐 Enhanced security features
-- 📊 Usage analytics dashboard
-- 🌐 Multi-language support
-
-### Version 1.3 (Q4 2024)
-{: .text-green-200 }
-- 🎵 Audio message processing
-- 📹 Video generation capabilities
-- 🔗 API integration for third-party apps
-
-*Note: Release timeline is tentative and may be adjusted based on development progress and user feedback.*
+### Best Practices
+- Regular updates
+- Key rotation
+- Access control
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guide](https://github.com/Amul-Thantharate/AIFusionBot/blob/main/CONTRIBUTING.md) for details.
+Want to help improve AIFusionBot?
+1. Fork the repository
+2. Create feature branch
+3. Submit pull request
 
 ## Support
 
-Need help? Check our [setup guide](setup.md) or [open an issue](https://github.com/Amul-Thantharate/AIFusionBot/issues).
+Need help?
+- Check documentation
+- Use `/help` command
+- Report issues on GitHub
+- Join support channel
+
+## Updates
+
+Stay updated:
+- Watch GitHub repository
+- Subscribe to status updates
+- Check release notes

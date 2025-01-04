@@ -1,33 +1,83 @@
-# Telegram Bot Access
+# Telegram Bot Integration
 
-Our AI Fusion Bot is available on Telegram for immediate use. You can access it through the following methods:
+This guide explains how to integrate and use AIFusionBot with Telegram.
 
-## Quick Access
+## Setup
 
-- **Direct Link**: [A_iFusion_bot](https://t.me/A_iFusion_bot)
-- **Search**: Search for `@A_iFusion_bot` in Telegram
+1. **Create Bot with BotFather**
+   - Message [@BotFather](https://t.me/botfather)
+   - Use `/newbot` command
+   - Choose bot name and username
+   - Save the bot token
 
-## Getting Started
+2. **Configure Bot**
+   - Set bot commands
+   - Set bot description
+   - Set bot profile picture
 
-1. Click the link above or search for the bot in Telegram
-2. Click "Start" or send `/start` to begin
-3. Use `/help` to see all available commands
+## Bot Commands
+
+### General
+- `/start` - Begin using bot
+- `/help` - View commands
+- `/chat` - Start conversation
+
+### Media
+- `/imagine` - Generate images
+- `/transcribe` - Convert speech to text
+- `/voice` - Convert text to speech
+- `/audio` - Download YouTube audio
+
+### Settings
+- `/settings` - View configuration
+- `/togglevoice` - Toggle voice responses
+
+### Maintenance
+- `/maintenance` - Set maintenance mode
+- `/status` - Check bot status
+- `/subscribe` - Get status updates
 
 ## Features
 
-- AI-powered chat conversations using Groq
-- Image generation with Together AI
-- Chat history management
-- Customizable settings
-- Export functionality
+### Chat System
+- Natural language processing
+- Context awareness
+- Voice responses
+- History management
 
-## Available Commands
+### Media Processing
+- Image generation
+- Speech recognition
+- Text-to-speech
+- YouTube integration
 
-See our [Commands](commands.md) documentation for a full list of available commands and their usage.
+### Maintenance
+- Scheduled maintenance
+- Status notifications
+- Auto-recovery
+- User subscriptions
+
+## Best Practices
+
+1. **User Experience**
+   - Clear command descriptions
+   - Helpful error messages
+   - Quick response times
+
+2. **Security**
+   - API key protection
+   - User data privacy
+   - Rate limiting
+
+3. **Performance**
+   - Efficient processing
+   - Resource management
+   - Error handling
 
 ## Support
 
-If you encounter any issues or need assistance, please:
-1. Check the `/help` command in the bot
-2. Review our [documentation](index.md)
-3. Report issues on our GitHub repository
+Need help?
+- Check documentation
+- Use `/help` command
+- Report issues
+- Join support channel

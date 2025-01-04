@@ -1,4 +1,4 @@
-# NovaChat AI v2.1.0 Release Notes
+# NovaChat AI v2.2.0 Release Notes
 
 ## 🚀 Major Enhancements
 
@@ -97,7 +97,7 @@
 
 ## Version History
 
-## Version 2.1.0 - 2024-12-31
+## Version 2.2.0 - 2025-02-01
 
 ### New Features
 - **Text-to-Speech Functionality**: The bot can now convert text responses into audio messages, enhancing user interaction.
@@ -111,7 +111,7 @@
 - Enhanced error handling and logging for better debugging and user feedback.
 - Updated documentation to reflect new features and commands.
 
-## Version 2.0.0 - 2025-01-04
+## Version 2.1.0 - 2025-01-04
 
 ### Major Changes 🚀
 - Switched from Groq to OpenAI for chat functionality
@@ -156,96 +156,152 @@
 - Updated command descriptions
 - Improved setup instructions
 
-## Version 1.1.0 - 2024-12-31
+## Version 2.0.0 - 2025-01-04
 
-### New Features
-- **Text-to-Speech Functionality**: The bot can now convert text responses into audio messages, enhancing user interaction.
-- **Image Description**: The bot can analyze images and provide detailed descriptions, now supporting both text and voice outputs.
+### Major Changes
+- Removed admin functionality for simplified user experience
+- Switched from Groq to OpenAI for chat functionality
+- Enhanced maintenance mode with user subscriptions
+- Added system monitoring and auto-recovery
 
-### Commands Added
-- `/togglevoice`: Toggles voice responses on or off for the bot.
-- `/describe`: Analyzes an image sent to the bot and provides a detailed description in text and voice formats.
+### Features Added
+1. **Maintenance System**
+   - User-accessible maintenance mode
+   - Duration-based maintenance scheduling
+   - Auto-recovery after maintenance period
+   - Status notification system
+   - User subscription for updates
+
+2. **Voice Features**
+   - Enhanced text-to-speech quality
+   - Improved voice message handling
+   - Better audio format support
+   - Voice response toggles
+
+3. **Image Generation**
+   - Better prompt handling
+   - Enhanced image quality
+   - Faster generation times
+   - More style options
+
+4. **YouTube Integration**
+   - Improved download stability
+   - Better format handling
+   - Enhanced error recovery
+   - Progress tracking
+
+### Features Removed
+1. **Admin System**
+   - Removed `/getid` command
+   - Removed `/addadmin` command
+   - Removed `/removeadmin` command
+   - Removed user ID display
+   - Removed admin checks
 
 ### Improvements
-- Enhanced error handling and logging for better debugging and user feedback.
-- Updated documentation to reflect new features and commands.
+1. **Performance**
+   - Optimized API calls
+   - Better error handling
+   - Improved response times
+   - Enhanced stability
 
-## Version 1.0.0 - 2024-03-20
+2. **User Experience**
+   - Clearer error messages
+   - Better command feedback
+   - Simplified interactions
+   - Improved help system
+
+3. **Security**
+   - Enhanced API key handling
+   - Better file management
+   - Improved error logging
+   - Secure maintenance mode
+
+### Bug Fixes
+1. **Voice Processing**
+   - Fixed audio format issues
+   - Resolved transcription errors
+   - Fixed voice message delays
+   - Improved error recovery
+
+2. **Image Generation**
+   - Fixed timeout issues
+   - Resolved style conflicts
+   - Fixed prompt handling
+   - Better error messages
+
+3. **System**
+   - Fixed maintenance timing
+   - Resolved notification issues
+   - Fixed subscription handling
+   - Better status tracking
+
+### Technical Details
+1. **API Changes**
+   - Switched to OpenAI API
+   - Updated Together AI integration
+   - Enhanced YouTube API usage
+   - Better API error handling
+
+2. **Dependencies**
+   - Updated Python requirements
+   - Enhanced package management
+   - Better version control
+   - Improved compatibility
+
+### Documentation
+1. **Updates**
+   - New setup instructions
+   - Updated command list
+   - Better troubleshooting guide
+   - Enhanced examples
+
+2. **New Sections**
+   - Maintenance guide
+   - Voice feature guide
+   - YouTube usage guide
+   - Status system guide
+
+## Version 1.1.0 - 2024-12-31
+
+### Added
+- Voice response capability
+- Image description feature
+- YouTube audio download
+- Chat history export
+
+### Changed
+- Improved error handling
+- Enhanced prompt engineering
+- Better API key management
+- Updated documentation
+
+### Fixed
+- Memory usage optimization
+- API rate limiting
+- File cleanup process
+- Error message clarity
+
+## Version 1.0.0 - 2024-12-15
 
 ### Initial Release
-- Launched AIFusionBot with core functionalities including AI chat, audio transcription, and image generation.
+- Basic chat functionality
+- Image generation
+- Text enhancement
+- Voice message support
+- YouTube integration
+- Basic error handling
 
-## Version 1.0.0 (2024-12-31)
+## Future Plans
 
-### 🎉 Initial Release
-Created by Amul Thantharate
+### Version 2.3.0
+- Enhanced audio processing
+- Better image generation
+- Improved chat context
+- More maintenance features
 
-### ✨ New Features
-
-#### Audio Transcription
-- English audio transcription using Groq API
-- Support for multiple audio formats
-- Voice message transcription
-- Audio file transcription
-- Language detection
-- Progress updates during processing
-
-#### Command System
-- Organized command categories
-- Detailed help system
-- Audio-specific commands
-- User-friendly instructions
-
-#### User Interface
-- Clean and modern design
-- Markdown formatting
-- Progress indicators
-- Error handling
-- User feedback
-
-### 🔧 Technical Features
-
-#### Audio Processing
-- Multiple format support:
-  - MP3, WAV, M4A
-  - OGG, OPUS
-  - MP4, WEBM
-- File size limit: 20MB
-- Temporary file management
-- Error handling
-
-#### Bot Framework
-- Python-telegram-bot integration
-- Groq API integration
-- Asynchronous processing
-- Session management
-- Command handlers
-
-#### Security
-- Environment variable management
-- API key protection
-- Secure file handling
-- Temporary file cleanup
-
-### 📝 Documentation
-- Comprehensive README
-- Command documentation
-- Setup instructions
-- Best practices guide
-
-### 🐛 Known Issues
-- None reported
-
-### 🔜 Upcoming Features
+### Version 2.4.0
 - Multi-language support
-- Batch processing
-- Custom transcription settings
-- Advanced audio analysis
-
-## How to Update
-1. Pull the latest changes
-2. Update dependencies
-3. Restart the bot
-
-## Feedback
-Please report any issues or suggestions on GitHub.
+- Advanced image editing
+- Better YouTube integration
+- Enhanced voice features

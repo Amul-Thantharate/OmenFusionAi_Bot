@@ -4,317 +4,134 @@ title: Command Reference
 nav_order: 3
 ---
 
-# NovaChat AI v2.0 Commands
-{: .no_toc }
+# AIFusionBot Commands
 
-This document details all available commands and their usage in NovaChat AI v2.0.
-{: .fs-6 .fw-300 }
+This document provides a comprehensive guide to all available commands in AIFusionBot.
 
-## Table of Contents
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
-
----
-
-## Core Commands
+## General Commands 
 
 ### /start
-Initializes NovaChat AI v2.0 and displays welcome message with available features.
-```
-/start
-```
+Starts the bot and displays welcome message.
+- Usage: `/start`
+- Response: Welcome message with basic instructions
 
 ### /help
-Shows comprehensive list of commands and features with detailed descriptions.
-```
-/help
-```
-
-## Chat Commands
+Shows all available commands organized by category.
+- Usage: `/help`
+- Response: List of commands with descriptions
 
 ### /chat
-Initiates conversation with advanced Groq LLM models. Now with voice responses.
-```
-/chat Explain quantum computing
-```
+Start a conversation with the AI.
+- Usage: `/chat <your message>`
+- Example: `/chat Tell me about quantum computing`
+- Response: AI-generated response
 
-### /enhance
-Improves the tone and style of the previous message using advanced language models. Enhances the provided text to make it more engaging and professional.
-```
-/enhance
-```
-
-## Image Commands
+## Image Commands 
 
 ### /imagine
-Creates high-quality images using Together AI's state-of-the-art models.
-```
-/imagine <prompt>
-Example: /imagine a serene lake at sunset with mountains in the background
-```
+Generate an image from text description.
+- Usage: `/imagine <description>`
+- Example: `/imagine sunset over mountains with purple sky`
+- Response: AI-generated image
+
+### /enhance
+Improve the last image generation prompt.
+- Usage: `/enhance`
+- Response: Enhanced version of previous image
 
 ### /describe
-Analyzes and provides detailed descriptions of images using Groq Vision API. Supports three ways to analyze images:
+Generate caption for an image.
+- Usage: Send image followed by `/describe`
+- Response: AI-generated image description
 
-1. Direct Upload:
-```
-Simply send any image to the bot
-```
+## Audio Commands 
 
-2. Reply to Image:
-```
-Reply to any image with /describe
-```
+### /transcribe
+Convert speech to text.
+- Usage: Send voice message or audio file with `/transcribe`
+- Response: Text transcription
 
-3. URL Analysis:
-```
-/describe <image_url>
-Example: /describe https://example.com/image.jpg
-```
+### /voice
+Convert text to speech.
+- Usage: `/voice <text>`
+- Example: `/voice Hello, how are you?`
+- Response: Voice message
 
-The bot will analyze the image and provide a detailed description of its contents, including:
-- Main subjects and objects
-- Scene description
-- Visual details and context
-- Notable features or characteristics
+### /audio
+Download YouTube video as audio.
+- Usage: `/audio <YouTube URL>`
+- Example: `/audio https://youtube.com/watch?v=...`
+- Response: Audio file
 
-Requirements:
-- Valid Groq API key (set using `/setgroqkey`)
-- Supported image formats: JPEG, PNG
-- For URLs: publicly accessible image links
+### /formats
+Show available audio formats.
+- Usage: `/formats`
+- Response: List of supported formats
 
-## Audio and Video Commands
+### /lang
+Show supported languages.
+- Usage: `/lang`
+- Response: List of supported languages
 
-### Transcription Commands
-- `/transcribe [YouTube URL]` - Transcribe audio from:
-  - YouTube videos (provide URL)
-  - Voice messages (reply to a voice message)
-  - Audio files (reply to an audio file)
-- `/formats` - Show supported audio formats
-- `/voice` - Get instructions for voice message transcription
-- `/audio` - Get instructions for audio file transcription
-- `/lang` - Show supported languages (English only)
-
-### Video Management
-- `/videos` - List all downloaded YouTube videos
-- `/clear` - Delete all downloaded videos
-
-### Voice Response Settings
-- `/togglevoice` - Toggle voice responses on/off
-
-## New Commands
-
-### /togglevoice
-Toggles voice responses on or off for the bot.
-```
-/togglevoice
-```
-
-### /describe
-Analyzes an image sent to the bot and provides a detailed description in text and voice formats.
-```
-/describe <image_url>
-Example: /describe https://example.com/image.jpg
-```
-
-## Configuration Commands
-
-### /setgroqkey
-Configures Groq API key for LLM access.
-```
-/setgroqkey your_api_key_here
-```
-
-### /settogetherkey
-Sets Together AI key for image generation.
-```
-/settogetherkey your_api_key_here
-```
+## Settings Commands 
 
 ### /settings
-Views and manages current bot configuration.
-```
-/settings
-```
+View current bot settings.
+- Usage: `/settings`
+- Response: Current configuration
 
-## Response Customization
+### /togglevoice
+Toggle voice responses on/off.
+- Usage: `/togglevoice`
+- Response: Confirmation message
 
-### /temperature
-Adjusts response creativity level (0.1-1.0).
-```
-/temperature 0.8
-```
+## Media Management Commands 
 
-### /tokens
-Sets maximum response length for better control.
-```
-/tokens 2048
-```
-
-## History Management
-
-### /export
-Exports complete chat history in chosen format.
-```
-/export pdf
-```
+### /videos
+List downloaded videos.
+- Usage: `/videos`
+- Response: List of saved videos
 
 ### /clear
-Clears current chat history and starts fresh.
-```
-/clear
-```
-
-## Security
-
-### /uploadenv
-Securely uploads configuration file with API keys.
-```
-/uploadenv
-# Then attach your .env file
-```
-
-## Response Examples
-
-### Chat Response
-```
-You: /chat What is artificial intelligence?
-
-🤖 AI: Artificial Intelligence (AI) refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include:
-
-1. Learning from experience
-2. Understanding natural language
-3. Recognizing patterns
-4. Making decisions
-5. Solving complex problems
-
-AI systems can range from rule-based programs to sophisticated deep learning models.
-```
-
-### Image Generation
-```
-You: /imagine beautiful sunset at beach, realistic, 4k
-
-🎨 Generating your high-quality image with Together AI... Please wait.
-
-[Image appears]
-✨ Generated with Together AI:
-beautiful sunset at beach, realistic, 4k
-
-⏱️ Image generated in 5.23 seconds
-```
-
-### Transcribing YouTube Videos
-1. Use the `/transcribe` command with a YouTube URL:
-   ```
-   /transcribe https://www.youtube.com/watch?v=VIDEO_ID
-   ```
-2. The bot will:
-   - Download the video (max size 20MB)
-   - Send the video file in chat
-   - Provide the transcription
-   - Save the video for later use
-
-### Managing Downloaded Videos
-1. View all downloaded videos:
-   ```
-   /videos
-   ```
-   Shows a list of saved videos with their sizes
-
-2. Clear all videos:
-   ```
-   /clear
-   ```
-   Deletes all downloaded videos from storage
-
-## Notes
-- Downloaded videos are preserved until explicitly cleared with `/clear`
-- Maximum video size: 20MB
-- Supported audio formats for transcription:
-  - MP3
-  - WAV
-  - OGG
-  - M4A
-  - AAC
-- Voice messages are automatically processed for transcription
-- Currently supports English language only
+Clear all downloaded videos.
+- Usage: `/clear`
+- Response: Confirmation message
 
 ## Error Handling
 
-Common error messages and their solutions:
+If a command fails:
+1. Check command syntax
+2. Verify required API keys are set
+3. Check bot status 
+4. Try again after a few moments
 
-1. **API Key Not Set**
-```
-⚠️ Please set your API key first using:
-/setgroqkey your_api_key
-```
-
-2. **Invalid API Key**
-```
-❌ Invalid API key. Please check your key and try again.
-```
-
-3. **Rate Limit**
-```
-⚠️ Rate limit reached. Please try again later.
-```
-
-## Best Practices
+## Tips for Best Results
 
 1. **Chat Commands**
-   - Be specific in your requests
-   - Use clear, concise language
-   - Check response temperature for desired creativity
+   - Be clear and specific
+   - Use proper punctuation
+   - Maintain context within sessions
 
 2. **Image Generation**
-   - Provide detailed descriptions
-   - Specify desired style and quality
-   - Use appropriate keywords
+   - Use descriptive prompts
+   - Try `/enhance` for better results
+   - Be specific about style and details
 
-3. **API Keys**
-   - Never share your API keys
-   - Set keys in private messages
-   - Rotate keys periodically
+3. **Audio Processing**
+   - Use clear audio for transcription
+   - Speak clearly for voice messages
+   - Check supported formats
 
-## Command Categories
+## Rate Limits
 
-### Essential
-- `/start`
-- `/help`
-- `/chat`
-- `/image`
+- Image generation: 50 requests per hour
+- Chat messages: 100 per hour
+- Audio processing: 25 per hour
+- YouTube downloads: 10 per hour
 
-### Advanced
-- `/imagine`
-- `/export`
-- `/settings`
-- `/temperature`
+## Need Help?
 
-### Configuration
-- `/setgroqkey`
-- `/settogetherkey`
-- `/tokens`
-
-### Management
-- `/clear`
-- `/export`
-
-## Tips & Tricks
-
-1. **Better Chat Responses**
-   - Adjust temperature for creativity
-   - Use context in conversations
-   - Be specific in questions
-
-2. **Quality Images**
-   - Add style descriptors
-   - Specify resolution
-   - Include artistic elements
-
-3. **Efficient Usage**
-   - Export chats regularly
-   - Clear history when needed
-   - Monitor API usage
+If you need assistance:
+1. Use `/help` for command list
+2. Check documentation
+3. Report issues on GitHub
