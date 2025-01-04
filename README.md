@@ -4,7 +4,7 @@ A versatile Telegram bot that combines AI chat, image generation, voice processi
 
 ## Features ✨
 
-- **AI Chat**: Natural language conversations with OpenAI
+- **AI Chat**: Natural language conversations with Groq
 - **Image Generation**: Create images from text descriptions
 - **Voice Processing**: Speech-to-text and text-to-speech
 - **YouTube Integration**: Download audio from videos
@@ -27,13 +27,13 @@ pip install -r requirements.txt
 Create `.env` file:
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_token
-OPENAI_API_KEY=your_openai_key
+GROQ_API_KEY=your_groq_key
 TOGETHER_API_KEY=your_together_key
 ```
 
 4. **Run Bot**
 ```bash
-python telegram_bot.py
+python main.py
 ```
 
 ## Commands 📝
@@ -62,7 +62,7 @@ python telegram_bot.py
 
 - Python 3.8+
 - Telegram Bot Token
-- OpenAI API Key
+- Groq API Key
 - Together AI API Key
 
 ## Documentation 📚

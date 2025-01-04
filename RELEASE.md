@@ -113,56 +113,116 @@
 
 ## Version 2.1.0 - 2025-01-04
 
-### Major Changes 🚀
-- Switched from Groq to OpenAI for chat functionality
-- Added maintenance mode with auto-recovery
-- Implemented status notification system
+### Major Changes 
+- Enhanced maintenance mode with user subscriptions
+- Added system monitoring and auto-recovery
+- Improved Groq integration for better chat responses
 
-### New Features ✨
-- Maintenance mode with duration and custom messages
-- Status subscription system for users
-- Automatic maintenance recovery
-- Enhanced voice response system
-- Improved image generation capabilities
+### New Features 
+- **Maintenance System**
+   - User-accessible maintenance mode
+   - Duration-based maintenance scheduling
+   - Auto-recovery after maintenance period
+   - Status notification system
+   - User subscription for updates
 
-### Improvements 🔧
-- Better error handling and logging
-- Streamlined command structure
-- Enhanced help command with categories
-- Improved chat history management
-- Better voice message handling
+- **Voice Features**
+   - Enhanced text-to-speech quality
+   - Improved voice message handling
+   - Better audio format support
+   - Voice response toggles
 
-### Technical Changes 🛠
-- Updated dependency management
-- Switched to OpenAI GPT for chat
-- Improved async/await implementation
-- Better session management
-- Enhanced error reporting
+- **Image Generation**
+   - Better prompt handling
+   - Enhanced image quality
+   - Faster generation times
+   - More style options
 
-### Removed Features 🗑
-- Admin system removed for simplicity
-- Removed user ID display from messages
-- Removed Groq API integration
+- **YouTube Integration**
+   - Improved download stability
+   - Better format handling
+   - Enhanced error recovery
+   - Progress tracking
 
-### Bug Fixes 🐛
-- Fixed voice message handling
-- Improved error messages
-- Better handling of API timeouts
-- Fixed maintenance mode timing issues
+### Features Removed
+1. **Admin System**
+   - Removed `/getid` command
+   - Removed `/addadmin` command
+   - Removed `/removeadmin` command
+   - Removed user ID display
+   - Removed admin checks
 
-### Documentation 📚
-- Updated README with new features
-- Added maintenance mode documentation
-- Updated command descriptions
-- Improved setup instructions
+### Improvements
+1. **Performance**
+   - Optimized API calls
+   - Better error handling
+   - Improved response times
+   - Enhanced stability
+
+2. **User Experience**
+   - Clearer error messages
+   - Better command feedback
+   - Simplified interactions
+   - Improved help system
+
+3. **Security**
+   - Enhanced API key handling
+   - Better file management
+   - Improved error logging
+   - Secure maintenance mode
+
+### Bug Fixes
+1. **Voice Processing**
+   - Fixed audio format issues
+   - Resolved transcription errors
+   - Fixed voice message delays
+   - Improved error recovery
+
+2. **Image Generation**
+   - Fixed timeout issues
+   - Resolved style conflicts
+   - Fixed prompt handling
+   - Better error messages
+
+3. **System**
+   - Fixed maintenance timing
+   - Resolved notification issues
+   - Fixed subscription handling
+   - Better status tracking
+
+### Technical Details
+1. **API Changes**
+   - Enhanced Groq API integration
+   - Updated Together AI integration
+   - Enhanced YouTube API usage
+   - Better API error handling
+
+2. **Dependencies**
+   - Updated Python requirements
+   - Enhanced package management
+   - Better version control
+   - Improved compatibility
+
+### Documentation
+1. **Updates**
+   - New setup instructions
+   - Updated command list
+   - Better troubleshooting guide
+   - Enhanced examples
+
+2. **New Sections**
+   - Maintenance guide
+   - Voice feature guide
+   - YouTube usage guide
+   - Status system guide
 
 ## Version 2.0.0 - 2025-01-04
 
 ### Major Changes
 - Removed admin functionality for simplified user experience
-- Switched from Groq to OpenAI for chat functionality
 - Enhanced maintenance mode with user subscriptions
 - Added system monitoring and auto-recovery
+- Improved Groq integration for better chat responses
 
 ### Features Added
 1. **Maintenance System**
@@ -238,7 +298,7 @@
 
 ### Technical Details
 1. **API Changes**
-   - Switched to OpenAI API
+   - Enhanced Groq API integration
    - Updated Together AI integration
    - Enhanced YouTube API usage
    - Better API error handling

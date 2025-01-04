@@ -278,81 +278,93 @@ Displays all available commands organized by category.
 
 ## Chat Features 💬
 
-### Basic Chat
+### Natural Language Chat
 ```
-/chat Hello, how are you?
+You: /chat What is artificial intelligence?
+
+🤖 Bot: Artificial Intelligence (AI) refers to computer systems designed to perform tasks that typically require human intelligence. These tasks include:
+
+1. Learning from experience
+2. Understanding natural language
+3. Recognizing patterns
+4. Making decisions
+5. Solving complex problems
+
+AI systems can range from rule-based programs to sophisticated deep learning models powered by Groq's advanced language models.
 ```
-Start a conversation with the AI. The bot will remember context within the session.
 
 ### Voice Responses
 ```
-/togglevoice
-```
-Toggle between text-only and voice+text responses.
+You: /togglevoice
+🔊 Voice responses enabled
 
-## Image Features 🎨
+You: /chat Tell me about quantum computing
+🎙️ Bot: [Voice Message] + Text Response
+```
 
-### Generating Images
-```
-/imagine a sunset over mountains
-```
-Creates an AI-generated image based on your description.
+## Image Generation
 
-### Enhancing Prompts
+### Basic Image Creation
 ```
-/enhance
-```
-Improves your last image prompt for better results.
+You: /imagine sunset over mountains with purple sky
 
-### Image Description
+🎨 Generating image...
+[Image appears]
+✨ Generated with Together AI
 ```
-/describe
+
+### Enhanced Image Generation
 ```
-Send an image to get an AI-generated caption.
+You: /imagine A futuristic city at night with flying cars
+[First image appears]
+
+You: /enhance
+[Enhanced version with better details]
+```
 
 ## Audio Features 🎵
 
-### Text to Speech
-```
-/voice Hello world
-```
-Converts text into spoken audio.
-
 ### Speech to Text
 ```
-/transcribe
+[Send voice message]
+You: /transcribe
+
+📝 Transcribing...
+"This is the transcribed text from your voice message."
 ```
-Send a voice message or audio file to convert it to text.
 
 ### YouTube Audio
 ```
-/audio https://youtube.com/watch?v=...
+You: /audio https://youtube.com/watch?v=example
+
+⬇️ Downloading...
+🎵 Converting to audio...
+[Audio file sent]
 ```
-Download audio from YouTube videos.
 
 ## Maintenance Features 🔧
 
 ### Setting Maintenance Mode
 ```
-/maintenance 2h System upgrade in progress
-```
-Puts the bot in maintenance mode for specified duration.
+You: /maintenance 2h System upgrade in progress
 
-### Checking Status
+🔧 Maintenance mode activated:
+- Duration: 2 hours
+- Message: System upgrade in progress
+- Auto-recovery: Enabled
 ```
-/status
-```
-Check if the bot is in maintenance mode or running normally.
 
-### Status Notifications
+### Status Updates
 ```
-/subscribe
+You: /subscribe
+✅ Subscribed to status updates
+
+You: /status
+📊 Bot Status:
+- Operational: Yes
+- Maintenance: No
+- Last Update: 2 minutes ago
 ```
-Subscribe to receive bot status updates.
-```
-/unsubscribe
-```
-Stop receiving status notifications.
 
 ## Example Usage Scenarios
 
@@ -396,9 +408,9 @@ Stop receiving status notifications.
    - Speak clearly for voice commands
 
 4. **Maintenance**
-   - Subscribe to status updates
-   - Check status before maintenance
-   - Use appropriate duration times
+   - Plan maintenance windows
+   - Set realistic durations
+   - Subscribe for updates
 
 ## Error Handling
 
