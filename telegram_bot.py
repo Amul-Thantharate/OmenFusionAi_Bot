@@ -40,13 +40,13 @@ COMMANDS = {
     'start': 'Start the bot',
     'help': 'Show this help message',
     'chat': 'Chat with the bot',
-    'imagine': 'Generate an image',
-    'enhance': 'Enhance text',
-    'describe': 'Describe an image',
-    'transcribe': 'Transcribe audio or YouTube video',
-    'formats': 'Show supported audio formats',
-    'voice': 'Send a voice message to transcribe',
-    'audio': 'Send an audio file to transcribe',
+    'imagine': 'Generate an image from text',
+    'enhance': 'Enhance the previous prompt',
+    'describe': 'Generate caption for an image',
+    'transcribe': 'Convert speech to text',
+    'voice': 'Convert text to speech',
+    'audio': 'Download YouTube video as audio',
+    'formats': 'Show available audio formats',
     'lang': 'Show supported language (English only)',
     'togglevoice': 'Toggle voice responses on/off',
     'videos': 'List downloaded videos',
@@ -59,15 +59,15 @@ COMMANDS = {
 
 class UserSession:
     def __init__(self):
-        self.model_type = "groq"
-        self.temperature = 0.5
-        self.max_tokens = 1024
-        self.chat_history = []
-        self.groq_api_key = os.getenv('GROQ_API_KEY')
+        self.conversation_history = []
+        self.last_response = None
+        self.last_image_prompt = None
+        self.last_image_url = None
+        self.selected_model = "gpt-3.5-turbo"
+        self.openai_api_key = os.getenv('OPENAI_API_KEY')
         self.together_api_key = os.getenv('TOGETHER_API_KEY')
         self.last_enhanced_prompt = None
         self.voice_response = True
-        self.is_admin = False
 
 BOT_STATUS = {
     "is_maintenance": False,
@@ -104,11 +104,11 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
-    help_text = "*Available Commands:*\n\n"
+    help_message = "Here are the available commands:\n\n"
     
-    # Group commands by category
+    # Organize commands by category
     categories = {
-        "🤖 Chat Commands": ['chat', 'temperature', 'tokens', 'clear', 'save', 'export'],
+        "💬 Chat Commands": ['chat'],
         "🎨 Image Commands": ['imagine', 'enhance', 'describe'],
         "🎵 Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
         "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice'],
@@ -117,27 +117,22 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
     
     for category, cmd_list in categories.items():
-        help_text += f"\n{category}:\n"
+        help_message += f"\n{category}:\n"
         for cmd in cmd_list:
             if cmd in COMMANDS:
-                help_text += f"/{cmd} - {COMMANDS[cmd]}\n"
+                help_message += f"/{cmd} - {COMMANDS[cmd]}\n"
     
-    help_text += "\n📝 *Tips:*\n"
-    help_text += "• Use /settings to customize bot behavior\n"
-    help_text += "• Only English audio is supported for transcription\n"
-    help_text += "• Clear audio quality gives better results\n"
-    
-    await update.message.reply_text(help_text, parse_mode='Markdown')
+    await update.message.reply_text(help_message)
 
-async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /setgroqkey command."""
+async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /setopenaikey command."""
     # Delete the message containing the API key for security
     await update.message.delete()
 
     if not context.args:
         await update.message.reply_text(
-            "Please provide your Groq API key after /setgroqkey\n"
-            "Example: `/setgroqkey your_api_key`\n"
+            "Please provide your OpenAI API key after /setopenaikey\n"
+            "Example: `/setopenaikey your_api_key`\n"
             "⚠️ Your message will be deleted immediately for security.",
             parse_mode='Markdown'
         )
@@ -148,10 +143,10 @@ async def setgroqkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE)
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    session.groq_api_key = context.args[0]
+    session.openai_api_key = context.args[0]
 
     await update.message.reply_text(
-        "✅ Groq API key set successfully!\n"
+        "✅ OpenAI API key set successfully!\n"
         "You can now use all bot features.\n"
         "Try `/chat Hello!` or `/imagine sunset`",
         parse_mode='Markdown'
@@ -194,9 +189,9 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         session = user_sessions[user_id]
         
-        if not session.groq_api_key:
+        if not session.openai_api_key:
             await update.message.reply_text(
-                "Please set your Groq API key first using the /setgroqkey command"
+                "Please set your OpenAI API key first using the /setopenaikey command"
             )
             return
             
@@ -209,11 +204,8 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Get AI response with proper API key
         response = interactive_chat(
             text=message,
-            temperature=session.temperature,
-            max_tokens=session.max_tokens,
-            model_type="groq",
-            stream=False,
-            api_key=session.groq_api_key
+            model_type="gpt-3.5-turbo",
+            api_key=session.openai_api_key
         )
         
         # Send text response
@@ -282,10 +274,10 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         return
 
-    if not session.groq_api_key:
+    if not session.openai_api_key:
         await update.message.reply_text(
-            "⚠️ Please set your Groq API key first using:\n"
-            "`/setgroqkey your_api_key`",
+            "⚠️ Please set your OpenAI API key first using:\n"
+            "`/setopenaikey your_api_key`",
             parse_mode='Markdown'
         )
         return
@@ -349,10 +341,10 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    if not session.groq_api_key:
+    if not session.openai_api_key:
         await update.message.reply_text(
-            "⚠️ Please set your Groq API key first using:\n"
-            "`/setgroqkey your_api_key`",
+            "⚠️ Please set your OpenAI API key first using:\n"
+            "`/setopenaikey your_api_key`",
             parse_mode='Markdown'
         )
         return
@@ -369,7 +361,7 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         enhancer = ToneEnhancer()
         
         # Set the API key from session
-        enhancer.groq_api_key = session.groq_api_key
+        enhancer.openai_api_key = session.openai_api_key
         
         start_time = time.time()
         success, enhanced_text, error = await enhancer.enhance_text(text)
@@ -405,10 +397,8 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     session = user_sessions[user_id]
     settings_text = (
         f"*Current Settings:*\n"
-        f"Model: Groq\n"
-        f"Temperature: {session.temperature}\n"
-        f"Max Tokens: {session.max_tokens}\n"
-        f"Groq API Key: {'✅ Set' if session.groq_api_key else '❌ Not Set'}\n"
+        f"Model: {session.selected_model}\n"
+        f"OpenAI API Key: {'✅ Set' if session.openai_api_key else '❌ Not Set'}\n"
         f"Together API Key: {'✅ Set' if session.together_api_key else '❌ Not Set'}\n"
         f"Voice Response: {'✅ Enabled' if session.voice_response else '❌ Disabled'}\n"
     )
@@ -422,15 +412,15 @@ async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     session = user_sessions[user_id]
-    if not session.chat_history:
+    if not session.conversation_history:
         await update.message.reply_text("No chat history to save.")
         return
 
     try:
         # Save chat history
         filename = save_chat_history(
-            messages=session.chat_history,
-            model_type="groq",
+            messages=session.conversation_history,
+            model_type="gpt-3.5-turbo",
             export_format='json'  # You can make this configurable
         )
         await update.message.reply_text(f"Chat history saved to: {filename}")
@@ -492,7 +482,7 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if query.data == 'clear_confirm':
         user_id = update.effective_user.id
         if user_id in user_sessions:
-            user_sessions[user_id].chat_history = []
+            user_sessions[user_id].conversation_history = []
             await query.edit_message_text("🗑️ Chat history cleared successfully!")
     elif query.data == 'clear_cancel':
         await query.edit_message_text("✅ Clear operation cancelled. Your chat history is preserved.")
@@ -516,7 +506,7 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             return
 
     user_id = update.effective_user.id
-    if user_id not in user_sessions or not user_sessions[user_id].chat_history:
+    if user_id not in user_sessions or not user_sessions[user_id].conversation_history:
         await update.message.reply_text("No chat history to export.")
         return
 
@@ -525,7 +515,7 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         success, message, file_bytes = save_chat_history(
-            user_sessions[user_id].chat_history,
+            user_sessions[user_id].conversation_history,
             format_type
         )
 
@@ -564,7 +554,7 @@ async def uploadenv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "Please upload your .env file. It should contain your API keys in this format:\n\n"
         "```\n"
-        "GROQ_API_KEY=your_groq_key\n"
+        "OPENAI_API_KEY=your_openai_key\n"
         "TOGETHER_API_KEY=your_together_key\n"
         "```\n"
         "⚠️ The file will be processed securely and deleted immediately.",
@@ -609,9 +599,9 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 key = key.strip()
                 value = value.strip().strip("'").strip('"')
                 
-                if key == 'GROQ_API_KEY':
-                    session.groq_api_key = value
-                    success_msg.append("✅ Groq API key set successfully")
+                if key == 'OPENAI_API_KEY':
+                    session.openai_api_key = value
+                    success_msg.append("✅ OpenAI API key set successfully")
                 elif key == 'TOGETHER_API_KEY':
                     session.together_api_key = value
                     success_msg.append("✅ Together API key set successfully")
@@ -625,14 +615,14 @@ async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(
                 "🔑 API Keys updated:\n" + "\n".join(success_msg) + "\n\n"
                 "Try the following commands:\n"
-                "• `/chat Hello!` - Test chat with Groq\n"
+                "• `/chat Hello!` - Test chat with OpenAI\n"
                 "• `/imagine sunset` - Generate image with Together AI",
                 parse_mode='Markdown'
             )
         else:
             await update.message.reply_text(
                 "❌ No valid API keys found in the .env file.\n"
-                "Make sure your file contains GROQ_API_KEY and/or TOGETHER_API_KEY."
+                "Make sure your file contains OPENAI_API_KEY and/or TOGETHER_API_KEY."
             )
             
     except Exception as e:
@@ -657,9 +647,9 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
         session = user_sessions[user_id]
         
-        if not session.groq_api_key:
+        if not session.openai_api_key:
             await update.message.reply_text(
-                "Please set your Groq API key first using the /setgroqkey command"
+                "Please set your OpenAI API key first using the /setopenaikey command"
             )
             return
 
@@ -681,7 +671,7 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
 
         # Create the client
-        client = Groq(api_key=session.groq_api_key)
+        client = Groq(api_key=session.openai_api_key)
 
         # Create the message with the image - using correct format for vision model
         messages = [
@@ -1024,66 +1014,32 @@ async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE
     """Handle text messages and respond with both voice and text."""
     try:
         user_id = update.effective_user.id
-        username = update.effective_user.username
-        full_name = update.effective_user.full_name
-        
-        # Show user info for every message (temporary for admin setup)
-        user_info = (
-            f"👤 User Information:\n"
-            f"ID: {user_id}\n"
-            f"Username: @{username if username else 'Not set'}\n"
-            f"Name: {full_name}\n"
-            f"------------\n"
-            f"Your message: {update.message.text}"
-        )
-        await update.message.reply_text(user_info)
-        
-        # Rest of your message handling code...
-        user_id = update.effective_user.id
         if user_id not in user_sessions:
             user_sessions[user_id] = UserSession()
         
         session = user_sessions[user_id]
         
-        # Send typing action
-        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+        # Get the message text
+        message_text = update.message.text.strip()
         
-        # Get AI response
-        response = interactive_chat(update.message.text, session)
+        # Process the message and get response
+        response = await process_message(message_text, session)
         
         # Send text response
         await update.message.reply_text(response)
         
-        # Handle voice response
-        try:
-            # Create voice file
-            tts = gTTS(text=response, lang='en', slow=False)
-            voice_path = os.path.join(tempfile.gettempdir(), f'response_{user_id}.mp3')
-            
-            # Save the audio file
-            logger.info(f"Saving voice to: {voice_path}")
-            tts.save(voice_path)
-            logger.info("Voice file saved successfully")
-            
-            # Send the voice message
-            with open(voice_path, 'rb') as voice:
-                await update.message.reply_voice(
-                    voice=voice,
-                    caption="🎙️ Voice Message"
+        # Send voice response if enabled
+        if session.voice_response:
+            audio_file = await text_to_speech(response)
+            if audio_file:
+                await context.bot.send_voice(
+                    chat_id=update.effective_chat.id,
+                    voice=open(audio_file, 'rb')
                 )
-            logger.info("Voice message sent successfully")
-            
-            # Clean up
-            os.remove(voice_path)
-            logger.info("Voice file cleaned up")
-            
-        except Exception as voice_error:
-            logger.error(f"Voice message error: {str(voice_error)}")
-            await update.message.reply_text("Note: Voice message could not be generated.")
-        
+                os.remove(audio_file)  # Clean up the audio file
+                
     except Exception as e:
-        logger.error(f"Message handling error: {str(e)}")
-        await update.message.reply_text("Sorry, I encountered an error while processing your message.")
+        await update.message.reply_text(f"Error: {str(e)}")
 
 async def toggle_voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Toggle voice responses on/off."""
@@ -1125,17 +1081,8 @@ async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text(result)
 
 async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /maintenance command for admins."""
+    """Handle the /maintenance command."""
     try:
-        user_id = update.effective_user.id
-        if user_id not in user_sessions:
-            user_sessions[user_id] = UserSession()
-        session = user_sessions[user_id]
-
-        if not session.is_admin:
-            await update.message.reply_text("⚠️ This command is only available for administrators.")
-            return
-
         if not context.args or len(context.args) < 2:
             await update.message.reply_text(
                 "Please provide duration and message.\n"
