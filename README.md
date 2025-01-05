@@ -2,6 +2,13 @@
 
 A versatile Telegram bot that combines AI chat, image generation, voice processing, and YouTube integration.
 
+## Latest Updates (v2.3.0) 🎉
+- Enhanced AI chat response system
+- Improved image generation capabilities
+- Optimized voice processing
+- Better YouTube integration
+- Updated dependencies and performance improvements
+
 ## Features ✨
 
 - **AI Chat**: Natural language conversations with Groq
@@ -62,8 +69,8 @@ python main.py
 
 - Python 3.8+
 - Telegram Bot Token
-- Groq API Key
-- Together AI API Key
+- Groq API Key (v0.4.1+)
+- Together AI API Key (v0.2.8+)
 
 ## Documentation 📚
 
