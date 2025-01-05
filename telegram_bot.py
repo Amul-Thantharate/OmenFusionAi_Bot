@@ -125,6 +125,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
     welcome_message = (
         "🌟 *Welcome to AIFusionBot!* 🤖\n\n"
+        "👨‍💼Created by Amul Thantharate\n\n"
         "I'm your AI-powered assistant with multiple capabilities:\n"
         "🗣️ Chat with AI\n"
         "🎨 Generate & enhance images\n"
