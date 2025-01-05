@@ -63,6 +63,10 @@ COMMANDS = {
         "/videos": "List downloaded videos",
         "/clear": "Clear downloaded videos"
     },
+    "API Commands": {
+        "/setgroqkey": "Set your Groq API key",
+        "/settogetherkey": "Set your Together AI key"
+    },
     "Settings Commands": {
         "/togglevoice": "Toggle voice responses",
         "/subscribe": "Subscribe to bot status",
@@ -78,7 +82,7 @@ COMMAND_CATEGORIES = {
     "🎨 Image": ['imagine', 'enhance', 'describe'],
     "🔑 API Keys": ['setgroqkey', 'settogetherkey'],
     "🎵 Audio": ['audio_to_text', 'togglevoice'],
-    "⚙️ Settings": ['clear_chat'],
+    "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice'],
     "ℹ️ General": ['start', 'help'],
     "🔧 Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe']
 }
@@ -113,8 +117,8 @@ subscribed_users = {}
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
     welcome_message = (
-        "👋 *Welcome to AIFusionBot!*\n\n"
-        "Created By Amul Thantharate👋 \n\n"
+        "✨ *Welcome to AIFusionBot!* ✨\n\n"
+        "🌟 Created By Amul Thantharate 🌟\n\n"
         "I'm your AI assistant with multiple capabilities:\n\n"
         "🤖 *AI Chat*\n"
         "• Use /chat to start a conversation\n"
@@ -129,19 +133,24 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📷 *Image Analysis*\n"
         "• Analyze images with /describe\n"
         "• Send images directly for analysis\n\n"
-        "Use /help to see all available commands!"
+        "🔑 *Required API Keys*\n"
+        "• Get Groq API key from: https://console.groq.com/keys\n"
+        "• Get Together AI key from: https://www.together.ai\n"
+        "• Use /setgroqkey and /settogetherkey to set them\n\n"
+        "❓ Use /help to see all available commands!"
     )
     await update.message.reply_text(welcome_message, parse_mode='Markdown')
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
-    help_message = "Here are the available commands:\n\n"
+    help_message = "🎯 *Available Commands*\n\n"
     
     # Organize commands by category
     categories = {
         "💬 Chat Commands": ['chat'],
         "🎨 Image Commands": ['imagine', 'enhance', 'describe'],
         "🎵 Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
+        "🔑 API Keys": ['setgroqkey', 'settogetherkey'],
         "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice'],
         "ℹ️ General": ['start', 'help'],
         "🔧 Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe'],
@@ -155,7 +164,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if cmd in COMMANDS:
                 help_message += f"/{cmd} - {COMMANDS[cmd]}\n"
     
-    await update.message.reply_text(help_message)
+    help_message += "\n🔑 *API Keys Required*:\n"
+    help_message += "• Groq API: https://console.groq.com/keys\n"
+    help_message += "• Together AI: https://www.together.ai\n"
+    
+    await update.message.reply_text(help_message, parse_mode='Markdown')
 
 async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """This command is deprecated."""
