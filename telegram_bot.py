@@ -25,6 +25,7 @@ from youtube_utils import (
     get_video_info
 )
 from tone_enhancer import ToneEnhancer
+import html  # Add this import
 
 # Load environment variables
 load_dotenv()
@@ -74,7 +75,8 @@ COMMANDS = {
         "/togglevoice": "Toggle voice responses",
         "/subscribe": "Subscribe to bot status",
         "/unsubscribe": "Unsubscribe from bot status",
-        "/clear_chat": "Clear chat history"
+        "/clear_chat": "Clear chat history",
+        "/export": "Export chat history as MD/HTML"
     },
     "Admin Commands 🔐": {
         "/maintenance": "Toggle maintenance mode (Requires root password)"
@@ -122,58 +124,90 @@ subscribed_users = {}
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
     welcome_message = (
-        " *Welcome to AIFusionBot!* \n\n"
-        " Created By Amul Thantharate \n\n"
-        "I'm your AI assistant with multiple capabilities:\n\n"
-        " *AI Chat*\n"
-        "• Use /chat to start a conversation\n"
-        "• Adjust settings with /settings\n\n"
-        " *Image Generation*\n"
-        "• Create images with /imagine\n"
-        "• Enhance prompts with /enhance\n\n"
-        " *Audio Transcription*\n"
-        "• Convert English audio to text\n"
-        "• Use /transcribe for help\n"
-        "• Check formats with /formats\n\n"
-        " *Image Analysis*\n"
-        "• Analyze images with /describe\n"
-        "• Send images directly for analysis\n\n"
-        " *Required API Keys*\n"
-        "• Get Groq API key from: https://console.groq.com/keys\n"
-        "• Get Together AI key from: https://www.together.ai\n"
-        "• Use /setgroqkey and /settogetherkey to set them\n\n"
-        " Use /help to see all available commands!"
+        "🌟 *Welcome to AIFusionBot!* 🤖\n\n"
+        "I'm your AI-powered assistant with multiple capabilities:\n"
+        "🗣️ Chat with AI\n"
+        "🎨 Generate & enhance images\n"
+        "🔊 Convert voice to text\n"
+        "📝 Process documents\n\n"
+        "🔑 *Important:* To use all features, you'll need:\n"
+        "• Groq API Key (/setgroqkey)\n"
+        "• Together AI Key (/settogetherkey)\n\n"
+        "🚀 *Get Started:*\n"
+        "1. Set up your API keys\n"
+        "2. Try /help to see all commands\n"
+        "3. Start chatting with /chat\n\n"
+        "✨ Let's create something amazing together! ✨"
     )
-    await update.message.reply_text(welcome_message, parse_mode='Markdown')
+    
+    try:
+        await update.message.reply_text(welcome_message, parse_mode='Markdown')
+    except Exception as e:
+        logging.error(f"Error in start command: {str(e)}")
+        await update.message.reply_text("An error occurred while processing your request.")
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
-    help_message = " *Available Commands*\n\n"
+    help_message = "🎮 *Available Commands* 🎮\n\n"
     
-    # Organize commands by category
-    categories = {
-        " Chat Commands": ['chat'],
-        " Image Commands": ['imagine', 'enhance', 'describe'],
-        " Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
-        " API Keys": ['setgroqkey', 'settogetherkey'],
-        " Settings": ['settings', 'uploadenv', 'togglevoice'],
-        " General": ['start', 'help'],
-        " Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe'],
-        " Translation": ['translate'],
-        " Text Processing": ['audio_to_text', 'clear_chat']
+    for category, commands in COMMANDS.items():
+        # Add emoji and formatting for category
+        if category == "Basic Commands":
+            help_message += "🎯 *Basic Commands*\n"
+        elif category == "Media Commands":
+            help_message += "🎨 *Media Commands*\n"
+        elif category == "API Commands":
+            help_message += "🔑 *API Setup*\n"
+        elif category == "Settings Commands":
+            help_message += "⚙️ *Settings*\n"
+        elif category == "Admin Commands 🔐":
+            help_message += "👑 *Admin Controls*\n"
+        
+        # Add commands with emojis
+        for cmd, desc in commands.items():
+            emoji = get_command_emoji(cmd)
+            help_message += f"{emoji} `{cmd}`: {desc}\n"
+        help_message += "\n"
+    
+    help_message += (
+        "🎯 *Quick Tips*:\n"
+        "• Use /chat to start a conversation\n"
+        "• Set up API keys before using AI features\n"
+        "• Try /status to check bot health\n"
+        "• Need help? Just ask! 😊\n\n"
+        "🌟 *Happy Chatting!* 🌟"
+    )
+    
+    try:
+        await update.message.reply_text(help_message, parse_mode='Markdown')
+    except Exception as e:
+        logging.error(f"Error in help command: {str(e)}")
+        await update.message.reply_text("An error occurred while processing your request.")
+
+def get_command_emoji(cmd):
+    """Get appropriate emoji for each command."""
+    emoji_map = {
+        "/start": "🚀",
+        "/help": "❓",
+        "/chat": "💭",
+        "/settings": "⚙️",
+        "/status": "📊",
+        "/imagine": "🎨",
+        "/enhance": "✨",
+        "/describe": "🔍",
+        "/audio_to_text": "🎵",
+        "/videos": "🎬",
+        "/clear": "🧹",
+        "/setgroqkey": "🔐",
+        "/settogetherkey": "🔑",
+        "/togglevoice": "🔊",
+        "/subscribe": "📢",
+        "/unsubscribe": "🔕",
+        "/clear_chat": "🗑️",
+        "/maintenance": "🛠️",
+        "/export": "📥"
     }
-    
-    for category, cmd_list in categories.items():
-        help_message += f"\n{category}:\n"
-        for cmd in cmd_list:
-            if cmd in COMMANDS:
-                help_message += f"/{cmd} - {COMMANDS[cmd]}\n"
-    
-    help_message += "\n *API Keys Required*:\n"
-    help_message += "• Groq API: https://console.groq.com/keys\n"
-    help_message += "• Together AI: https://www.together.ai\n"
-    
-    await update.message.reply_text(help_message, parse_mode='Markdown')
+    return emoji_map.get(cmd, "•")
 
 async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """This command is deprecated."""
@@ -1395,6 +1429,134 @@ async def clear_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
             "Sorry, I encountered an error while clearing the chat history. Please try again."
         )
 
+async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Export chat history and images in Markdown and HTML formats."""
+    try:
+        user_id = update.effective_user.id
+        chat_id = update.effective_chat.id
+        
+        if user_id not in user_sessions:
+            await update.message.reply_text("🤔 No chat history found to export.")
+            return
+        
+        # Create export directory if it doesn't exist
+        export_dir = Path(f"exports/user_{user_id}")
+        export_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Get current timestamp for filename
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        
+        # Get chat history from user session
+        session = user_sessions[user_id]
+        chat_history = session.conversation_history if hasattr(session, 'conversation_history') else []
+        
+        if not chat_history:
+            await update.message.reply_text("📭 No messages to export.")
+            return
+        
+        # Export as Markdown
+        md_file = export_dir / f"chat_export_{timestamp}.md"
+        html_file = export_dir / f"chat_export_{timestamp}.html"
+        
+        # Create Markdown export
+        with md_file.open('w', encoding='utf-8') as f:
+            f.write("# Chat History Export\n\n")
+            f.write(f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n\n")
+            
+            for msg in chat_history:
+                # Handle different message formats
+                if isinstance(msg, dict):
+                    role = "🤖 Bot" if msg.get('role') == 'assistant' else "👤 You"
+                    content = msg.get('content', '')
+                else:
+                    # If message is not a dict, try to convert it to string
+                    role = "💬 Message"
+                    content = str(msg)
+                
+                f.write(f"## {role}\n\n{content}\n\n")
+                
+                # Handle images if present
+                if isinstance(msg, dict) and 'image_url' in msg:
+                    f.write(f"![Image]({msg['image_url']})\n\n")
+        
+        # Create HTML export
+        with html_file.open('w', encoding='utf-8') as f:
+            f.write("""
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Chat History Export</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .message { margin: 20px 0; padding: 15px; border-radius: 10px; }
+        .bot { background-color: #f0f0f0; }
+        .user { background-color: #e3f2fd; }
+        .default { background-color: #fff3e0; }
+        .timestamp { color: #666; font-size: 0.8em; }
+        img { max-width: 100%; height: auto; border-radius: 5px; margin: 10px 0; }
+        h1 { color: #2196F3; }
+    </style>
+</head>
+<body>
+            """)
+            
+            f.write(f"<h1>Chat History Export</h1>")
+            f.write(f"<p class='timestamp'>Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>")
+            
+            for msg in chat_history:
+                if isinstance(msg, dict):
+                    role = "🤖 Bot" if msg.get('role') == 'assistant' else "👤 You"
+                    content = html.escape(msg.get('content', '')).replace('\n', '<br>')
+                    msg_class = 'bot' if msg.get('role') == 'assistant' else 'user'
+                else:
+                    role = "💬 Message"
+                    content = html.escape(str(msg)).replace('\n', '<br>')
+                    msg_class = 'default'
+                
+                f.write(f"<div class='message {msg_class}'>")
+                f.write(f"<strong>{role}</strong><br>")
+                f.write(f"{content}")
+                
+                # Handle images
+                if isinstance(msg, dict) and 'image_url' in msg:
+                    f.write(f"<br><img src='{html.escape(msg['image_url'])}' alt='Generated Image'>")
+                
+                f.write("</div>")
+            
+            f.write("""
+</body>
+</html>
+            """)
+        
+        # Send the exported files
+        await update.message.reply_text(
+            "📤 Export completed! Here are your files:",
+            parse_mode='Markdown'
+        )
+        
+        # Send Markdown file
+        await context.bot.send_document(
+            chat_id=chat_id,
+            document=md_file.open('rb'),
+            filename=md_file.name,
+            caption="📝 Markdown Export"
+        )
+        
+        # Send HTML file
+        await context.bot.send_document(
+            chat_id=chat_id,
+            document=html_file.open('rb'),
+            filename=html_file.name,
+            caption="🌐 HTML Export"
+        )
+        
+    except Exception as e:
+        logging.error(f"Error in export command: {str(e)}")
+        await update.message.reply_text(
+            "❌ Sorry, an error occurred while exporting your chat history."
+        )
+
 def setup_bot(token: str) -> Application:
     """Set up and configure the bot with all handlers."""
     # Create application
@@ -1417,6 +1579,7 @@ def setup_bot(token: str) -> Application:
     application.add_handler(CommandHandler("maintenance", maintenance_command))
     application.add_handler(CommandHandler("videos", videos_command))
     application.add_handler(CommandHandler("clear", clear_command))
+    application.add_handler(CommandHandler("export", export_command))  # Add this line
     
     # Add message handlers
     application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
