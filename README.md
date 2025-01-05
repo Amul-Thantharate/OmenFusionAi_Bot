@@ -38,6 +38,31 @@ GROQ_API_KEY=your_groq_key
 TOGETHER_API_KEY=your_together_key
 ```
 
+## Environment Setup 🔐
+
+1. **Create Environment File**
+```bash
+cp .env.example .env
+```
+
+2. **Configure Environment Variables**
+```env
+# Required Variables
+TELEGRAM_BOT_TOKEN=   # Get from @BotFather
+GROQ_API_KEY=        # Get from https://console.groq.com/keys
+TOGETHER_API_KEY=    # Get from https://www.together.ai
+ROOT_PASSWORD=       # Set a secure password for admin commands
+
+# Optional Variables
+ADMIN_USER_ID=       # Your Telegram User ID
+```
+
+3. **Security Notes**
+- Use a strong password for ROOT_PASSWORD
+- Keep your .env file secure
+- Never commit .env to version control
+- Backup your credentials safely
+
 4. **Run Bot**
 ```bash
 python main.py
