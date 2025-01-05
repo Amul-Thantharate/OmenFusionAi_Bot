@@ -2,13 +2,17 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
 import logging
 import os
+import sys
 import tempfile
+import base64
+import logging
+from typing import Optional, Dict, List, Any
+from datetime import datetime, timedelta
 from pathlib import Path
-from datetime import datetime
+from dotenv import load_dotenv
 from io import BytesIO
 import time
 import json
-from dotenv import load_dotenv
 from main import interactive_chat, save_chat_history, generate_image
 from flask import Flask, request, jsonify
 from groq import Groq
@@ -17,9 +21,16 @@ from gtts import gTTS
 from youtube_utils import (
     download_and_compress_video,
     clear_videos,
-    get_downloaded_videos
+    get_downloaded_videos,
+    get_video_info
 )
 from tone_enhancer import ToneEnhancer
+
+# Load environment variables
+load_dotenv()
+TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
+if not TELEGRAM_BOT_TOKEN:
+    raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
 
 # Configure logging
 logging.basicConfig(
@@ -37,24 +48,39 @@ user_sessions = {}
 
 # Dictionary of available commands and their descriptions
 COMMANDS = {
-    'start': 'Start the bot',
-    'help': 'Show this help message',
-    'chat': 'Chat with the bot',
-    'imagine': 'Generate an image from text',
-    'enhance': 'Enhance the previous prompt',
-    'describe': 'Generate caption for an image',
-    'transcribe': 'Convert speech to text',
-    'voice': 'Convert text to speech',
-    'audio': 'Download YouTube video as audio',
-    'formats': 'Show available audio formats',
-    'lang': 'Show supported language (English only)',
-    'togglevoice': 'Toggle voice responses on/off',
-    'videos': 'List downloaded videos',
-    'clear': 'Clear all downloaded videos',
-    'maintenance': 'Set bot maintenance mode',
-    'status': 'Check bot status',
-    'subscribe': 'Subscribe to bot status updates',
-    'unsubscribe': 'Unsubscribe from bot status updates'
+    "Basic Commands": {
+        "/start": "Start the bot",
+        "/help": "Show this help message",
+        "/chat": "Chat with the bot",
+        "/settings": "Show bot settings",
+        "/status": "Check bot status"
+    },
+    "Media Commands": {
+        "/imagine": "Generate images",
+        "/enhance": "Enhance prompts",
+        "/describe": "Describe images",
+        "/audio_to_text": "Convert voice messages to text",
+        "/videos": "List downloaded videos",
+        "/clear": "Clear downloaded videos"
+    },
+    "Settings Commands": {
+        "/togglevoice": "Toggle voice responses",
+        "/subscribe": "Subscribe to bot status",
+        "/unsubscribe": "Unsubscribe from bot status",
+        "/clear_chat": "Clear chat history",
+        "/maintenance": "Toggle maintenance mode (admin only)"
+    }
+}
+
+# Group commands by category for help menu
+COMMAND_CATEGORIES = {
+    "🤖 Chat": ['chat'],
+    "🎨 Image": ['imagine', 'enhance', 'describe'],
+    "🔑 API Keys": ['setgroqkey', 'settogetherkey'],
+    "🎵 Audio": ['audio_to_text', 'togglevoice'],
+    "⚙️ Settings": ['clear_chat'],
+    "ℹ️ General": ['start', 'help'],
+    "🔧 Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe']
 }
 
 class UserSession:
@@ -77,7 +103,9 @@ BOT_STATUS = {
     "maintenance_end": None,
     "is_online": True,
     "last_offline_message": None,
-    "notified_users": set()
+    "notified_users": set(),
+    "start_time": time.time(),  # Add this line to track bot start time
+    "last_offline_time": None
 }
 
 subscribed_users = {}
@@ -116,7 +144,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎵 Audio Commands": ['transcribe', 'formats', 'voice', 'audio', 'lang'],
         "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice'],
         "ℹ️ General": ['start', 'help'],
-        "🔧 Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe']
+        "🔧 Maintenance": ['maintenance', 'status', 'subscribe', 'unsubscribe'],
+        "🌐 Translation": ['translate'],
+        "📝 Text Processing": ['audio_to_text', 'clear_chat']
     }
     
     for category, cmd_list in categories.items():
@@ -257,10 +287,14 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /imagine command for image generation with prompt enhancement."""
+    logger.info("Starting /imagine command...")
+    
     if not update.message:
+        logger.error("No message object found in update")
         return
 
     if not context.args:
+        logger.info("No prompt provided with /imagine command")
         await update.message.reply_text(
             "Please provide a description after /imagine\n"
             "Example: `/imagine beautiful sunset over mountains, realistic, 4k, detailed`",
@@ -269,11 +303,15 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     user_id = update.effective_user.id
+    logger.info(f"Processing /imagine command for user {user_id}")
+    
     if user_id not in user_sessions:
+        logger.info(f"Creating new session for user {user_id}")
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
     if not session.together_api_key:
+        logger.warning(f"Together API key not set for user {user_id}")
         await update.message.reply_text(
             "⚠️ Please set your Together API key first using:\n"
             "`/settogetherkey your_api_key`",
@@ -282,6 +320,7 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     prompt = ' '.join(context.args)
+    logger.info(f"Received prompt: {prompt}")
 
     # Send a message indicating that prompt enhancement has started
     progress_message = await update.message.reply_text(
@@ -290,11 +329,14 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         start_time = time.time()
+        logger.info("Calling generate_image function...")
         # Pass the user_id to generate_image
         success, image_bytes, message, enhanced_prompt = generate_image(prompt, user_id=user_id)
         total_time = time.time() - start_time
+        logger.info(f"Image generation completed in {total_time:.2f} seconds. Success: {success}")
         
         if success and image_bytes:
+            logger.info("Image generated successfully, sending to user...")
             # Update progress message for image generation
             await progress_message.edit_text("🎨 Step 2/2: Generating image from enhanced prompt...")
             
@@ -312,9 +354,10 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parse_mode='Markdown'
             )
         else:
+            logger.error(f"Failed to generate image: {message}")
             await update.message.reply_text(f"❌ Failed to generate image: {message}")
     except Exception as e:
-        logger.error(f"Error in image generation: {str(e)}")
+        logger.error(f"Error in image generation: {str(e)}", exc_info=True)
         await update.message.reply_text(
             "❌ Sorry, something went wrong while generating the image. Please try again later."
         )
@@ -447,101 +490,30 @@ async def temperature_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         await update.message.reply_text(str(e))
 
 async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /clear command."""
-    if not update.message:
-        return
+    """Clear all downloaded files."""
+    try:
+        message = clear_videos()
+        await update.message.reply_text(message)
+    except Exception as e:
+        logger.error(f"Error clearing files: {str(e)}")
+        await update.message.reply_text("Error clearing downloaded files.")
 
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        await update.message.reply_text("No chat history to clear.")
-        return
-
-    # Create inline keyboard for confirmation
-    keyboard = [
-        [
-            InlineKeyboardButton("Yes, clear history", callback_data='clear_confirm'),
-            InlineKeyboardButton("No, keep history", callback_data='clear_cancel')
-        ]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text(
-        "⚠️ Are you sure you want to clear your chat history?\n"
-        "This action cannot be undone.",
-        reply_markup=reply_markup
-    )
-
-async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle button callbacks."""
-    query = update.callback_query
-    await query.answer()  # Answer the callback query to remove the loading state
-
-    if query.data == 'clear_confirm':
-        user_id = update.effective_user.id
-        if user_id in user_sessions:
-            user_sessions[user_id].conversation_history = []
-            await query.edit_message_text("🗑️ Chat history cleared successfully!")
-    elif query.data == 'clear_cancel':
-        await query.edit_message_text("✅ Clear operation cancelled. Your chat history is preserved.")
-
-async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /export command."""
-    if not update.message:
-        return
-
-    # Check if format is specified
-    format_type = "markdown"  # default format
-    if context.args:
-        format_type = context.args[0].lower()
-        if format_type not in ["markdown", "pdf"]:
-            await update.message.reply_text(
-                "❌ Invalid format. Please use:\n"
-                "• `/export markdown` - Export as Markdown\n"
-                "• `/export pdf` - Export as PDF",
-                parse_mode='Markdown'
-            )
+async def videos_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """List all downloaded videos."""
+    try:
+        videos = get_downloaded_videos()
+        if not videos:
+            await update.message.reply_text("No videos have been downloaded yet.")
             return
 
-    user_id = update.effective_user.id
-    if user_id not in user_sessions or not user_sessions[user_id].conversation_history:
-        await update.message.reply_text("No chat history to export.")
-        return
-
-    # Send "processing" message
-    processing_msg = await update.message.reply_text("📤 Processing your export request...")
-
-    try:
-        success, message, file_bytes = save_chat_history(
-            user_sessions[user_id].conversation_history,
-            format_type
-        )
-
-        if success and file_bytes:
-            # Prepare the file
-            current_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-            if format_type == "markdown":
-                filename = f"chat_history_{current_time}.md"
-                caption = "📝 Here's your chat history in Markdown format!"
-            else:  # pdf
-                filename = f"chat_history_{current_time}.pdf"
-                caption = "📄 Here's your chat history in PDF format!"
-
-            # Send the file
-            await update.message.reply_document(
-                document=BytesIO(file_bytes),
-                filename=filename,
-                caption=caption
-            )
-        else:
-            await update.message.reply_text(f"❌ Export failed: {message}")
-
+        message = "📹 *Downloaded Videos:*\n"
+        for video in videos:
+            message += f"• {video['name']} ({video['size']})\n"
+        
+        await update.message.reply_text(message, parse_mode='Markdown')
     except Exception as e:
-        logger.error(f"Error in export_command: {str(e)}")
-        await update.message.reply_text("❌ Sorry, something went wrong during export.")
-
-    finally:
-        # Delete the processing message
-        await processing_msg.delete()
+        logger.error(f"Error listing videos: {str(e)}")
+        await update.message.reply_text("Error listing downloaded videos.")
 
 async def uploadenv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /uploadenv command."""
@@ -620,107 +592,150 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
 async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /describe command and direct photo messages for image analysis"""
     try:
+        logger.info("Starting image description process...")
         user_id = update.effective_user.id
         if user_id not in user_sessions:
+            logger.info(f"Creating new session for user {user_id}")
             user_sessions[user_id] = UserSession()
             
         session = user_sessions[user_id]
         
-        if not session.together_api_key:
+        if not session.groq_api_key:
+            logger.warning(f"Groq API key not set for user {user_id}")
             await update.message.reply_text(
-                "Please set your Together API key first using the /settogetherkey command"
+                "⚠️ Please set your Groq API key first using:\n"
+                "`/setgroqkey your_api_key`",
+                parse_mode='Markdown'
             )
             return
 
         # Get the photo file
         if update.message.photo:
+            logger.info("Photo found in message")
             photo = update.message.photo[-1]  # Get the largest size
+            logger.info(f"Photo size: {photo.width}x{photo.height}, file_id: {photo.file_id}")
         else:
-            await update.message.reply_text("Please send an image to describe.")
+            logger.warning("No photo found in message")
+            await update.message.reply_text(
+                "Please send a photo along with the /describe command, or just send a photo directly.",
+                parse_mode='Markdown'
+            )
             return
 
         # Download the photo
-        photo_file = await context.bot.get_file(photo.file_id)
-        photo_bytes = await photo_file.download_as_bytearray()
+        try:
+            logger.info("Downloading photo...")
+            photo_file = await context.bot.get_file(photo.file_id)
+            photo_bytes = await photo_file.download_as_bytearray()
+            logger.info(f"Photo downloaded successfully, size: {len(photo_bytes)} bytes")
+        except Exception as e:
+            logger.error(f"Error downloading photo: {str(e)}", exc_info=True)
+            await update.message.reply_text("Sorry, I couldn't download the photo. Please try again.")
+            return
 
         # Convert to base64
-        photo_base64 = base64.b64encode(photo_bytes).decode('utf-8')
+        try:
+            logger.info("Converting photo to base64...")
+            photo_base64 = base64.b64encode(photo_bytes).decode('utf-8')
+            logger.info("Photo converted to base64 successfully")
+        except Exception as e:
+            logger.error(f"Error converting photo to base64: {str(e)}", exc_info=True)
+            await update.message.reply_text("Sorry, I couldn't process the photo. Please try again.")
+            return
 
         # Send typing action
         await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
 
-        # Create the client
-        client = Groq(api_key=session.groq_api_key)
-
-        # Create the message with the image - using correct format for vision model
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": f"data:image/jpeg;base64,{photo_base64}"
-                        }
-                    },
-                    {
-                        "type": "text",
-                        "text": "As a helpful assistant that describes images in detail, please describe this image. Focus on the main elements, colors, composition, and any notable features. Provide a clear and comprehensive description."
-                    }
-                ]
-            }
-        ]
-
-        # Get the response
-        response = client.chat.completions.create(
-            messages=messages,
-            model="llama-3.2-11b-vision-preview",  # Using vision model
-            temperature=0.7,
-            max_tokens=1024,
-            top_p=1,
-            stream=False
-        )
-
-        # Get the description
-        description = response.choices[0].message.content
-
-        # Send text response
-        await update.message.reply_text(description)
-        
-        # Handle voice response
         try:
-            # Send recording action
-            await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
-            status_message = await update.message.reply_text("🎙️ Converting description to speech...")
+            logger.info("Creating Groq client...")
+            client = Groq(api_key=session.groq_api_key)
+            logger.info("Groq client created successfully")
+
+            # Create the message with the image
+            messages = [
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image_url",
+                            "image_url": {
+                                "url": f"data:image/jpeg;base64,{photo_base64}"
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": "As a helpful assistant that describes images in detail, please describe this image. Focus on the main elements, colors, composition, and any notable features. Provide a clear and comprehensive description."
+                        }
+                    ]
+                }
+            ]
+
+            logger.info("Making API request to Groq...")
+            response = client.chat.completions.create(
+                messages=messages,
+                model="llama-3.2-11b-vision-preview",
+                temperature=0.7,
+                max_tokens=1024,
+                top_p=1,
+                stream=False
+            )
+            logger.info("Received response from Groq")
+
+            # Get the description
+            description = response.choices[0].message.content
+            logger.info("Description extracted from response")
+
+            # Send text response
+            await update.message.reply_text(description)
+            logger.info("Text description sent to user")
+
+        except Exception as e:
+            error_message = f"Error with Groq API: {str(e)}"
+            logger.error(error_message, exc_info=True)
+            await update.message.reply_text(
+                "Sorry, I encountered an error while analyzing the image. Please try again later."
+            )
+            return
             
-            # Create voice file
-            voice_path = os.path.join(tempfile.gettempdir(), f'description_{user_id}.mp3')
-            success = await text_to_speech_chunk(description, voice_path)
-            
-            if success and os.path.exists(voice_path):
-                # Update status
-                await status_message.edit_text("📤 Sending voice description...")
+        # Handle voice response if enabled
+        if session.voice_response:
+            try:
+                logger.info("Starting voice response generation...")
+                # Send recording action
+                await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
+                status_message = await update.message.reply_text("🎙️ Converting description to speech...")
                 
-                # Send the voice message
-                with open(voice_path, 'rb') as voice:
-                    await update.message.reply_voice(
-                        voice=voice,
-                        caption="🎙️ Image Description"
-                    )
+                # Create voice file
+                voice_path = os.path.join(tempfile.gettempdir(), f'description_{user_id}.mp3')
+                success = await text_to_speech_chunk(description, voice_path)
                 
-                # Clean up
-                os.remove(voice_path)
-                await status_message.delete()
-            else:
-                await status_message.edit_text("❌ Could not generate voice description.")
-                
-        except Exception as voice_error:
-            logger.error(f"Voice description error: {str(voice_error)}")
-            await update.message.reply_text("Note: Voice description could not be generated.")
+                if success and os.path.exists(voice_path):
+                    logger.info("Voice file created successfully")
+                    # Update status
+                    await status_message.edit_text("📤 Sending voice description...")
+                    
+                    # Send the voice message
+                    with open(voice_path, 'rb') as voice:
+                        await update.message.reply_voice(
+                            voice=voice,
+                            caption="🎙️ Image Description"
+                        )
+                    logger.info("Voice message sent successfully")
+                    
+                    # Clean up
+                    os.remove(voice_path)
+                    await status_message.delete()
+                else:
+                    logger.error("Failed to create voice file")
+                    await status_message.edit_text("❌ Could not generate voice description.")
+                    
+            except Exception as voice_error:
+                logger.error(f"Voice description error: {str(voice_error)}", exc_info=True)
+                await update.message.reply_text("Note: Voice description could not be generated.")
 
     except Exception as e:
         error_message = f"Error describing image: {str(e)}"
-        logger.error(error_message)
+        logger.error(error_message, exc_info=True)
         await update.message.reply_text(
             "Sorry, I encountered an error while describing the image. Please try again."
         )
@@ -813,7 +828,6 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
             file = await update.message.voice.get_file()
             file_name = f"voice_{update.message.from_user.id}.ogg"
         elif update.message.audio:
-            file = await update.message.audio.get_file()
             file_name = update.message.audio.file_name
             if not is_supported_format(file_name):
                 await processing_msg.edit_text(
@@ -821,6 +835,7 @@ async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
                     "Use /formats to see supported formats."
                 )
                 return
+            file = await update.message.audio.get_file()
         else:
             await processing_msg.edit_text("❌ Please send a voice message or audio file.")
             return
@@ -925,25 +940,10 @@ async def voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     await update.message.reply_text(voice_text)
 
 async def audio_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Show audio file instructions."""
-    audio_text = (
-        "🎵 *Audio File Instructions*\n\n"
-        "To send an audio file:\n"
-        "1. Click the attachment icon (📎)\n"
-        "2. Select 'Audio'\n"
-        "3. Choose your English audio file\n"
-        "4. Send the file\n\n"
-        "📝 *Requirements:*\n"
-        "• English audio only\n"
-        "• Maximum size: 20MB\n"
-        "• Supported formats: use /formats\n\n"
-        "⚠️ *Tips:*\n"
-        "• High-quality audio works best\n"
-        "• Clear speech is important\n"
-        "• Minimal background noise\n"
-        "• Single speaker preferred"
+    """Deprecated: This command has been removed."""
+    await update.message.reply_text(
+        "⚠️ The /audio command has been removed. Please use /audio_to_text to transcribe voice messages."
     )
-    await update.message.reply_text(audio_text)
 
 async def text_to_speech_chunk(text: str, file_path: str, max_length: int = 500) -> bool:
     """Convert text to speech in smaller chunks for better performance."""
@@ -1039,101 +1039,127 @@ async def toggle_voice_command(update: Update, context: ContextTypes.DEFAULT_TYP
         logger.error(f"Error in toggle_voice_command: {str(e)}")
         await update.message.reply_text("Sorry, I encountered an error while toggling voice responses.")
 
-async def videos_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """List all downloaded videos."""
-    videos = get_downloaded_videos()
-    if not videos:
-        await update.message.reply_text("No videos have been downloaded yet.")
-        return
-
-    message = "📺 Downloaded Videos:\n\n"
-    for video in videos:
-        message += f"🎥 {video['name']}\n"
-        message += f"📊 Size: {video['size']}\n\n"
-    
-    message += "\nUse /clear to delete all videos."
-    await update.message.reply_text(message)
-
-async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Clear all downloaded videos."""
-    result = clear_videos()
-    await update.message.reply_text(result)
-
 async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /maintenance command."""
     try:
-        if not context.args or len(context.args) < 2:
+        # Check if user is admin (you can modify this check as needed)
+        user_id = update.effective_user.id
+        if user_id not in user_sessions or not user_sessions[user_id].groq_api_key:
             await update.message.reply_text(
-                "Please provide duration and message.\n"
-                "Example: /maintenance 2h System upgrade in progress"
+                "⚠️ You need to be registered with an API key to use maintenance mode.\n"
+                "Use /setgroqkey to set your API key first."
             )
             return
 
-        duration_str = context.args[0].lower()
-        message = " ".join(context.args[1:])
-
-        # Parse duration (e.g., 2h, 30m)
-        try:
-            unit = duration_str[-1]
-            value = int(duration_str[:-1])
-            if unit == 'h':
-                duration = timedelta(hours=value)
-            elif unit == 'm':
-                duration = timedelta(minutes=value)
+        # Parse command arguments
+        args = context.args if context.args else []
+        
+        # If no arguments, show current status
+        if not args:
+            status = "🔧 ON" if BOT_STATUS["is_maintenance"] else "✅ OFF"
+            message = BOT_STATUS["maintenance_message"] or "No message set"
+            end_time = BOT_STATUS["maintenance_end"]
+            
+            if end_time:
+                time_left = end_time - datetime.now()
+                if time_left.total_seconds() > 0:
+                    time_str = str(time_left).split('.')[0]
+                else:
+                    time_str = "Expired"
             else:
-                raise ValueError("Invalid duration unit")
-        except ValueError:
+                time_str = "No duration set"
+            
             await update.message.reply_text(
-                "Invalid duration format. Use format: 2h or 30m"
+                f"Maintenance Mode: {status}\n"
+                f"Message: {message}\n"
+                f"Time Remaining: {time_str}"
             )
             return
 
-        # Set maintenance mode
-        BOT_STATUS["is_maintenance"] = True
-        BOT_STATUS["maintenance_message"] = message
-        BOT_STATUS["maintenance_start"] = datetime.now()
-        BOT_STATUS["maintenance_end"] = datetime.now() + duration
+        # Parse maintenance command
+        if args[0].lower() in ['on', 'true', '1']:
+            # Get duration (in minutes) and message
+            duration = 30  # Default 30 minutes
+            message = "Scheduled maintenance"
+            
+            if len(args) > 1:
+                try:
+                    duration = int(args[1])
+                except ValueError:
+                    await update.message.reply_text("Duration must be a number in minutes. Using default 30 minutes.")
+            
+            if len(args) > 2:
+                message = ' '.join(args[2:])
 
-        # Notify all subscribed users
-        notification = (
-            "🔧 Bot Maintenance Notice\n\n"
-            f"Message: {message}\n"
-            f"Duration: {duration_str}\n"
-            f"Start Time: {BOT_STATUS['maintenance_start'].strftime('%Y-%m-%d %H:%M:%S')}\n"
-            f"Expected End: {BOT_STATUS['maintenance_end'].strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+            # Set maintenance mode
+            BOT_STATUS["is_maintenance"] = True
+            BOT_STATUS["maintenance_message"] = message
+            BOT_STATUS["maintenance_start"] = datetime.now()
+            BOT_STATUS["maintenance_end"] = datetime.now() + timedelta(minutes=duration)
 
-        for subscribed_user in BOT_STATUS["notified_users"]:
-            try:
-                await context.bot.send_message(
-                    chat_id=subscribed_user,
-                    text=notification
-                )
-            except Exception as e:
-                logger.error(f"Failed to notify user {subscribed_user}: {str(e)}")
+            # Schedule end of maintenance
+            asyncio.create_task(end_maintenance(context.bot, duration))
 
-        await update.message.reply_text("✅ Maintenance mode activated and users notified.")
+            # Notify all users
+            notification = (
+                "🔧 Bot entering maintenance mode\n\n"
+                f"Message: {message}\n"
+                f"Duration: {duration} minutes"
+            )
+            await notify_subscribers(context.application, notification)
 
-        # Schedule maintenance end
-        asyncio.create_task(end_maintenance(context.bot, duration))
+            await update.message.reply_text(
+                f"✅ Maintenance mode activated for {duration} minutes\n"
+                f"Message: {message}"
+            )
+
+        elif args[0].lower() in ['off', 'false', '0']:
+            # Turn off maintenance mode
+            BOT_STATUS["is_maintenance"] = False
+            BOT_STATUS["maintenance_message"] = ""
+            BOT_STATUS["maintenance_start"] = None
+            BOT_STATUS["maintenance_end"] = None
+
+            # Notify all users
+            notification = "✅ Maintenance mode ended"
+            await notify_subscribers(context.application, notification)
+
+            await update.message.reply_text("✅ Maintenance mode deactivated")
+
+        else:
+            await update.message.reply_text(
+                "Invalid command. Use:\n"
+                "/maintenance on [duration] [message] - Turn on maintenance mode\n"
+                "/maintenance off - Turn off maintenance mode\n"
+                "/maintenance - Show current status"
+            )
 
     except Exception as e:
-        await update.message.reply_text(f"Error setting maintenance mode: {str(e)}")
+        logger.error(f"Error in maintenance command: {str(e)}", exc_info=True)
+        await update.message.reply_text(
+            "Sorry, I encountered an error while processing the maintenance command."
+        )
 
 async def end_maintenance(bot, duration):
     """Automatically end maintenance after specified duration."""
-    await asyncio.sleep(duration.total_seconds())
-    if BOT_STATUS["is_maintenance"]:
-        BOT_STATUS["is_maintenance"] = False
-        # Notify all subscribed users
-        for user_id in BOT_STATUS["notified_users"]:
-            try:
-                await bot.send_message(
-                    chat_id=user_id,
-                    text="✅ Maintenance completed! Bot is now back online."
-                )
-            except Exception as e:
-                logger.error(f"Failed to notify user {user_id} about maintenance end: {str(e)}")
+    try:
+        await asyncio.sleep(duration * 60)  # Convert minutes to seconds
+        if BOT_STATUS["is_maintenance"]:
+            BOT_STATUS["is_maintenance"] = False
+            BOT_STATUS["maintenance_message"] = ""
+            BOT_STATUS["maintenance_start"] = None
+            BOT_STATUS["maintenance_end"] = None
+
+            # Notify all users
+            notification = "✅ Scheduled maintenance completed"
+            for user_id in get_subscribers():
+                try:
+                    await bot.send_message(chat_id=user_id, text=notification)
+                except Exception as e:
+                    logger.error(f"Failed to notify user {user_id}: {str(e)}")
+
+    except Exception as e:
+        logger.error(f"Error ending maintenance: {str(e)}", exc_info=True)
 
 async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Subscribe to bot status notifications."""
@@ -1162,23 +1188,28 @@ async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     )
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /status command."""
+    """Check if the bot is online."""
     try:
-        if BOT_STATUS["is_maintenance"]:
-            time_left = BOT_STATUS["maintenance_end"] - datetime.now()
-            message = (
-                "🔧 Bot is currently under maintenance\n\n"
-                f"Message: {BOT_STATUS['maintenance_message']}\n"
-                f"Started: {BOT_STATUS['maintenance_start'].strftime('%Y-%m-%d %H:%M:%S')}\n"
-                f"Expected End: {BOT_STATUS['maintenance_end'].strftime('%Y-%m-%d %H:%M:%S')}\n"
-                f"Time Remaining: {str(time_left).split('.')[0]}"
-            )
-        else:
-            message = "✅ Bot is online and functioning normally."
+        # Get bot information to verify connection
+        bot_info = await context.bot.get_me()
+        current_time = time.time()
+        start_time = BOT_STATUS.get("start_time", current_time)
+        uptime = current_time - start_time
         
-        await update.message.reply_text(message)
+        hours = int(uptime // 3600)
+        minutes = int((uptime % 3600) // 60)
+        
+        status_message = (
+            "🟢 Bot Status: Online\n"
+            f"Bot Name: {bot_info.first_name}\n"
+            f"Username: @{bot_info.username}\n"
+            f"Uptime: {hours}h {minutes}m\n"
+            f"Maintenance Mode: {'🔧 Yes' if BOT_STATUS['is_maintenance'] else '✅ No'}"
+        )
+        await update.message.reply_text(status_message)
     except Exception as e:
-        await update.message.reply_text(f"Error checking status: {str(e)}")
+        logger.error(f"Error checking status: {str(e)}")
+        await update.message.reply_text("🔴 Bot Status: Error checking status")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle incoming messages."""
@@ -1231,36 +1262,167 @@ async def on_startup(application: Application):
     )
     await notify_subscribers(application, startup_message)
 
+async def audio_to_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Convert voice messages to text using Groq."""
+    try:
+        # Check if there's a voice message
+        voice = update.message.voice or update.message.audio
+        if not voice:
+            await update.message.reply_text(
+                "Please send a voice message or audio file to transcribe.",
+                parse_mode='Markdown'
+            )
+            return
+
+        # Get user session
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+        session = user_sessions[user_id]
+
+        if not session.groq_api_key:
+            await update.message.reply_text(
+                "⚠️ Please set your Groq API key first using:\n"
+                "`/setgroqkey your_api_key`",
+                parse_mode='Markdown'
+            )
+            return
+
+        # Send typing action
+        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+        status_message = await update.message.reply_text("🎧 Processing audio...")
+
+        # Download the voice message
+        voice_file = await context.bot.get_file(voice.file_id)
+        voice_bytes = await voice_file.download_as_bytearray()
+
+        # Save to temporary file
+        temp_path = os.path.join(tempfile.gettempdir(), f'voice_{user_id}.ogg')
+        with open(temp_path, 'wb') as f:
+            f.write(voice_bytes)
+
+        # Convert audio to base64
+        with open(temp_path, 'rb') as audio_file:
+            audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
+
+        # Create Groq client
+        client = Groq(api_key=session.groq_api_key)
+
+        # Create the transcription prompt
+        messages = [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant that transcribes audio. Please transcribe the following audio file accurately."
+            },
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "audio",
+                        "audio_url": {
+                            "url": f"data:audio/ogg;base64,{audio_base64}"
+                        }
+                    }
+                ]
+            }
+        ]
+
+        # Get transcription
+        response = client.chat.completions.create(
+            messages=messages,
+            model="mixtral-8x7b-32768",
+            temperature=0.3,
+            max_tokens=1024,
+            top_p=1,
+            stream=False
+        )
+
+        transcript = response.choices[0].message.content.strip()
+        
+        # Send transcription
+        await status_message.edit_text(
+            f"📝 Transcription:\n\n{transcript}",
+            parse_mode='Markdown'
+        )
+
+        # Clean up
+        if os.path.exists(temp_path):
+            os.remove(temp_path)
+
+    except Exception as e:
+        logger.error(f"Audio processing error: {str(e)}", exc_info=True)
+        await update.message.reply_text(
+            "Sorry, I encountered an error while processing the audio. Please try again."
+        )
+
+async def clear_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Clear the chat history for the current user."""
+    try:
+        user_id = update.effective_user.id
+        if user_id in user_sessions:
+            user_sessions[user_id].conversation_history = []
+            await update.message.reply_text(
+                "🧹 Chat history cleared successfully!",
+                parse_mode='Markdown'
+            )
+        else:
+            await update.message.reply_text(
+                "No chat history found to clear.",
+                parse_mode='Markdown'
+            )
+    except Exception as e:
+        logger.error(f"Clear chat error: {str(e)}", exc_info=True)
+        await update.message.reply_text(
+            "Sorry, I encountered an error while clearing the chat history. Please try again."
+        )
+
+def setup_bot(token: str) -> Application:
+    """Set up and configure the bot with all handlers."""
+    # Create application
+    application = Application.builder().token(token).build()
+
+    # Add command handlers
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("chat", chat_command))
+    application.add_handler(CommandHandler("settings", settings_command))
+    application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
+    application.add_handler(CommandHandler("subscribe", subscribe_command))
+    application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
+    application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(CommandHandler("imagine", imagine_command))
+    application.add_handler(CommandHandler("enhance", enhance_command))
+    application.add_handler(CommandHandler("describe", describe_image))
+    application.add_handler(CommandHandler("audio_to_text", audio_to_text))
+    application.add_handler(CommandHandler("clear_chat", clear_chat))
+    application.add_handler(CommandHandler("maintenance", maintenance_command))
+    application.add_handler(CommandHandler("videos", videos_command))
+    application.add_handler(CommandHandler("clear", clear_command))
+    
+    # Add message handlers
+    application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    
+    # Add error handler
+    application.add_error_handler(error_handler)
+    
+    return application
+
 def run_bot():
     """Run the bot."""
     try:
-        # Create application
-        application = Application.builder().token(TELEGRAM_BOT_TOKEN).build()
-
-        # Add command handlers
-        application.add_handler(CommandHandler("start", start_command))
-        application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("chat", chat_command))
-        application.add_handler(CommandHandler("settings", settings_command))
-        application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
-        application.add_handler(CommandHandler("subscribe", subscribe_command))
-        application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
+        # Initialize bot status
+        BOT_STATUS["start_time"] = time.time()
         
-        # Add error handler
-        application.add_error_handler(error_handler)
+        # Create and run application
+        application = setup_bot(TELEGRAM_BOT_TOKEN)
         
-        # Register startup notification
-        application.job_queue.run_once(
-            lambda context: on_startup(application),
-            when=1
-        )
-        
-        # Start the bot
-        application.run_polling()
-        
+        # Run the bot
+        logger.info("Starting bot...")
+        application.run_polling(allowed_updates=Update.ALL_TYPES)
     except Exception as e:
-        logger.error(f"Failed to start bot: {str(e)}")
-        raise e
+        logger.error(f"Error running bot: {str(e)}")
+        raise
 
 if __name__ == "__main__":
     run_bot()

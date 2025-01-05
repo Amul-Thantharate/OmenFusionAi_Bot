@@ -21,7 +21,9 @@ class AIImageGenerator:
         if not groq_api_key:
             raise ValueError("Groq API key not found. Please set GROQ_API_KEY in your .env file")
             
-        self.together_client = Together(api_key=together_api_key)
+        # Initialize Together client
+        self.together_client = Together()
+        self.together_client.api_key = together_api_key
         self.groq_client = Groq(api_key=groq_api_key)
         self.last_enhanced_prompt = None
 
@@ -39,7 +41,7 @@ class AIImageGenerator:
                         "content": f"Enhance this image prompt: {user_prompt}"
                     }
                 ],
-                model="llama3-8b-8192",
+                model="mixtral-8x7b-32768",  
                 temperature=0.7,
                 max_tokens=256
             )
@@ -68,6 +70,7 @@ class AIImageGenerator:
         try:
             logger.info("Attempting to generate image with Together API...")
             
+            # Generate image
             response = self.together_client.images.generate(
                 prompt=prompt,
                 model="black-forest-labs/FLUX.1-schnell-Free",
@@ -75,22 +78,16 @@ class AIImageGenerator:
                 height=768,
                 steps=1,
                 n=1,
+                response_format="b64_json"
             )
             
             if hasattr(response, 'data') and response.data:
                 image_data = response.data[0]
-                if hasattr(image_data, 'url'):
-                    logger.info(f"Image generated successfully. URL: {image_data.url}")
-                    img_response = requests.get(image_data.url)
-                    if img_response.status_code == 200:
-                        b64_data = base64.b64encode(img_response.content).decode('utf-8')
-                        return True, b64_data, ""
-                    else:
-                        error_msg = f"Failed to download image from URL. Status code: {img_response.status_code}"
-                        logger.error(error_msg)
-                        return False, None, error_msg
+                if hasattr(image_data, 'b64_json'):
+                    logger.info("Image generated successfully")
+                    return True, image_data.b64_json, ""
                 else:
-                    error_msg = "No URL found in response data"
+                    error_msg = "No base64 data found in response"
                     logger.error(error_msg)
                     return False, None, error_msg
             else:
@@ -100,10 +97,7 @@ class AIImageGenerator:
                 
         except Exception as e:
             error_msg = f"Error generating image: {str(e)}"
-            logger.error(error_msg)
-            if hasattr(e, 'response'):
-                logger.error(f"Response status: {e.response.status_code}")
-                logger.error(f"Response text: {e.response.text}")
+            logger.error(error_msg, exc_info=True)
             return False, None, error_msg
 
     def save_image(self, b64_json, filename):

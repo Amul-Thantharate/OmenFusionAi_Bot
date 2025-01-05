@@ -1,6 +1,6 @@
-# NovaChat AI v2.0 Demo Guide 🚀
+# NovaChat AI v2.3.0 Demo Guide 🚀
 
-This document showcases the enhanced features and capabilities of NovaChat AI v2.0.
+This document showcases the enhanced features and capabilities of NovaChat AI v2.3.0.
 
 ## Enhanced Chat Examples 💬
 
@@ -63,6 +63,28 @@ Bot: *Generates high-quality image based on enhanced prompt*
 You: /imagine A portrait in the style of Van Gogh's Starry Night
 Bot: 🎨 Enhancing your prompt...
 Bot: *Generates artistic interpretation with enhanced style elements*
+```
+
+## Latest Features (January 2025) 🆕
+
+### Enhanced Voice Processing
+```
+You: /voice "Convert this text to natural speech"
+Bot: *Generates more natural and fluid voice output*
+```
+
+### Improved Image Generation
+```
+You: /imagine "A futuristic city with floating gardens"
+Bot: 🎨 Processing with enhanced image generation...
+Bot: *Generates higher quality image with improved details*
+```
+
+### YouTube Integration
+```
+You: /audio https://youtube.com/watch?v=example
+Bot: 🎵 Processing audio extraction...
+Bot: *Provides high-quality audio file with metadata*
 ```
 
 ## Advanced Settings ⚙️

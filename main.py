@@ -36,13 +36,21 @@ def generate_image(prompt: str, user_id: str = None) -> tuple[bool, bytes, str, 
         generator = AIImageGenerator()
         enhanced_prompt = generator.enhance_prompt(prompt)
         if not enhanced_prompt:
+            logger.error("Failed to enhance prompt")
             return False, None, "Failed to enhance prompt", None
             
         success, image_data, error_msg = generator.generate_image(enhanced_prompt)
-        if not success:
-            return False, None, error_msg, None
+        if not success or not image_data:
+            logger.error(f"Failed to generate image: {error_msg}")
+            return False, None, error_msg, enhanced_prompt
             
-        return True, base64.b64decode(image_data), "", enhanced_prompt
+        try:
+            decoded_image = base64.b64decode(image_data)
+            return True, decoded_image, "", enhanced_prompt
+        except Exception as e:
+            logger.error(f"Failed to decode base64 image: {str(e)}")
+            return False, None, f"Failed to decode image: {str(e)}", enhanced_prompt
+            
     except Exception as e:
         error_msg = f"Error in image generation: {str(e)}"
         logger.error(error_msg)
@@ -163,8 +171,8 @@ def save_chat_history(history: list, format: str = "markdown") -> tuple[bool, st
 
 def run_app():
     """Run the main application - starts the Telegram bot"""
-    from telegram_bot import run_telegram_bot
-    run_telegram_bot()
+    from telegram_bot import run_bot
+    run_bot()
 
 if __name__ == "__main__":
     run_app()
