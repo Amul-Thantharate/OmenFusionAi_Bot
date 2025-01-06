@@ -1,148 +1,84 @@
-# AIFusionBot 🤖
+# 🤖 AI Fusion Bot
 
-A versatile Telegram bot that combines AI chat, image generation, voice processing, and YouTube integration.
+A powerful Telegram bot that combines multiple AI capabilities including chat, image generation, video analysis, and YouTube summarization.
 
-## Latest Updates (v2.4.0) 🎉
-- Improved image description using Groq's vision model
-- Enhanced voice response system
-- Optimized image processing pipeline
-- Better error handling and user feedback
-- Updated dependencies and performance improvements
+## 🌟 Features
 
-## Features ✨
+### 💬 Chat
+- `/chat` - Have an intelligent conversation with the bot
+- Powered by Groq's advanced language models
 
-- **AI Chat**: Natural language conversations with Groq
-- **Image Analysis**: Detailed image descriptions with voice output
-- **Image Generation**: Create images from text descriptions
-- **Voice Processing**: Speech-to-text and text-to-speech
-- **YouTube Integration**: Download audio from videos
-- **Maintenance System**: Schedule maintenance with notifications
+### 🎨 Image Generation & Analysis
+- `/imagine` - Generate images from text descriptions
+- `/enhance` - Enhance image generation prompts
+- `/describe` - Analyze and describe images
 
-## Quick Start 🚀
+### 📽️ Video Analysis
+- `/analyze_video` - Get AI insights from video content
+- `/summarize_youtube` - Summarize YouTube videos
+- Supports video files up to 50MB
+- Powered by Google's Gemini Vision
 
-1. **Clone Repository**
-```bash
-git clone https://github.com/yourusername/AIFusionBot.git
-cd AIFusionBot
-```
+### 🔧 Settings & Utilities
+- `/settings` - Configure bot settings
+- `/togglevoice` - Toggle voice responses
+- `/clear_chat` - Clear chat history
+- `/help` - View all commands
 
-2. **Install Dependencies**
+## 🚀 Setup
+
+1. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **Configure Environment**
-Create `.env` file:
+2. Configure environment variables in `.env`:
 ```env
+API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_token
-GROQ_API_KEY=your_groq_key
-TOGETHER_API_KEY=your_together_key
+ROOT_PASSWORD=your_admin_password
 ```
 
-## Environment Setup 🔐
-
-1. **Create Environment File**
-```bash
-cp .env.example .env
-```
-
-2. **Configure Environment Variables**
-```env
-# Required Variables
-TELEGRAM_BOT_TOKEN=   # Get from @BotFather
-GROQ_API_KEY=        # Get from https://console.groq.com/keys
-TOGETHER_API_KEY=    # Get from https://www.together.ai
-ROOT_PASSWORD=       # Set a secure password for admin commands
-
-# Optional Variables
-ADMIN_USER_ID=       # Your Telegram User ID
-```
-
-3. **Security Notes**
-- Use a strong password for ROOT_PASSWORD
-- Keep your .env file secure
-- Never commit .env to version control
-- Backup your credentials safely
-
-4. **Run Bot**
+3. Run the bot:
 ```bash
 python app.py
 ```
 
-## Commands 📝
-
-### General
-- `/start` - Begin using bot
-- `/help` - View commands
-- `/chat` - Start conversation
-
-### Media
-- `/imagine` - Generate images
-- `/describe` - Analyze and describe images
-- `/transcribe` - Convert speech to text
-- `/voice` - Convert text to speech
-- `/audio` - Download YouTube audio
-
-### Settings
-- `/settings` - View configuration
-- `/togglevoice` - Toggle voice responses
-
-### Maintenance
-- `/maintenance` - Set maintenance mode
-- `/status` - Check bot status
-- `/subscribe` - Get status updates
-
-## Requirements 📋
+## 📝 Requirements
 
 - Python 3.8+
 - Telegram Bot Token
-- Groq API Key (v0.4.1+)
-- Together AI API Key (v0.2.8+)
-- PIL (Python Imaging Library)
-- gTTS (Google Text-to-Speech)
+- Google Gemini API Key
+- Internet connection
 
-## Documentation 📚
+## 🛠️ Technical Details
 
-- [Setup Guide](docs/setup.md)
-- [Commands](docs/commands.md)
-- [Changelog](docs/changelog.md)
-- [Contributing](CONTRIBUTING.md)
+- Uses Google's Gemini Pro for text and Gemini Vision for images/videos
+- Implements efficient file handling and cleanup
+- Includes error handling and user feedback
+- Supports multiple file formats for videos and images
 
-## Features in Detail 🔍
+## 🔒 Security
 
-### Chat System
-- Natural language processing
-- Context-aware responses
-- Voice message support
-- History management
+- Environment variables for sensitive data
+- Admin-only maintenance commands
+- Secure file handling
 
-### Image Features
-- Text-to-image generation
-- Advanced image analysis with Groq Vision
-- Voice descriptions of images
-- Prompt enhancement
-- Style customization
+## 📚 Usage Examples
 
-### Audio Processing
-- Speech-to-text conversion
-- Text-to-speech synthesis
-- YouTube audio extraction
-- Multiple format support
+### Video Analysis
+Send a video (up to 50MB) and get detailed insights about:
+- What's happening in the video
+- Key objects and people
+- Notable actions or events
+- Overall context and setting
 
-### Maintenance System
-- Scheduled maintenance
-- Status notifications
-- Auto-recovery
-- User subscriptions
+### YouTube Summaries
+```
+/summarize_youtube https://youtube.com/watch?v=video_id
+```
+Get concise summaries of YouTube videos with key points and insights.
 
-## Contributing 🤝
+## 🤝 Contributing
 
-We welcome contributions! See [Contributing Guide](CONTRIBUTING.md) for details.
-
-## License 📄
-
-This project is licensed under the MIT License - see [LICENSE](LICENSE) file.
-
-## Support 💬
-
-Need help? Check our [documentation](docs/index.md) or open an issue.
+Feel free to submit issues and enhancement requests!

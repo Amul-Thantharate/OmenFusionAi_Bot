@@ -21,6 +21,11 @@ from gtts import gTTS
 import html  # Add this import
 from PIL import Image
 import io
+from pytube import YouTube
+from youtube_transcript_api import YouTubeTranscriptApi
+import google.generativeai as genai
+from video_insights import process_youtube_video, get_insights
+from constants import SUMMARY_PROMPT, MEDIA_FOLDER, HELP_MESSAGE
 
 # Load environment variables
 load_dotenv()
@@ -58,6 +63,8 @@ COMMANDS = {
         "/imagine": "🎨 Generate images",
         "/enhance": "✨ Enhance prompts",
         "/describe": "🔍 Describe images",
+        "/analyze_video": "🎥 Analyze video content",
+        "/summarize_youtube": "📺 Summarize YouTube video"
     },
     "API Commands": {
         "/setgroqkey": "🔑 Set your Groq API key",
@@ -142,63 +149,14 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
-    help_message = "🎮 *Available Commands* 🎮\n\n"
-    
-    for category, commands in COMMANDS.items():
-        # Add emoji and formatting for category
-        if category == "Basic Commands":
-            help_message += "🎯 *Basic Commands*\n"
-        elif category == "Media Commands":
-            help_message += "🎨 *Media Commands*\n"
-        elif category == "API Commands":
-            help_message += "🔑 *API Setup*\n"
-        elif category == "Settings Commands":
-            help_message += "⚙️ *Settings*\n"
-        elif category == "Admin Commands ":
-            help_message += "🔐 *Admin Controls*\n"
+    if not update.message:
+        return
         
-        # Add commands with emojis
-        for cmd, desc in commands.items():
-            emoji = get_command_emoji(cmd)
-            help_message += f"{emoji} `{cmd}`: {desc}\n"
-        help_message += "\n"
-    
-    help_message += (
-        "*Quick Tips:*\n"
-        "• Use `/chat` to start a conversation\n"
-        "• Set up API keys before using AI features\n"
-        "• Try `/status` to check bot health\n"
-        "• Need help? Just ask!\n\n"
-        "*Happy Chatting!* 🌟"
+    from constants import HELP_MESSAGE
+    await update.message.reply_text(
+        HELP_MESSAGE,
+        parse_mode='Markdown'
     )
-    
-    try:
-        await update.message.reply_text(help_message, parse_mode='Markdown')
-    except Exception as e:
-        logging.error(f"Error in help command: {str(e)}")
-        await update.message.reply_text("An error occurred while processing your request.")
-
-def get_command_emoji(cmd):
-    """Get appropriate emoji for each command."""
-    emoji_map = {
-        "/start": "",
-        "/help": "",
-        "/chat": "",
-        "/settings": "",
-        "/status": "",
-        "/imagine": "",
-        "/enhance": "",
-        "/describe": "",
-        "/setgroqkey": "",
-        "/settogetherkey": "",
-        "/togglevoice": "",
-        "/subscribe": "",
-        "/unsubscribe": "",
-        "/clear_chat": "",
-        "/maintenance": "",
-        "/export": ""
-    }
-    return emoji_map.get(cmd, "•")
 
 async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """This command is deprecated."""
@@ -1129,11 +1087,186 @@ async def resize_image(image_path, max_size=(800, 800)):
         logging.error(f"Error resizing image: {str(e)}")
         return None
 
-def setup_bot(token: str) -> Application:
-    """Set up and configure the bot with all handlers."""
-    # Create application
-    application = Application.builder().token(token).build()
+def initialize_genai():
+    api_key = os.getenv("API_KEY")
+    if not api_key:
+        raise ValueError("API_KEY not found in .env file")
+    genai.configure(api_key=api_key)
 
+def get_video_insights(video_path):
+    video_file = genai.upload_file(path=video_path)
+    
+    while video_file.state.name == "PROCESSING":
+        time.sleep(10)
+        video_file = genai.get_file(video_file.name)
+
+    if video_file.state.name == "FAILED":
+        raise ValueError("Video processing failed")
+
+    prompt = "Describe the video. Provide insights from the video."
+    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+    response = model.generate_content([prompt, video_file], request_options={"timeout": 600})
+    genai.delete_file(video_file.name)
+    return response.text
+
+def extract_transcript_details(youtube_video_url):
+    try:
+        video_id = youtube_video_url.split("=")[1]
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'hi'])
+        transcript = " ".join([item["text"] for item in transcript_list])
+        return transcript
+    except Exception as e:
+        raise e
+
+def generate_gemini_content(transcript_text, prompt):
+    model = genai.GenerativeModel("gemini-pro")
+    response = model.generate_content(prompt + transcript_text)
+    return response.text
+
+MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
+
+async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /analyze_video command and direct video messages."""
+    if not update.message:
+        return
+        
+    # Get video file from either command or direct message
+    video = update.message.video
+    document = update.message.document
+
+    # If neither video nor document is present, send instructions
+    if not video and not document:
+        await update.message.reply_text(
+            "Please send me a video to analyze! You can either:\n"
+            "1. Send the video directly\n"
+            "2. Use /analyze_video and attach a video\n\n"
+            "📝 Requirements:\n"
+            "• Maximum file size: 50MB\n"
+            "• Supported formats: MP4, MOV, AVI\n"
+            "• Recommended length: 1-3 minutes"
+        )
+        return
+
+    # Check file size
+    file_size = video.file_size if video else document.file_size if document else 0
+    if file_size > MAX_VIDEO_SIZE:
+        await update.message.reply_text(
+            "❌ Video file is too large!\n\n"
+            "Due to Telegram's limitations, I can only process videos up to 50MB.\n"
+            "Please try:\n"
+            "• Compressing the video\n"
+            "• Trimming it to a shorter length\n"
+            "• Reducing the video quality\n"
+            "• Sending a shorter clip"
+        )
+        return
+
+    # Check if it's a video file
+    file_id = None
+    if video:
+        file_id = video.file_id
+    elif document and document.mime_type and 'video' in document.mime_type:
+        file_id = document.file_id
+    
+    if not file_id:
+        await update.message.reply_text(
+            "Please send a valid video file (MP4, MOV, AVI, etc.)\n\n"
+            "📝 Requirements:\n"
+            "• Maximum file size: 50MB\n"
+            "• Supported formats: MP4, MOV, AVI\n"
+            "• Recommended length: 1-3 minutes"
+        )
+        return
+
+    await update.message.reply_text(
+        "🔄 Processing your video...\n"
+        "This may take a few minutes depending on the video size.\n"
+        "I'll analyze it using Gemini Vision and provide you with insights!"
+    )
+    
+    try:
+        file = await context.bot.get_file(file_id)
+        
+        if not os.path.exists(MEDIA_FOLDER):
+            os.makedirs(MEDIA_FOLDER)
+            
+        file_path = os.path.join(MEDIA_FOLDER, f"video_{update.message.from_user.id}_{int(time.time())}.mp4")
+        await file.download_to_drive(file_path)
+        
+        try:
+            insights = get_insights(file_path)
+            await update.message.reply_text(
+                "📽️ Video Analysis Results:\n\n"
+                f"{insights}\n\n"
+                "Feel free to send another video for analysis!"
+            )
+        except Exception as e:
+            logging.error(f"Error analyzing video content: {str(e)}")
+            await update.message.reply_text(
+                "❌ Error analyzing video content. This could be because:\n"
+                "• The video is too long\n"
+                "• The video format is not supported\n"
+                "• The video content couldn't be processed\n\n"
+                "Please try with a different video or contact support if the issue persists."
+            )
+        finally:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                
+    except Exception as e:
+        logging.error(f"Error processing video file: {str(e)}")
+        if "File is too big" in str(e):
+            await update.message.reply_text(
+                "❌ Video file is too large!\n\n"
+                "Due to Telegram's limitations, I can only process videos up to 50MB.\n"
+                "Please try:\n"
+                "• Compressing the video\n"
+                "• Trimming it to a shorter length\n"
+                "• Reducing the video quality\n"
+                "• Sending a shorter clip"
+            )
+        else:
+            await update.message.reply_text(
+                "❌ Error processing video file. Please make sure:\n"
+                "• The file is a valid video format (MP4, MOV, AVI)\n"
+                "• The file size is under 50MB\n"
+                "• The video length is reasonable (1-3 minutes)\n\n"
+                "Try uploading the video again or use a different video file."
+            )
+
+async def summarize_youtube_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /summarize_youtube command."""
+    if not update.message:
+        return
+        
+    if not context.args:
+        await update.message.reply_text("Please provide a YouTube URL. Example: /summarize_youtube https://youtube.com/watch?v=...")
+        return
+
+    youtube_url = context.args[0]
+    await update.message.reply_text("🔄 Processing YouTube video...")
+    
+    try:
+        summary = process_youtube_video(youtube_url)
+        if summary:
+            # Split long messages if needed (Telegram has a 4096 character limit)
+            if len(summary) > 4000:
+                chunks = [summary[i:i+4000] for i in range(0, len(summary), 4000)]
+                for chunk in chunks:
+                    await update.message.reply_text(chunk)
+            else:
+                await update.message.reply_text(summary)
+        else:
+            await update.message.reply_text("❌ Could not generate summary. Please try another video.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error processing YouTube video: {str(e)}")
+
+def setup_bot(token: str):
+    """Set up and configure the bot with all handlers."""
+    initialize_genai()  # Initialize Gemini AI
+    
+    application = Application.builder().token(token).build()
+    
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
     application.add_handler(CommandHandler("help", help_command))
@@ -1149,10 +1282,13 @@ def setup_bot(token: str) -> Application:
     application.add_handler(CommandHandler("clear_chat", clear_chat))
     application.add_handler(CommandHandler("maintenance", maintenance_command))
     application.add_handler(CommandHandler("export", export_command))  # Add this line
+    application.add_handler(CommandHandler("analyze_video", analyze_video_command))
+    application.add_handler(CommandHandler("summarize_youtube", summarize_youtube_command))  # Add this line
     
     # Add message handlers
     application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_handler(MessageHandler(filters.VIDEO & ~filters.COMMAND, analyze_video_command))  # Add video handler
     
     # Add error handler
     application.add_error_handler(error_handler)

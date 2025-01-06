@@ -156,3 +156,58 @@ Bot: Max tokens set to 2048 - Allowing for more detailed responses
 - Use /help for command list
 - Check documentation for detailed guides
 - Report issues on GitHub
+
+## 🎮 AIFusionBot Demo
+
+## 🤖 Chat Features
+```
+/chat What's the weather like in Paris?
+```
+The bot will engage in natural conversation using advanced language models.
+
+## 🎨 Image Features
+```
+/imagine A serene lake at sunset with mountains in the background
+```
+Generate beautiful images from text descriptions.
+
+```
+/describe [upload an image]
+```
+Get detailed descriptions of any image you send.
+
+## 📽️ Video Analysis
+```
+/analyze_video [upload a video]
+```
+Get AI-powered insights about your videos:
+- What's happening
+- Key objects and people
+- Notable actions
+- Context and setting
+
+Requirements:
+- Max file size: 50MB
+- Supported formats: MP4, MOV, AVI
+- Recommended length: 1-3 minutes
+
+## 🎥 YouTube Summaries
+```
+/summarize_youtube https://youtube.com/watch?v=VIDEO_ID
+```
+Get concise summaries of YouTube videos with key points.
+
+## ⚙️ Settings
+```
+/settings - Configure bot preferences
+/togglevoice - Enable/disable voice responses
+/clear_chat - Clear conversation history
+```
+
+## 🔐 Admin Features
+```
+/maintenance - Schedule maintenance (requires admin password)
+/status - Check bot health
+```
+
+Try these commands to explore AIFusionBot's capabilities! 🚀

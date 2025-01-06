@@ -48,6 +48,60 @@ Track AIFusionBot's version history and updates.
 - 🔌 OpenAI integration and related commands
 - 🔑 Legacy API key handling methods
 
+## [2.5.0] - 2025-01-06 🎉
+
+### ✨ Added
+- New video analysis features:
+  - `/analyze_video` command for AI-powered video insights
+  - `/summarize_youtube` command for YouTube video summaries
+  - Support for video file uploads up to 50MB
+  - Detailed video content analysis using Gemini Vision
+
+### 🔧 Changed
+- Improved error handling and user feedback
+- Better handling of YouTube transcripts
+- Enhanced help messages with emojis
+- Organized constants in a dedicated file
+
+### 🎨 UI/UX
+- Added emojis throughout the bot responses
+- More detailed command descriptions
+- Better error messages with troubleshooting steps
+- Clear file size and format requirements
+
+### 🔒 Security
+- Improved environment variable handling
+- Better API key management
+- Secure file handling and cleanup
+
+### 🐛 Fixed
+- Fixed circular import issues
+- Improved video file size validation
+- Better error handling for unavailable YouTube transcripts
+- Fixed maintenance mode issues
+
+### 📚 Documentation
+- Updated README with new features
+- Added detailed setup instructions
+- Improved command documentation
+- Added usage examples
+
+## [2.4.0] - Previous Release
+
+### Added
+- Image description using Groq's vision model
+- Enhanced voice response system
+- Optimized image processing pipeline
+
+### Changed
+- Better error handling
+- Updated dependencies
+- Performance improvements
+
+### Fixed
+- Various bug fixes and improvements
+- Enhanced stability
+
 ## [2.0.0] - 2024-12-15 🌟
 
 ### ✨ Added
