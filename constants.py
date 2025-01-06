@@ -31,26 +31,37 @@ Be specific but concise in your analysis.
 
 # Help Messages 💡
 HELP_MESSAGE = """
-Welcome to AIFusionBot! Here are the available commands:
+*Welcome to AIFusionBot!* Here are all available commands:
 
-🤖 *Chat Commands*
-• /chat - Start a conversation with me
+🤖 *Basic Commands*
+• `/start` - Start the bot
+• `/help` - Show this help message
+• `/chat` - Chat with AI
+• `/settings` - Configure bot settings
+• `/status` - Check bot status
 
-🎨 *Image Commands*
-• /imagine - Generate images from text
-• /enhance - Enhance your image prompts
-• /describe - Analyze and describe images
+🎨 *Media Commands*
+• `/imagine` - Generate images
+• `/enhance` - Enhance prompts
+• `/describe` - Describe images
+• `/analyze_video` - Analyze video content
+• `/summarize_youtube` - Summarize YouTube video
 
-📽️ *Video Commands*
-• /analyze_video - Get AI insights from videos
-• /summarize_youtube - Summarize YouTube videos
+🔑 *API Setup*
+• `/setgroqkey` - Set your Groq API key
+• `/settogetherkey` - Set your Together API key
 
-⚙️ *Settings*
-• /settings - Configure bot settings
-• /togglevoice - Toggle voice responses
-• /clear_chat - Clear chat history
+⚙️ *Settings & Preferences*
+• `/togglevoice` - Toggle voice responses
+• `/subscribe` - Subscribe to bot status
+• `/unsubscribe` - Unsubscribe from bot status
+• `/clear_chat` - Clear chat history
+• `/export` - Export chat history
 
-Need help? Just type /help to see this message again!
+🔐 *Admin Commands*
+• `/maintenance` - Toggle maintenance mode (Requires root password)
+
+Need help? Feel free to use any of these commands! Start with `/start` to get an introduction.
 """
 
 # Error Messages ❌

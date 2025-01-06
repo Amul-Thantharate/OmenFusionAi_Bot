@@ -25,6 +25,27 @@
 - Improved async operations
 - Better error recovery
 
+# Release Notes 📝
+
+## Version 1.4.0 (2025-01-06) 🚀
+
+### Enhancements 🌟
+- 📚 Improved `/help` command with comprehensive command listing and better categorization
+- 🔄 Updated Together AI package to version 1.3.11
+- 🎨 Enhanced message formatting for better readability
+- 🛠️ Fixed Markdown formatting issues in help messages
+
+### Bug Fixes 🐛
+- 🔧 Fixed entity parsing error in help command
+- ✨ Improved command descriptions and categorization
+- 🎯 Fixed Markdown escaping in bot messages
+
+### Dependencies 📦
+- ⬆️ Upgraded `together` package to v1.3.11
+- ⬆️ Updated `aiohttp` to v3.11.11
+- ⬆️ Updated `pillow` to v10.4.0
+- ⬆️ Updated `tqdm` to v4.67.1
+
 # NovaChat AI v2.2.0 Release Notes
 
 ## 🚀 Major Enhancements
