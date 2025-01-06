@@ -4,106 +4,106 @@ title: Command Reference
 nav_order: 3
 ---
 
-# AIFusionBot Commands
+# 🤖 AIFusionBot Commands
 
 This document provides a comprehensive guide to all available commands in AIFusionBot.
 
-## General Commands 
+## 🎯 General Commands 
 
-### /start
+### 🚀 /start
 Starts the bot and displays welcome message.
 - Usage: `/start`
 - Response: Welcome message with basic instructions
 
-### /help
+### ❓ /help
 Shows all available commands organized by category.
 - Usage: `/help`
 - Response: List of commands with descriptions
 
-### /chat
+### 💭 /chat
 Start a conversation with the AI.
 - Usage: `/chat <your message>`
 - Example: `/chat Tell me about quantum computing`
 - Response: AI-generated response
 
-## Image Commands 
+## 🎨 Image Commands 
 
-### /imagine
+### 🖼️ /imagine
 Generate an image from text description.
 - Usage: `/imagine <description>`
 - Example: `/imagine sunset over mountains with purple sky`
 - Response: AI-generated image
 
-### /enhance
+### ✨ /enhance
 Improve the last image generation prompt.
 - Usage: `/enhance`
 - Response: Enhanced version of previous image
 
-### /describe
+### 🔍 /describe
 Generate caption for an image.
 - Usage: Send image followed by `/describe`
 - Response: AI-generated image description
 
-## Audio Commands 
+## 🔊 Audio Commands 
 
-### /transcribe
+### 🎵 /transcribe
 Convert speech to text.
 - Usage: Send voice message or audio file with `/transcribe`
 - Response: Text transcription
 
-### /voice
+### 🗣️ /voice
 Convert text to speech.
 - Usage: `/voice <text>`
 - Example: `/voice Hello, how are you?`
 - Response: Voice message
 
-### /formats
+### 📝 /formats
 Show available audio formats.
 - Usage: `/formats`
 - Response: List of supported formats
 
-### /lang
+### 🌎 /lang
 Show supported languages.
 - Usage: `/lang`
 - Response: List of supported languages
 
-## Status Commands
+## 📊 Status Commands
 
-### /subscribe
+### 🔔 /subscribe
 Subscribe to bot status notifications. You will receive alerts when:
-- Bot goes offline due to errors
-- Bot comes back online
-- System maintenance starts/ends
-- Critical updates or changes
+- 🔴 Bot goes offline due to errors
+- 🟢 Bot comes back online
+- 🛠️ System maintenance starts/ends
+- 📢 Critical updates or changes
 
-### /unsubscribe
+### 🔕 /unsubscribe
 Unsubscribe from bot status notifications.
 
-## Settings Commands 
+## ⚙️ Settings Commands 
 
-### /settings
+### 🛠️ /settings
 View current bot settings.
 - Usage: `/settings`
 - Response: Current configuration
 
-### /togglevoice
+### 🗑️ /togglevoice
 Toggle voice responses on/off.
 - Usage: `/togglevoice`
 - Response: Confirmation message
 
-## Media Management Commands 
+## 📺 Media Management Commands 
 
-### /videos
+### 📹 /videos
 List downloaded videos.
 - Usage: `/videos`
 - Response: List of saved videos
 
-### /clear
+### 🗑️ /clear
 Clear all downloaded videos.
 - Usage: `/clear`
 - Response: Confirmation message
 
-## Error Handling
+## 🚨 Error Handling
 
 If a command fails:
 1. Check command syntax
@@ -111,7 +111,7 @@ If a command fails:
 3. Check bot status 
 4. Try again after a few moments
 
-## Tips for Best Results
+## 💡 Tips for Best Results
 
 1. **Chat Commands**
    - Be clear and specific
@@ -128,13 +128,13 @@ If a command fails:
    - Speak clearly for voice messages
    - Check supported formats
 
-## Rate Limits
+## ⚡ Rate Limits
 
-- Image generation: 50 requests per hour
-- Chat messages: 100 per hour
-- Audio processing: 25 per hour
+- 🎨 Image generation: 50 requests per hour
+- 💭 Chat messages: 100 per hour
+- 🔊 Audio processing: 25 per hour
 
-## Need Help?
+## ❓ Need Help?
 
 If you need assistance:
 1. Use `/help` for command list

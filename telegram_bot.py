@@ -46,42 +46,43 @@ user_sessions = {}
 # Dictionary of available commands and their descriptions
 COMMANDS = {
     "Basic Commands": {
-        "/start": "Start the bot",
-        "/help": "Show this help message",
-        "/chat": "Chat with the bot",
-        "/settings": "Show bot settings",
-        "/status": "Check bot status"
+        "/start": "🚀 Start the bot",
+        "/help": "❓ Show this help message",
+        "/chat": "💭 Chat with AI",
+        "/settings": "⚙️ Configure bot settings",
+        "/status": "📊 Check bot status"
     },
     "Media Commands": {
-        "/imagine": "Generate images",
-        "/enhance": "Enhance prompts",
-        "/describe": "Describe images",
+        "/imagine": "🎨 Generate images",
+        "/enhance": "✨ Enhance prompts",
+        "/describe": "🔍 Describe images",
     },
     "API Commands": {
-        "/setgroqkey": "Set your Groq API key",
-        "/settogetherkey": "Set your Together AI key"
+        "/setgroqkey": "🔑 Set your Groq API key",
+        "/settogetherkey": "🔐 Set your Together API key"
     },
     "Settings Commands": {
-        "/togglevoice": "Toggle voice responses",
-        "/subscribe": "Subscribe to bot status",
-        "/unsubscribe": "Unsubscribe from bot status",
-        "/clear_chat": "Clear chat history",
-        "/export": "Export chat history as MD/HTML"
+        "/togglevoice": "🔊 Toggle voice responses",
+        "/subscribe": "🔔 Subscribe to bot status",
+        "/unsubscribe": "🔔 Unsubscribe from bot status",
+        "/clear_chat": "🗑️ Clear chat history",
+        "/export": "📥 Export chat history",
+        "/maintenance": "🛠️ Toggle maintenance mode (Requires root password)"
     },
     "Admin Commands ": {
-        "/maintenance": "Toggle maintenance mode (Requires root password)"
+        "/maintenance": "🛠️ Toggle maintenance mode (Requires root password)"
     }
 }
 
 # Group commands by category for help menu
 COMMAND_CATEGORIES = {
-    " Chat": ['chat'],
-    " Image": ['imagine', 'enhance', 'describe'],
-    " API Keys": ['setgroqkey', 'settogetherkey'],
-    " Audio": ['togglevoice'],
-    " Settings": ['settings', 'uploadenv', 'togglevoice', 'clear_chat'],
-    " General": ['start', 'help'],
-    " Admin": ['maintenance']  # Changed to show it requires authentication
+    "🤖 Chat": ['chat'],
+    "🎨 Image": ['imagine', 'enhance', 'describe'],
+    "🔑 API Keys": ['setgroqkey', 'settogetherkey'],
+    "🔊 Audio": ['togglevoice'],
+    "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice', 'clear_chat'],
+    "ℹ️ General": ['start', 'help'],
+    "🔐 Admin": ['maintenance']  # Changed to show it requires authentication
 }
 
 class UserSession:
@@ -114,20 +115,21 @@ subscribed_users = {}
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
     welcome_message = (
-        " Welcome to AIFusionBot!\n\n"
-        "Created by Amul Thantharate\n\n"
-        "I'm your AI-powered assistant with multiple capabilities:\n"
-        " Chat with AI\n"
-        " Generate & enhance images\n"
-        " Process documents\n\n"
-        " Important: To use all features, you'll need:\n"
-        " Groq API Key (/setgroqkey)\n"
-        " Together AI Key (/settogetherkey)\n\n"
-        " Get Started:\n"
+        "🌟 *Welcome to AIFusionBot!* 🤖\n\n"
+        "👨‍💼 Created by Amul Thantharate\n\n"
+        "I'm your AI-powered assistant with multiple capabilities:\n\n"
+        "🗣️ Chat with AI\n"
+        "🎨 Generate & enhance images\n"
+        "🔊 Voice responses\n"
+        "📝 Process documents\n\n"
+        "🔑 *Important:* To use all features, you'll need:\n"
+        "• Groq API Key (/setgroqkey)\n"
+        "• Together AI Key (/settogetherkey)\n\n"
+        "🚀 *Get Started:*\n"
         "1. Set up your API keys\n"
         "2. Try /help to see all commands\n"
         "3. Start chatting with /chat\n\n"
-        " Let's create something amazing together! "
+        "✨ Let's create something amazing together! ✨"
     )
     
     try:
@@ -138,20 +140,20 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
-    help_message = " Available Commands\n\n"
+    help_message = "🎮 *Available Commands* 🎮\n\n"
     
     for category, commands in COMMANDS.items():
         # Add emoji and formatting for category
         if category == "Basic Commands":
-            help_message += " *Basic Commands*\n"
+            help_message += "🎯 *Basic Commands*\n"
         elif category == "Media Commands":
-            help_message += " *Media Commands*\n"
+            help_message += "🎨 *Media Commands*\n"
         elif category == "API Commands":
-            help_message += " *API Setup*\n"
+            help_message += "🔑 *API Setup*\n"
         elif category == "Settings Commands":
-            help_message += " *Settings*\n"
+            help_message += "⚙️ *Settings*\n"
         elif category == "Admin Commands ":
-            help_message += " *Admin Controls*\n"
+            help_message += "🔐 *Admin Controls*\n"
         
         # Add commands with emojis
         for cmd, desc in commands.items():
