@@ -18,13 +18,6 @@ from flask import Flask, request, jsonify
 from groq import Groq
 import asyncio
 from gtts import gTTS
-from youtube_utils import (
-    download_and_compress_video,
-    clear_videos,
-    get_downloaded_videos,
-    get_video_info
-)
-from tone_enhancer import ToneEnhancer
 import html  # Add this import
 
 # Load environment variables
@@ -63,9 +56,6 @@ COMMANDS = {
         "/imagine": "Generate images",
         "/enhance": "Enhance prompts",
         "/describe": "Describe images",
-        "/audio_to_text": "Convert voice messages to text",
-        "/videos": "List downloaded videos",
-        "/clear": "Clear downloaded videos"
     },
     "API Commands": {
         "/setgroqkey": "Set your Groq API key",
@@ -78,20 +68,20 @@ COMMANDS = {
         "/clear_chat": "Clear chat history",
         "/export": "Export chat history as MD/HTML"
     },
-    "Admin Commands 🔐": {
+    "Admin Commands ": {
         "/maintenance": "Toggle maintenance mode (Requires root password)"
     }
 }
 
 # Group commands by category for help menu
 COMMAND_CATEGORIES = {
-    "🤖 Chat": ['chat'],
-    "🎨 Image": ['imagine', 'enhance', 'describe'],
-    "🔑 API Keys": ['setgroqkey', 'settogetherkey'],
-    "🎵 Audio": ['audio_to_text', 'togglevoice'],
-    "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice', 'clear_chat'],
-    "ℹ️ General": ['start', 'help'],
-    "🔐 Admin": ['maintenance']  # Changed to show it requires authentication
+    " Chat": ['chat'],
+    " Image": ['imagine', 'enhance', 'describe'],
+    " API Keys": ['setgroqkey', 'settogetherkey'],
+    " Audio": ['togglevoice'],
+    " Settings": ['settings', 'uploadenv', 'togglevoice', 'clear_chat'],
+    " General": ['start', 'help'],
+    " Admin": ['maintenance']  # Changed to show it requires authentication
 }
 
 class UserSession:
@@ -124,21 +114,20 @@ subscribed_users = {}
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
     welcome_message = (
-        "🌟 *Welcome to AIFusionBot!* 🤖\n\n"
-        "👨‍💼Created by Amul Thantharate\n\n"
+        " Welcome to AIFusionBot!\n\n"
+        "Created by Amul Thantharate\n\n"
         "I'm your AI-powered assistant with multiple capabilities:\n"
-        "🗣️ Chat with AI\n"
-        "🎨 Generate & enhance images\n"
-        "🔊 Convert voice to text\n"
-        "📝 Process documents\n\n"
-        "🔑 *Important:* To use all features, you'll need:\n"
-        "• Groq API Key (/setgroqkey)\n"
-        "• Together AI Key (/settogetherkey)\n\n"
-        "🚀 *Get Started:*\n"
+        " Chat with AI\n"
+        " Generate & enhance images\n"
+        " Process documents\n\n"
+        " Important: To use all features, you'll need:\n"
+        " Groq API Key (/setgroqkey)\n"
+        " Together AI Key (/settogetherkey)\n\n"
+        " Get Started:\n"
         "1. Set up your API keys\n"
         "2. Try /help to see all commands\n"
         "3. Start chatting with /chat\n\n"
-        "✨ Let's create something amazing together! ✨"
+        " Let's create something amazing together! "
     )
     
     try:
@@ -149,20 +138,20 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
-    help_message = "🎮 *Available Commands* 🎮\n\n"
+    help_message = " Available Commands\n\n"
     
     for category, commands in COMMANDS.items():
         # Add emoji and formatting for category
         if category == "Basic Commands":
-            help_message += "🎯 *Basic Commands*\n"
+            help_message += " *Basic Commands*\n"
         elif category == "Media Commands":
-            help_message += "🎨 *Media Commands*\n"
+            help_message += " *Media Commands*\n"
         elif category == "API Commands":
-            help_message += "🔑 *API Setup*\n"
+            help_message += " *API Setup*\n"
         elif category == "Settings Commands":
-            help_message += "⚙️ *Settings*\n"
-        elif category == "Admin Commands 🔐":
-            help_message += "👑 *Admin Controls*\n"
+            help_message += " *Settings*\n"
+        elif category == "Admin Commands ":
+            help_message += " *Admin Controls*\n"
         
         # Add commands with emojis
         for cmd, desc in commands.items():
@@ -171,12 +160,12 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         help_message += "\n"
     
     help_message += (
-        "🎯 *Quick Tips*:\n"
-        "• Use /chat to start a conversation\n"
-        "• Set up API keys before using AI features\n"
-        "• Try /status to check bot health\n"
-        "• Need help? Just ask! 😊\n\n"
-        "🌟 *Happy Chatting!* 🌟"
+        " Quick Tips:\n"
+        " Use /chat to start a conversation\n"
+        " Set up API keys before using AI features\n"
+        " Try /status to check bot health\n"
+        " Need help? Just ask! \n\n"
+        " Happy Chatting!* "
     )
     
     try:
@@ -188,25 +177,22 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def get_command_emoji(cmd):
     """Get appropriate emoji for each command."""
     emoji_map = {
-        "/start": "🚀",
-        "/help": "❓",
-        "/chat": "💭",
-        "/settings": "⚙️",
-        "/status": "📊",
-        "/imagine": "🎨",
-        "/enhance": "✨",
-        "/describe": "🔍",
-        "/audio_to_text": "🎵",
-        "/videos": "🎬",
-        "/clear": "🧹",
-        "/setgroqkey": "🔐",
-        "/settogetherkey": "🔑",
-        "/togglevoice": "🔊",
-        "/subscribe": "📢",
-        "/unsubscribe": "🔕",
-        "/clear_chat": "🗑️",
-        "/maintenance": "🛠️",
-        "/export": "📥"
+        "/start": "",
+        "/help": "",
+        "/chat": "",
+        "/settings": "",
+        "/status": "",
+        "/imagine": "",
+        "/enhance": "",
+        "/describe": "",
+        "/setgroqkey": "",
+        "/settogetherkey": "",
+        "/togglevoice": "",
+        "/subscribe": "",
+        "/unsubscribe": "",
+        "/clear_chat": "",
+        "/maintenance": "",
+        "/export": ""
     }
     return emoji_map.get(cmd, "•")
 
@@ -542,106 +528,6 @@ async def temperature_command(update: Update, context: ContextTypes.DEFAULT_TYPE
     except ValueError as e:
         await update.message.reply_text(str(e))
 
-async def clear_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Clear all downloaded files."""
-    try:
-        message = clear_videos()
-        await update.message.reply_text(message)
-    except Exception as e:
-        logger.error(f"Error clearing files: {str(e)}")
-        await update.message.reply_text("Error clearing downloaded files.")
-
-async def videos_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """List all downloaded videos."""
-    try:
-        videos = get_downloaded_videos()
-        if not videos:
-            await update.message.reply_text("No videos have been downloaded yet.")
-            return
-
-        message = " *Downloaded Videos:*\n"
-        for video in videos:
-            message += f"• {video['name']} ({video['size']})\n"
-        
-        await update.message.reply_text(message, parse_mode='Markdown')
-    except Exception as e:
-        logger.error(f"Error listing videos: {str(e)}")
-        await update.message.reply_text("Error listing downloaded videos.")
-
-async def uploadenv_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /uploadenv command."""
-    await update.message.reply_text(
-        " Please upload a .env file containing your API keys.\n\n"
-        "Format:\n"
-        "```\n"
-        "GROQ_API_KEY=your_groq_key\n"
-        "TOGETHER_API_KEY=your_together_key\n"
-        "```\n\n"
-        "Make sure to send the file as a document.",
-        parse_mode='Markdown'
-    )
-
-async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle uploaded documents."""
-    session = context.user_data.get('session', UserSession())
-    
-    # Check if the file is a .env file
-    if not update.message.document.file_name.endswith('.env'):
-        await update.message.reply_text(" Please upload a .env file")
-        return
-
-    try:
-        file = await context.bot.get_file(update.message.document.file_id)
-        
-        # Create a temporary file to store the downloaded content
-        with tempfile.NamedTemporaryFile(delete=False) as temp_file:
-            await file.download_to_memory(temp_file)
-            temp_file_path = temp_file.name
-
-        # Read and parse the .env file
-        success_msg = []
-        with open(temp_file_path, 'r') as f:
-            for line in f:
-                line = line.strip()
-                if line and not line.startswith('#'):
-                    try:
-                        key, value = line.split('=', 1)
-                        key = key.strip()
-                        value = value.strip()
-
-                        if key == 'GROQ_API_KEY':
-                            session.groq_api_key = value
-                            success_msg.append(" Groq API key set successfully")
-                        elif key == 'TOGETHER_API_KEY':
-                            session.together_api_key = value
-                            success_msg.append(" Together API key set successfully")
-                    except ValueError:
-                        continue
-
-        # Clean up the temporary file
-        os.unlink(temp_file_path)
-
-        if success_msg:
-            await update.message.reply_text("\n".join(success_msg))
-        else:
-            await update.message.reply_text(
-                " No valid API keys found in the file.\n"
-                "Make sure your file contains GROQ_API_KEY and/or TOGETHER_API_KEY."
-            )
-
-        # Update the session in user_data
-        context.user_data['session'] = session
-
-    except Exception as e:
-        await update.message.reply_text(f" Error processing file: {str(e)}")
-
-async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle errors in the telegram bot."""
-    logger.error(f"Exception while handling an update: {context.error}")
-    if update and isinstance(update, Update) and update.effective_message:
-        text = "Sorry, an error occurred while processing your request."
-        await update.effective_message.reply_text(text)
-
 async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /describe command and direct photo messages for image analysis"""
     try:
@@ -828,219 +714,6 @@ def transcribe_audio(filename, prompt=None):
     except Exception as e:
         logger.error(f"Error during transcription: {str(e)}")
         raise
-
-async def transcribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle the /transcribe command for both YouTube videos and audio files."""
-    if not context.args:
-        await update.message.reply_text(
-            "Please provide a YouTube link or reply to an audio message to transcribe."
-        )
-        return
-
-    url = context.args[0]
-    if "youtube.com" in url or "youtu.be" in url:
-        # Handle YouTube URL
-        status_message = await update.message.reply_text(" Downloading and processing YouTube video...")
-        
-        try:
-            video_path, error = download_and_compress_video(url)
-            if error:
-                await status_message.edit_text(f" Error: {error}")
-                return
-                
-            await status_message.edit_text(" Transcribing audio...")
-            transcription = transcribe_audio(video_path)
-            
-            if transcription:
-                # Send video file first
-                with open(video_path, 'rb') as video_file:
-                    await update.message.reply_video(
-                        video=video_file,
-                        caption="Downloaded video (will be saved until /clear is used)"
-                    )
-                # Then send transcription
-                await status_message.edit_text(f" Transcription:\n\n{transcription}")
-            else:
-                await status_message.edit_text(" Failed to transcribe the audio.")
-        except Exception as e:
-            await status_message.edit_text(f" Error: {str(e)}")
-    else:
-        await update.message.reply_text("Please provide a valid YouTube link.")
-
-async def handle_audio(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Handle audio messages."""
-    try:
-        # Send initial processing message
-        processing_msg = await update.message.reply_text(
-            " Receiving your audio...\n Note: Only English audio is supported",
-            parse_mode='Markdown'
-        )
-
-        # Get the audio file
-        if update.message.voice:
-            file = await update.message.voice.get_file()
-            file_name = f"voice_{update.message.from_user.id}.ogg"
-        elif update.message.audio:
-            file_name = update.message.audio.file_name
-            if not is_supported_format(file_name):
-                await processing_msg.edit_text(
-                    f" Sorry, the format {get_file_extension(file_name)} is not supported.\n"
-                    "Use /formats to see supported formats."
-                )
-                return
-            file = await update.message.audio.get_file()
-        else:
-            await processing_msg.edit_text(" Please send a voice message or audio file.")
-            return
-
-        # Create unique file path
-        file_path = TEMP_DIR / f"{update.message.from_user.id}_{file_name}"
-        
-        # Download the file
-        await file.download_to_drive(str(file_path))
-        
-        # Update processing message
-        await processing_msg.edit_text(" Processing your audio... Please wait.")
-
-        # Transcribe the audio
-        transcription = transcribe_audio(str(file_path))
-
-        if transcription:
-            if transcription.startswith(" Sorry, this bot only transcribes English audio"):
-                # If non-English audio was detected
-                await processing_msg.edit_text(transcription)
-            else:
-                # Split long messages if needed (Telegram has a 4096 character limit)
-                max_length = 4000
-                messages = [transcription[i:i+max_length] for i in range(0, len(transcription), max_length)]
-                
-                # Send transcription
-                await processing_msg.edit_text(" Transcription completed!")
-                for i, msg in enumerate(messages, 1):
-                    if len(messages) > 1:
-                        header = f"*Part {i}/{len(messages)}:*\n\n"
-                    else:
-                        header = "*Transcription:*\n\n"
-                    await update.message.reply_text(f"{header}{msg}", parse_mode='Markdown')
-        else:
-            await processing_msg.edit_text(
-                " Sorry, I couldn't transcribe the audio. Please try again with clear English audio."
-            )
-
-        # Clean up the temporary file
-        if file_path.exists():
-            file_path.unlink()
-
-    except Exception as e:
-        logger.error(f"Error handling audio: {str(e)}")
-        await update.message.reply_text(
-            " Sorry, something went wrong. Please try again with clear English audio."
-        )
-
-async def formats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Show supported audio formats."""
-    formats_text = (
-        " *Supported Audio Formats:*\n\n"
-        "• MP3 (.mp3)\n"
-        "• WAV (.wav)\n"
-        "• M4A (.m4a)\n"
-        "• OGG (.ogg, .oga)\n"
-        "• OPUS (.opus)\n"
-        "• MP4 (.mp4)\n"
-        "• MPEG (.mpeg, .mpga)\n"
-        "• WEBM (.webm)\n\n"
-        " Just send me any audio file in these formats!"
-    )
-    await update.message.reply_text(formats_text, parse_mode='Markdown')
-
-async def lang_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Show supported language information."""
-    lang_text = (
-        " *Supported Language for Audio Transcription*\n\n"
-        "Currently, this bot only supports:\n"
-        "• English (US)\n"
-        "• English (UK)\n"
-        "• English (International)\n\n"
-        " *Important Notes:*\n"
-        "• Clear pronunciation helps accuracy\n"
-        "• Minimal background noise preferred\n"
-        "• Good audio quality recommended\n\n"
-        " *Best Practices:*\n"
-        "• Speak clearly and at normal speed\n"
-        "• Avoid heavy accents if possible\n"
-        "• Use good quality recording equipment\n"
-        "• Record in a quiet environment\n\n"
-        "Use /transcribe to start transcribing!"
-    )
-    await update.message.reply_text(lang_text)
-
-async def voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Show voice message instructions."""
-    voice_text = (
-        " *Voice Message Instructions*\n\n"
-        "To send a voice message:\n"
-        "1. Click the microphone icon ()\n"
-        "2. Hold to record your message\n"
-        "3. Speak clearly in English\n"
-        "4. Release to send\n\n"
-        " *Tips for Best Results:*\n"
-        "• Find a quiet location\n"
-        "• Speak at a normal pace\n"
-        "• Hold phone close to mouth\n"
-        "• Avoid background noise\n\n"
-        "Maximum duration: 20 minutes"
-    )
-    await update.message.reply_text(voice_text)
-
-async def audio_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    """Deprecated: This command has been removed."""
-    await update.message.reply_text(
-        " The /audio command has been removed. Please use /audio_to_text to transcribe voice messages."
-    )
-
-async def text_to_speech_chunk(text: str, file_path: str, max_length: int = 500) -> bool:
-    """Convert text to speech in smaller chunks for better performance."""
-    try:
-        # Split text into smaller chunks at sentence boundaries
-        sentences = text.split('. ')
-        chunks = []
-        current_chunk = []
-        current_length = 0
-        
-        for sentence in sentences:
-            if current_length + len(sentence) > max_length:
-                chunks.append('. '.join(current_chunk) + '.')
-                current_chunk = [sentence]
-                current_length = len(sentence)
-            else:
-                current_chunk.append(sentence)
-                current_length += len(sentence)
-        
-        if current_chunk:
-            chunks.append('. '.join(current_chunk))
-        
-        # Convert each chunk to speech
-        for i, chunk in enumerate(chunks):
-            tts = gTTS(text=chunk, lang='en', slow=False)
-            chunk_path = f"{file_path}.part{i}"
-            tts.save(chunk_path)
-        
-        # Combine all chunks (if multiple)
-        if len(chunks) > 1:
-            with open(file_path, 'wb') as outfile:
-                for i in range(len(chunks)):
-                    chunk_path = f"{file_path}.part{i}"
-                    with open(chunk_path, 'rb') as infile:
-                        outfile.write(infile.read())
-                    os.remove(chunk_path)
-        else:
-            # If only one chunk, just rename it
-            os.rename(f"{file_path}.part0", file_path)
-            
-        return True
-    except Exception as e:
-        logger.error(f"Error in text_to_speech_chunk: {str(e)}")
-        return False
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle text messages and respond with both voice and text."""
@@ -1316,99 +989,6 @@ async def on_startup(application: Application):
     )
     await notify_subscribers(application, startup_message)
 
-async def audio_to_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Convert voice messages to text using Groq."""
-    try:
-        # Check if there's a voice message
-        voice = update.message.voice or update.message.audio
-        if not voice:
-            await update.message.reply_text(
-                "Please send a voice message or audio file to transcribe.",
-                parse_mode='Markdown'
-            )
-            return
-
-        # Get user session
-        user_id = update.effective_user.id
-        if user_id not in user_sessions:
-            user_sessions[user_id] = UserSession()
-        session = user_sessions[user_id]
-
-        if not session.groq_api_key:
-            await update.message.reply_text(
-                " Please set your Groq API key first using:\n"
-                "`/setgroqkey your_api_key`",
-                parse_mode='Markdown'
-            )
-            return
-
-        # Send typing action
-        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
-        status_message = await update.message.reply_text(" Processing audio...")
-
-        # Download the voice message
-        voice_file = await context.bot.get_file(voice.file_id)
-        voice_bytes = await voice_file.download_as_bytearray()
-
-        # Save to temporary file
-        temp_path = os.path.join(tempfile.gettempdir(), f'voice_{user_id}.ogg')
-        with open(temp_path, 'wb') as f:
-            f.write(voice_bytes)
-
-        # Convert audio to base64
-        with open(temp_path, 'rb') as audio_file:
-            audio_base64 = base64.b64encode(audio_file.read()).decode('utf-8')
-
-        # Create Groq client
-        client = Groq(api_key=session.groq_api_key)
-
-        # Create the transcription prompt
-        messages = [
-            {
-                "role": "system",
-                "content": "You are a helpful assistant that transcribes audio. Please transcribe the following audio file accurately."
-            },
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "audio",
-                        "audio_url": {
-                            "url": f"data:audio/ogg;base64,{audio_base64}"
-                        }
-                    }
-                ]
-            }
-        ]
-
-        # Get transcription
-        response = client.chat.completions.create(
-            messages=messages,
-            model="mixtral-8x7b-32768",
-            temperature=0.3,
-            max_tokens=1024,
-            top_p=1,
-            stream=False
-        )
-
-        transcript = response.choices[0].message.content.strip()
-        
-        # Send transcription
-        await status_message.edit_text(
-            f" Transcription:\n\n{transcript}",
-            parse_mode='Markdown'
-        )
-
-        # Clean up
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
-
-    except Exception as e:
-        logger.error(f"Audio processing error: {str(e)}", exc_info=True)
-        await update.message.reply_text(
-            "Sorry, I encountered an error while processing the audio. Please try again."
-        )
-
 async def clear_chat(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Clear the chat history for the current user."""
     try:
@@ -1437,7 +1017,7 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_id = update.effective_chat.id
         
         if user_id not in user_sessions:
-            await update.message.reply_text("🤔 No chat history found to export.")
+            await update.message.reply_text(" No chat history found to export.")
             return
         
         # Create export directory if it doesn't exist
@@ -1452,7 +1032,7 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         chat_history = session.conversation_history if hasattr(session, 'conversation_history') else []
         
         if not chat_history:
-            await update.message.reply_text("📭 No messages to export.")
+            await update.message.reply_text(" No messages to export.")
             return
         
         # Export as Markdown
@@ -1467,11 +1047,11 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for msg in chat_history:
                 # Handle different message formats
                 if isinstance(msg, dict):
-                    role = "🤖 Bot" if msg.get('role') == 'assistant' else "👤 You"
+                    role = " Bot" if msg.get('role') == 'assistant' else " You"
                     content = msg.get('content', '')
                 else:
                     # If message is not a dict, try to convert it to string
-                    role = "💬 Message"
+                    role = " Message"
                     content = str(msg)
                 
                 f.write(f"## {role}\n\n{content}\n\n")
@@ -1507,11 +1087,11 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             
             for msg in chat_history:
                 if isinstance(msg, dict):
-                    role = "🤖 Bot" if msg.get('role') == 'assistant' else "👤 You"
+                    role = " Bot" if msg.get('role') == 'assistant' else " You"
                     content = html.escape(msg.get('content', '')).replace('\n', '<br>')
                     msg_class = 'bot' if msg.get('role') == 'assistant' else 'user'
                 else:
-                    role = "💬 Message"
+                    role = " Message"
                     content = html.escape(str(msg)).replace('\n', '<br>')
                     msg_class = 'default'
                 
@@ -1532,7 +1112,7 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         
         # Send the exported files
         await update.message.reply_text(
-            "📤 Export completed! Here are your files:",
+            " Export completed! Here are your files:",
             parse_mode='Markdown'
         )
         
@@ -1541,7 +1121,7 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=chat_id,
             document=md_file.open('rb'),
             filename=md_file.name,
-            caption="📝 Markdown Export"
+            caption=" Markdown Export"
         )
         
         # Send HTML file
@@ -1549,13 +1129,13 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             chat_id=chat_id,
             document=html_file.open('rb'),
             filename=html_file.name,
-            caption="🌐 HTML Export"
+            caption=" HTML Export"
         )
         
     except Exception as e:
         logging.error(f"Error in export command: {str(e)}")
         await update.message.reply_text(
-            "❌ Sorry, an error occurred while exporting your chat history."
+            " Sorry, an error occurred while exporting your chat history."
         )
 
 def setup_bot(token: str) -> Application:
@@ -1575,11 +1155,8 @@ def setup_bot(token: str) -> Application:
     application.add_handler(CommandHandler("imagine", imagine_command))
     application.add_handler(CommandHandler("enhance", enhance_command))
     application.add_handler(CommandHandler("describe", describe_image))
-    application.add_handler(CommandHandler("audio_to_text", audio_to_text))
     application.add_handler(CommandHandler("clear_chat", clear_chat))
     application.add_handler(CommandHandler("maintenance", maintenance_command))
-    application.add_handler(CommandHandler("videos", videos_command))
-    application.add_handler(CommandHandler("clear", clear_command))
     application.add_handler(CommandHandler("export", export_command))  # Add this line
     
     # Add message handlers

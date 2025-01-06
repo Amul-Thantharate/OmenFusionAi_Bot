@@ -57,12 +57,6 @@ Convert text to speech.
 - Example: `/voice Hello, how are you?`
 - Response: Voice message
 
-### /audio
-Download YouTube video as audio.
-- Usage: `/audio <YouTube URL>`
-- Example: `/audio https://youtube.com/watch?v=...`
-- Response: Audio file
-
 ### /formats
 Show available audio formats.
 - Usage: `/formats`
@@ -139,7 +133,6 @@ If a command fails:
 - Image generation: 50 requests per hour
 - Chat messages: 100 per hour
 - Audio processing: 25 per hour
-- YouTube downloads: 10 per hour
 
 ## Need Help?
 

@@ -18,6 +18,18 @@ Track AIFusionBot's version history and updates.
 
 ---
 
+## [3.1.0] - 2025-01-06
+
+### Removed
+- Removed YouTube video download functionality
+- Removed `/videos` and `/clear` commands
+- Removed YouTube-related dependencies
+- Cleaned up documentation and help messages
+
+### Changed
+- Simplified audio commands section
+- Updated requirements.txt to remove yt-dlp package
+
 ## [3.0.0] - 2025-01-04
 ### Added
 - Migrated to Groq API with Mixtral-8x7b model
@@ -77,13 +89,13 @@ Track AIFusionBot's version history and updates.
 
 ## Upcoming Features
 
-### [3.1.0] - Planned
+### [3.2.0] - Planned
 - Enhanced audio processing
 - Better image generation
 - Improved chat context
 - More maintenance features
 
-### [3.2.0] - Planned
+### [3.3.0] - Planned
 - Multi-language support
 - Advanced image editing
 - Better YouTube integration
