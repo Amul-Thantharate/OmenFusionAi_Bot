@@ -19,6 +19,8 @@ from groq import Groq
 import asyncio
 from gtts import gTTS
 import html  # Add this import
+from PIL import Image
+import io
 
 # Load environment variables
 load_dotenv()
@@ -124,7 +126,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "📝 Process documents\n\n"
         "🔑 *Important:* To use all features, you'll need:\n"
         "• Groq API Key (/setgroqkey)\n"
-        "• Together AI Key (/settogetherkey)\n\n"
+        "• Together API Key (/settogetherkey)\n\n"
         "🚀 *Get Started:*\n"
         "1. Set up your API keys\n"
         "2. Try /help to see all commands\n"
@@ -162,12 +164,12 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         help_message += "\n"
     
     help_message += (
-        " Quick Tips:\n"
-        " Use /chat to start a conversation\n"
-        " Set up API keys before using AI features\n"
-        " Try /status to check bot health\n"
-        " Need help? Just ask! \n\n"
-        " Happy Chatting!* "
+        "*Quick Tips:*\n"
+        "• Use `/chat` to start a conversation\n"
+        "• Set up API keys before using AI features\n"
+        "• Try `/status` to check bot health\n"
+        "• Need help? Just ask!\n\n"
+        "*Happy Chatting!* 🌟"
     )
     
     try:
@@ -533,152 +535,106 @@ async def temperature_command(update: Update, context: ContextTypes.DEFAULT_TYPE
 async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /describe command and direct photo messages for image analysis"""
     try:
-        logger.info("Starting image description process...")
-        user_id = update.effective_user.id
-        if user_id not in user_sessions:
-            logger.info(f"Creating new session for user {user_id}")
-            user_sessions[user_id] = UserSession()
-            
-        session = user_sessions[user_id]
-        
-        if not session.groq_api_key:
-            logger.warning(f"Groq API key not set for user {user_id}")
-            await update.message.reply_text(
-                " Please set your Groq API key first using:\n"
-                "`/setgroqkey your_api_key`",
-                parse_mode='Markdown'
-            )
-            return
-
         # Get the photo file
         if update.message.photo:
-            logger.info("Photo found in message")
             photo = update.message.photo[-1]  # Get the largest size
-            logger.info(f"Photo size: {photo.width}x{photo.height}, file_id: {photo.file_id}")
         else:
-            logger.warning("No photo found in message")
+            await update.message.reply_text("Please send a photo to describe or use this command as a reply to a photo.")
+            return
+
+        # Get user session
+        user_id = update.effective_user.id
+        if user_id not in user_sessions:
+            user_sessions[user_id] = UserSession()
+        session = user_sessions[user_id]
+
+        # Check if Groq API key is set
+        if not session.groq_api_key:
             await update.message.reply_text(
-                "Please send a photo along with the /describe command, or just send a photo directly.",
-                parse_mode='Markdown'
+                "Please set your Groq API key first using /setgroqkey command."
             )
             return
 
-        # Download the photo
-        try:
-            logger.info("Downloading photo...")
-            photo_file = await context.bot.get_file(photo.file_id)
-            photo_bytes = await photo_file.download_as_bytearray()
-            logger.info(f"Photo downloaded successfully, size: {len(photo_bytes)} bytes")
-        except Exception as e:
-            logger.error(f"Error downloading photo: {str(e)}", exc_info=True)
-            await update.message.reply_text("Sorry, I couldn't download the photo. Please try again.")
-            return
+        await update.message.reply_text("Analyzing the image... 🔍")
 
-        # Convert to base64
-        try:
-            logger.info("Converting photo to base64...")
-            photo_base64 = base64.b64encode(photo_bytes).decode('utf-8')
-            logger.info("Photo converted to base64 successfully")
-        except Exception as e:
-            logger.error(f"Error converting photo to base64: {str(e)}", exc_info=True)
-            await update.message.reply_text("Sorry, I couldn't process the photo. Please try again.")
-            return
+        # Get the file URL
+        photo_file = await context.bot.get_file(photo.file_id)
+        file_url = photo_file.file_path
 
-        # Send typing action
-        await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
+        # Create Groq client
+        client = Groq(api_key=session.groq_api_key)
+        logging.info("Groq client created successfully")
 
-        try:
-            logger.info("Creating Groq client...")
-            client = Groq(api_key=session.groq_api_key)
-            logger.info("Groq client created successfully")
-
-            # Create the message with the image
-            messages = [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": f"data:image/jpeg;base64,{photo_base64}"
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": "As a helpful assistant that describes images in detail, please describe this image. Focus on the main elements, colors, composition, and any notable features. Provide a clear and comprehensive description."
+        # Prepare the message for image analysis
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": "Please describe this image in detail. Focus on the main elements, colors, composition, and any notable features."
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": file_url
                         }
-                    ]
-                }
-            ]
+                    }
+                ]
+            }
+        ]
 
-            logger.info("Making API request to Groq...")
-            response = client.chat.completions.create(
-                messages=messages,
-                model="llama-3.2-11b-vision-preview",
-                temperature=0.7,
-                max_tokens=1024,
-                top_p=1,
-                stream=False
-            )
-            logger.info("Received response from Groq")
+        logging.info("Making API request to Groq...")
+        
+        # Make the API request
+        response = client.chat.completions.create(
+            model="llama-3.2-11b-vision-preview",
+            messages=messages,
+            temperature=0.7,
+            max_tokens=1024,
+            top_p=1,
+            stream=False
+        )
 
-            # Get the description
-            description = response.choices[0].message.content
-            logger.info("Description extracted from response")
+        logging.info("Received response from Groq")
 
-            # Send text response
-            await update.message.reply_text(description)
-            logger.info("Text description sent to user")
+        # Extract the description
+        description = response.choices[0].message.content
+        logging.info("Description extracted from response")
 
-        except Exception as e:
-            error_message = f"Error with Groq API: {str(e)}"
-            logger.error(error_message, exc_info=True)
-            await update.message.reply_text(
-                "Sorry, I encountered an error while analyzing the image. Please try again later."
-            )
-            return
-            
-        # Handle voice response if enabled
+        # Send the text description
+        await update.message.reply_text(description)
+        logging.info("Text description sent to user")
+
+        # Generate and send voice response if enabled
         if session.voice_response:
-            try:
-                logger.info("Starting voice response generation...")
-                # Send recording action
-                await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
-                status_message = await update.message.reply_text(" Converting description to speech...")
-                
-                # Create voice file
-                voice_path = os.path.join(tempfile.gettempdir(), f'description_{user_id}.mp3')
-                success = await text_to_speech_chunk(description, voice_path)
-                
-                if success and os.path.exists(voice_path):
-                    logger.info("Voice file created successfully")
-                    # Update status
-                    await status_message.edit_text(" Sending voice description...")
-                    
-                    # Send the voice message
-                    with open(voice_path, 'rb') as voice:
-                        await update.message.reply_voice(
-                            voice=voice,
-                            caption=" Image Description"
-                        )
-                    logger.info("Voice message sent successfully")
-                    
-                    # Clean up
-                    os.remove(voice_path)
-                    await status_message.delete()
-                else:
-                    logger.error("Failed to create voice file")
-                    await status_message.edit_text(" Could not generate voice description.")
-                    
-            except Exception as voice_error:
-                logger.error(f"Voice description error: {str(voice_error)}", exc_info=True)
-                await update.message.reply_text("Note: Voice description could not be generated.")
+            logging.info("Starting voice response generation...")
+            await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="upload_voice")
+            
+            # Create voice file path
+            voice_path = os.path.join(TEMP_DIR, f"description_{photo.file_id}.mp3")
+            
+            # Convert text to speech
+            success = await text_to_speech_chunk(description, voice_path)
+            
+            if success:
+                # Send voice message
+                with open(voice_path, 'rb') as voice_file:
+                    await context.bot.send_voice(
+                        chat_id=update.effective_chat.id,
+                        voice=voice_file,
+                        caption="🎧 Voice description"
+                    )
+                # Clean up voice file
+                os.remove(voice_path)
+            else:
+                await update.message.reply_text("Sorry, I couldn't generate the voice description.")
+                logging.error("Failed to generate voice description")
 
     except Exception as e:
-        error_message = f"Error describing image: {str(e)}"
-        logger.error(error_message, exc_info=True)
+        logging.error(f"Error in image description: {str(e)}")
         await update.message.reply_text(
-            "Sorry, I encountered an error while describing the image. Please try again."
+            "Sorry, I encountered an error while processing your image. Please try again later."
         )
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -1139,6 +1095,39 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             " Sorry, an error occurred while exporting your chat history."
         )
+
+async def text_to_speech_chunk(text: str, output_path: str) -> bool:
+    """Convert text to speech using gTTS and save to file."""
+    try:
+        # Create gTTS object
+        tts = gTTS(text=text, lang='en', slow=False)
+        # Save to file
+        tts.save(output_path)
+        return True
+    except Exception as e:
+        logging.error(f"Error in text to speech conversion: {str(e)}")
+        return False
+
+async def resize_image(image_path, max_size=(800, 800)):
+    """Resize image to reduce file size while maintaining aspect ratio"""
+    try:
+        with Image.open(image_path) as img:
+            # Convert to RGB if necessary
+            if img.mode in ('RGBA', 'P'):
+                img = img.convert('RGB')
+            
+            # Calculate new size maintaining aspect ratio
+            img.thumbnail(max_size, Image.Resampling.LANCZOS)
+            
+            # Save to bytes
+            img_byte_arr = io.BytesIO()
+            img.save(img_byte_arr, format='JPEG', quality=85, optimize=True)
+            img_byte_arr.seek(0)
+            
+            return img_byte_arr.getvalue()
+    except Exception as e:
+        logging.error(f"Error resizing image: {str(e)}")
+        return None
 
 def setup_bot(token: str) -> Application:
     """Set up and configure the bot with all handlers."""

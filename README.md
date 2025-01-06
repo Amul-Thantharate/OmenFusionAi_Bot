@@ -2,16 +2,17 @@
 
 A versatile Telegram bot that combines AI chat, image generation, voice processing, and YouTube integration.
 
-## Latest Updates (v2.3.0) 🎉
-- Enhanced AI chat response system
-- Improved image generation capabilities
-- Optimized voice processing
-- Better YouTube integration
+## Latest Updates (v2.4.0) 🎉
+- Improved image description using Groq's vision model
+- Enhanced voice response system
+- Optimized image processing pipeline
+- Better error handling and user feedback
 - Updated dependencies and performance improvements
 
 ## Features ✨
 
 - **AI Chat**: Natural language conversations with Groq
+- **Image Analysis**: Detailed image descriptions with voice output
 - **Image Generation**: Create images from text descriptions
 - **Voice Processing**: Speech-to-text and text-to-speech
 - **YouTube Integration**: Download audio from videos
@@ -65,7 +66,7 @@ ADMIN_USER_ID=       # Your Telegram User ID
 
 4. **Run Bot**
 ```bash
-python main.py
+python app.py
 ```
 
 ## Commands 📝
@@ -77,6 +78,7 @@ python main.py
 
 ### Media
 - `/imagine` - Generate images
+- `/describe` - Analyze and describe images
 - `/transcribe` - Convert speech to text
 - `/voice` - Convert text to speech
 - `/audio` - Download YouTube audio
@@ -96,6 +98,8 @@ python main.py
 - Telegram Bot Token
 - Groq API Key (v0.4.1+)
 - Together AI API Key (v0.2.8+)
+- PIL (Python Imaging Library)
+- gTTS (Google Text-to-Speech)
 
 ## Documentation 📚
 
@@ -114,7 +118,8 @@ python main.py
 
 ### Image Features
 - Text-to-image generation
-- Image analysis
+- Advanced image analysis with Groq Vision
+- Voice descriptions of images
 - Prompt enhancement
 - Style customization
 
