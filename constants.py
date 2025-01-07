@@ -31,37 +31,37 @@ Be specific but concise in your analysis.
 
 # Help Messages 💡
 HELP_MESSAGE = """
-*Welcome to AIFusionBot!* Here are all available commands:
+*Welcome to AIFusionBot\!* Here are all available commands:
 
 🤖 *Basic Commands*
-• `/start` - Start the bot
-• `/help` - Show this help message
-• `/chat` - Chat with AI
-• `/settings` - Configure bot settings
-• `/status` - Check bot status
+• /start \- Start the bot
+• /help \- Show this help message
+• /chat \- Chat with AI
+• /settings \- Configure bot settings
+• /status \- Check bot status
 
 🎨 *Media Commands*
-• `/imagine` - Generate images
-• `/enhance` - Enhance prompts
-• `/describe` - Describe images
-• `/analyze_video` - Analyze video content
-• `/summarize_youtube` - Summarize YouTube video
+• /imagine \- Generate images
+• /enhance \- Enhance prompts
+• /describe \- Describe images
+• /analyze\_video \- Analyze video content
+• /summarize\_youtube \- Summarize YouTube video
 
 🔑 *API Setup*
-• `/setgroqkey` - Set your Groq API key
-• `/settogetherkey` - Set your Together API key
+• /setgroqkey \- Set your Groq API key
+• /settogetherkey \- Set your Together API key
 
 ⚙️ *Settings & Preferences*
-• `/togglevoice` - Toggle voice responses
-• `/subscribe` - Subscribe to bot status
-• `/unsubscribe` - Unsubscribe from bot status
-• `/clear_chat` - Clear chat history
-• `/export` - Export chat history
+• /togglevoice \- Toggle voice responses
+• /subscribe \- Subscribe to bot status
+• /unsubscribe \- Unsubscribe from bot status
+• /clear\_chat \- Clear chat history
+• /export \- Export chat history
 
 🔐 *Admin Commands*
-• `/maintenance` - Toggle maintenance mode (Requires root password)
+• /maintenance \- Toggle maintenance mode \(Requires root password\)
 
-Need help? Feel free to use any of these commands! Start with `/start` to get an introduction.
+Need help? Feel free to use any of these commands\! Start with /start to get an introduction\.
 """
 
 # Error Messages ❌
