@@ -26,24 +26,53 @@ def get_insights(video_path):
     """Get insights from a video using Gemini Vision."""
     try:
         logging.info(f"🎥 Processing video: {video_path}")
-        video_file = genai.upload_file(path=video_path)
-
-        while video_file.state.name == "PROCESSING":
-            time.sleep(10)
-            video_file = genai.get_file(video_file.name)
-
-        if video_file.state.name == "FAILED":
-            raise ValueError(ERROR_MESSAGES["processing_error"])
-
-        model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
+        
+        # Initialize Gemini model with the newer 1.5 Flash version
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Read video frames
+        import cv2
+        cap = cv2.VideoCapture(video_path)
+        frames = []
+        frame_interval = 30  # Capture one frame every second (assuming 30fps)
+        frame_count = 0
+        
+        while cap.isOpened():
+            ret, frame = cap.read()
+            if not ret:
+                break
+                
+            if frame_count % frame_interval == 0:
+                # Convert frame to RGB
+                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+                # Convert to format expected by Gemini
+                _, buffer = cv2.imencode('.jpg', frame_rgb)
+                frames.append({
+                    "mime_type": "image/jpeg",
+                    "data": buffer.tobytes()
+                })
+                
+                # Limit to max 10 frames to avoid token limits
+                if len(frames) >= 10:
+                    break
+                    
+            frame_count += 1
+            
+        cap.release()
+        
+        if not frames:
+            raise ValueError("No frames could be extracted from the video")
+            
+        # Generate content with frames
         response = model.generate_content(
-            [VIDEO_ANALYSIS_PROMPT, video_file],
-            request_options={"timeout": 600}
+            contents=[VIDEO_ANALYSIS_PROMPT] + frames,
+            generation_config={
+                "temperature": 0.4,
+                "max_output_tokens": 2048
+            }
         )
         
-        insights = response.text
-        genai.delete_file(video_file.name)
-        return insights
+        return response.text
         
     except Exception as e:
         logging.error(f"❌ Error in get_insights: {str(e)}")
