@@ -1,4 +1,4 @@
-# NovaChat AI v2.3.0 Release Notes
+# AIFusionBot AI v2.3.0 Release Notes
 
 ## 🚀 Latest Updates (January 5, 2025)
 
