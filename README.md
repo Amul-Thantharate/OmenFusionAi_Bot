@@ -37,6 +37,7 @@ pip install -r requirements.txt
 API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_token
 ROOT_PASSWORD=your_admin_password
+REPLICATE_API_KEY=your_replicate_api_key
 ```
 
 3. Run the bot:
@@ -49,6 +50,7 @@ python app.py
 - Python 3.8+
 - Telegram Bot Token
 - Google Gemini API Key
+- Replicate API Key
 - Internet connection
 
 ## 🛠️ Technical Details

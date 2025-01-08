@@ -1,4 +1,4 @@
-import together
+import replicate
 from groq import Groq
 import base64
 from PIL import Image
@@ -15,17 +15,16 @@ logging.basicConfig(level=logging.INFO)
 class AIImageGenerator:
     def __init__(self):
         load_dotenv(override=True)  # Force reload environment variables
-        together_api_key = os.getenv('TOGETHER_API_KEY')
+        replicate_api_key = os.getenv('REPLICATE_API_KEY')
         groq_api_key = os.getenv('GROQ_API_KEY')
 
-        if not together_api_key:
-            raise ValueError("Together API key not found. Please set TOGETHER_API_KEY in your .env file")
+        if not replicate_api_key:
+            raise ValueError("Replicate API key not found. Please set REPLICATE_API_KEY in your .env file")
         if not groq_api_key:
             raise ValueError("Groq API key not found. Please set GROQ_API_KEY in your .env file")
 
-        # Initialize Together client
-        together.api_key = together_api_key
-        self.together_client = together
+        # Set Replicate API key
+        os.environ['REPLICATE_API_TOKEN'] = replicate_api_key
         self.groq_client = Groq(api_key=groq_api_key)
         self.last_enhanced_prompt = None
 
@@ -65,46 +64,45 @@ class AIImageGenerator:
             return None
 
     def generate_image(self, prompt):
-        """Generate images using the Together API."""
+        """Generate images using the Replicate API."""
         try:
-            logger.info("Attempting to generate image with Together API...")
+            logger.info("Attempting to generate image with Replicate API...")
             logger.info(f"Using prompt: {prompt}")
 
-            # Generate image using the Image class
-            response = self.together_client.Image.create(
-                prompt=prompt,
-                model="black-forest-labs/FLUX.1-schnell-Free",
-                width=1024,
-                height=768,
-                steps=1,
-                n=1
+            # Generate image using Replicate
+            logger.info("Making API call to Replicate...")
+            output = replicate.run(
+                "recraft-ai/recraft-v3",
+                input={
+                    "size": "1024x1024",
+                    "style": "any",
+                    "prompt": prompt
+                }
             )
-        
-            logger.info(f"API Response type: {type(response)}")
-            logger.info(f"API Response content: {response}")
+            
+            logger.info(f"API Response type: {type(output)}")
+            logger.info(f"Raw API Response: {output}")
 
-            # Handle dictionary response
-            if isinstance(response, dict) and 'data' in response and response['data']:
-                image_data = response['data'][0]
-                if 'url' in image_data:
-                    # Download image from URL and convert to base64
-                    image_url = image_data['url']
-                    logger.info(f"Downloading image from URL: {image_url}")
-                    img_response = requests.get(image_url)
-                    if img_response.status_code == 200:
-                        b64_json = base64.b64encode(img_response.content).decode('utf-8')
-                        logger.info("Image downloaded and converted to base64 successfully")
-                        return True, b64_json, ""
-                    else:
-                        error_msg = f"Failed to download image from URL. Status code: {img_response.status_code}"
-                        logger.error(error_msg)
-                        return False, None, error_msg
+            # Handle the FileOutput response
+            try:
+                # Convert FileOutput to URL string
+                image_url = str(output)
+                logger.info(f"Image URL extracted: {image_url}")
+
+                # Download the image and convert to base64
+                logger.info(f"Downloading image from URL: {image_url}")
+                response = requests.get(image_url)
+                if response.status_code == 200:
+                    image_data = base64.b64encode(response.content).decode('utf-8')
+                    logger.info("Successfully downloaded and converted image to base64")
+                    return True, image_data, ""
                 else:
-                    error_msg = "No URL found in image data"
+                    error_msg = f"Failed to download image. Status code: {response.status_code}"
                     logger.error(error_msg)
                     return False, None, error_msg
-            else:
-                error_msg = f"Invalid response format. Expected 'data' array. Got keys: {list(response.keys()) if isinstance(response, dict) else 'not a dict'}"
+
+            except Exception as e:
+                error_msg = f"Error processing image URL: {str(e)}"
                 logger.error(error_msg)
                 return False, None, error_msg
 

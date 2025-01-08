@@ -20,7 +20,7 @@ google-generativeai==0.3.2
 youtube-transcript-api>=0.6.3
 SpeechRecognition>=3.10.0
 httpx==0.25.2
-together>=0.2.7
+replicate>=0.2.7
 yt-dlp>=2023.12.30
 browser-cookie3>=0.19.1  # Added for YouTube authentication
 
