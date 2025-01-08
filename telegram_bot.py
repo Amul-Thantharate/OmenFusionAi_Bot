@@ -26,6 +26,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 import google.generativeai as genai
 from video_insights import process_youtube_video, get_insights
 from constants import SUMMARY_PROMPT, MEDIA_FOLDER, HELP_MESSAGE
+from telegram import BotCommand
 
 # Load environment variables
 load_dotenv()
@@ -123,29 +124,55 @@ subscribed_users = {}
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
+    user = update.effective_user
     welcome_message = (
-        "🌟 *Welcome to AIFusionBot!* 🤖\n\n"
-        "👨‍💼 Created by Amul Thantharate\n\n"
-        "I'm your AI-powered assistant with multiple capabilities:\n\n"
-        "🗣️ Chat with AI\n"
-        "🎨 Generate & enhance images\n"
-        "🔊 Voice responses\n"
-        "📝 Process documents\n\n"
-        "🔑 *Important:* To use all features, you'll need:\n"
-        "• Groq API Key (/setgroqkey)\n"
-        "• Together API Key (/settogetherkey)\n\n"
-        "🚀 *Get Started:*\n"
-        "1. Set up your API keys\n"
-        "2. Try /help to see all commands\n"
-        "3. Start chatting with /chat\n\n"
-        "✨ Let's create something amazing together! ✨"
+        f"👋 Hello {user.first_name}! Welcome to AIFusionBot!\n\n"
+        "🤖 I'm your AI assistant with multiple capabilities. Here are my main commands:\n\n"
+        "🗣️ Basic Commands:\n"
+        "/start - Start the bot\n"
+        "/help - Show help message\n"
+        "/chat - Start a chat conversation\n"
+        "/settings - Configure bot settings\n\n"
+        "🎨 Creative Commands:\n"
+        "/imagine - Generate an image from text\n"
+        "/enhance - Enhance your text\n"
+        "/describe - Analyze an image\n\n"
+        "📽️ Media Commands:\n"
+        "/analyze_video - Analyze a video file\n"
+        "/summarize_youtube - Summarize YouTube video\n\n"
+        "⚙️ Utility Commands:\n"
+        "/clear_chat - Clear chat history\n"
+        "/export - Export chat history\n"
+        "/status - Check bot status\n"
+        "/togglevoice - Toggle voice responses\n\n"
+        "Type / to see all available commands!"
     )
     
     try:
-        await update.message.reply_text(welcome_message, parse_mode='Markdown')
+        # Try to set up commands menu
+        commands = [
+            BotCommand("start", "Start the bot"),
+            BotCommand("help", "Show help message"),
+            BotCommand("chat", "Start a chat conversation"),
+            BotCommand("settings", "Configure bot settings"),
+            BotCommand("togglevoice", "Toggle voice responses"),
+            BotCommand("imagine", "Generate an image from text"),
+            BotCommand("enhance", "Enhance your text"),
+            BotCommand("describe", "Analyze an image"),
+            BotCommand("clear_chat", "Clear chat history"),
+            BotCommand("export", "Export chat history"),
+            BotCommand("analyze_video", "Analyze a video file"),
+            BotCommand("summarize_youtube", "Summarize YouTube video"),
+            BotCommand("status", "Check bot status"),
+            BotCommand("subscribe", "Subscribe to bot updates"),
+            BotCommand("unsubscribe", "Unsubscribe from updates")
+        ]
+        await context.bot.set_my_commands(commands)
+        logging.info("✅ Bot commands registered successfully from start command")
     except Exception as e:
-        logging.error(f"Error in start command: {str(e)}")
-        await update.message.reply_text("An error occurred while processing your request.")
+        logging.error(f"❌ Failed to register bot commands from start: {str(e)}")
+    
+    await update.message.reply_text(welcome_message)
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /help is issued."""
@@ -1261,39 +1288,105 @@ async def summarize_youtube_command(update: Update, context: ContextTypes.DEFAUL
     except Exception as e:
         await update.message.reply_text(f"❌ Error processing YouTube video: {str(e)}")
 
-def setup_bot(token: str):
+async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to set up the bot commands menu."""
+    try:
+        commands = [
+            ("start", "Start the bot"),
+            ("help", "Show help message"),
+            ("chat", "Start a chat conversation"),
+            ("settings", "Configure bot settings"),
+            ("togglevoice", "Toggle voice responses"),
+            ("imagine", "Generate an image from text"),
+            ("enhance", "Enhance your text"),
+            ("describe", "Analyze an image"),
+            ("clear_chat", "Clear chat history"),
+            ("export", "Export chat history"),
+            ("analyze_video", "Analyze a video file"),
+            ("summarize_youtube", "Summarize YouTube video"),
+            ("status", "Check bot status"),
+            ("subscribe", "Subscribe to bot updates"),
+            ("unsubscribe", "Unsubscribe from updates")
+        ]
+        await context.bot.set_my_commands(commands)
+        await update.message.reply_text("✅ Bot commands menu has been set up successfully!")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error setting up commands menu: {str(e)}")
+
+async def post_init(application: Application) -> None:
+    """Post-initialization hook for the bot."""
+    try:
+        # Set up commands
+        if hasattr(application, '_commands'):
+            await application.bot.set_my_commands(application._commands)
+            logging.info("✅ Bot commands registered successfully")
+    except Exception as e:
+        logging.error(f"❌ Failed to register bot commands: {str(e)}")
+
+async def setup_bot(token: str):
     """Set up and configure the bot with all handlers."""
-    initialize_genai()  # Initialize Gemini AI
-    
-    application = Application.builder().token(token).build()
-    
-    # Add command handlers
-    application.add_handler(CommandHandler("start", start_command))
-    application.add_handler(CommandHandler("help", help_command))
-    application.add_handler(CommandHandler("chat", chat_command))
-    application.add_handler(CommandHandler("settings", settings_command))
-    application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
-    application.add_handler(CommandHandler("subscribe", subscribe_command))
-    application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
-    application.add_handler(CommandHandler("status", status_command))
-    application.add_handler(CommandHandler("imagine", imagine_command))
-    application.add_handler(CommandHandler("enhance", enhance_command))
-    application.add_handler(CommandHandler("describe", describe_image))
-    application.add_handler(CommandHandler("clear_chat", clear_chat))
-    application.add_handler(CommandHandler("maintenance", maintenance_command))
-    application.add_handler(CommandHandler("export", export_command))  # Add this line
-    application.add_handler(CommandHandler("analyze_video", analyze_video_command))
-    application.add_handler(CommandHandler("summarize_youtube", summarize_youtube_command))  # Add this line
-    
-    # Add message handlers
-    application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    application.add_handler(MessageHandler(filters.VIDEO & ~filters.COMMAND, analyze_video_command))  # Add video handler
-    
-    # Add error handler
-    application.add_error_handler(error_handler)
-    
-    return application
+    try:
+        initialize_genai()  # Initialize Gemini AI
+        
+        # Build application with post_init
+        application = (
+            Application.builder()
+            .token(token)
+            .post_init(post_init)
+            .build()
+        )
+        
+        # Add command handlers first
+        application.add_handler(CommandHandler("start", start_command))
+        application.add_handler(CommandHandler("help", help_command))
+        application.add_handler(CommandHandler("chat", chat_command))
+        application.add_handler(CommandHandler("settings", settings_command))
+        application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
+        application.add_handler(CommandHandler("subscribe", subscribe_command))
+        application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
+        application.add_handler(CommandHandler("status", status_command))
+        application.add_handler(CommandHandler("imagine", imagine_command))
+        application.add_handler(CommandHandler("enhance", enhance_command))
+        application.add_handler(CommandHandler("describe", describe_image))
+        application.add_handler(CommandHandler("clear_chat", clear_chat))
+        application.add_handler(CommandHandler("maintenance", maintenance_command))
+        application.add_handler(CommandHandler("export", export_command))
+        application.add_handler(CommandHandler("analyze_video", analyze_video_command))
+        application.add_handler(CommandHandler("summarize_youtube", summarize_youtube_command))
+        
+        # Add message handlers
+        application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
+        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+        application.add_handler(MessageHandler(filters.VIDEO & ~filters.COMMAND, analyze_video_command))
+        
+        # Add error handler
+        application.add_error_handler(error_handler)
+        
+        # Define commands
+        commands = [
+            BotCommand("start", "Start the bot"),
+            BotCommand("help", "Show help message"),
+            BotCommand("chat", "Start a chat conversation"),
+            BotCommand("settings", "Configure bot settings"),
+            BotCommand("togglevoice", "Toggle voice responses"),
+            BotCommand("imagine", "Generate an image from text"),
+            BotCommand("enhance", "Enhance your text"),
+            BotCommand("describe", "Analyze an image"),
+            BotCommand("clear_chat", "Clear chat history"),
+            BotCommand("export", "Export chat history"),
+            BotCommand("analyze_video", "Analyze a video file"),
+            BotCommand("summarize_youtube", "Summarize YouTube video"),
+            BotCommand("status", "Check bot status")
+        ]
+        
+        # Set commands for the bot - we'll do this after the bot starts
+        application._commands = commands  # Store commands for later use
+        
+        return application
+        
+    except Exception as e:
+        logger.error(f"Error in setup_bot: {str(e)}")
+        raise
 
 def run_bot():
     """Run the bot."""
