@@ -1,23 +1,77 @@
 # AIFusionBot AI v2.3.0 Release Notes
 
-## 🚀 Latest Updates (January 5, 2025)
+## 🚀 Latest Updates (January 8, 2025)
 
-### Enhanced Bot Features
-- Improved AI chat response system
-- Enhanced image generation capabilities
-- Optimized voice processing
-- Better YouTube integration performance
+### 🔧 Core Improvements
+- Fixed event loop handling and bot initialization
+- Enhanced command registration system
+- Improved error handling and cleanup processes
+- Added proper async polling mechanism
+- Enhanced application shutdown process
 
-### System Improvements
-- Updated dependency versions
-- Enhanced error handling
-- Improved maintenance system
-- Better session management
+### 🎯 Features
+- Improved bot command menu display
+- Enhanced bot stability and reliability
+- Better error reporting and logging
+- Optimized application lifecycle management
 
-### Documentation
-- Updated command reference
-- Enhanced setup guides
-- Improved troubleshooting documentation
+### 🔒 Security
+- Improved environment variable handling
+- Enhanced token validation and verification
+
+### 📚 Documentation
+- Updated deployment instructions
+- Added server setup guidelines
+- Enhanced troubleshooting documentation
+
+### 🛠️ Technical Details
+- Refactored event loop management
+- Improved async/await patterns
+- Enhanced error boundary handling
+- Optimized resource cleanup
+
+## 🔄 Installation & Deployment
+
+### Prerequisites
+- Python 3.8+
+- pip (Python package manager)
+- Git
+
+### Required Environment Variables
+```env
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+GROQ_API_KEY=your_groq_api_key
+TOGETHER_API_KEY=your_together_api_key
+```
+
+### Server Deployment Steps
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/yourusername/AIFusionBot.git
+   cd AIFusionBot
+   ```
+
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. Set up environment variables:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your actual values
+   ```
+
+4. Run the application:
+   ```bash
+   python app.py
+   ```
+
+## 📋 Server Requirements
+- 1GB RAM minimum (2GB recommended)
+- Python 3.8 or higher
+- Stable internet connection
+- SSL certificate (for production)
 
 ## 🛠️ Technical Updates
 - Updated Python dependencies
