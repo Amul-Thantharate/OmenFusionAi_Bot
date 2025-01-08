@@ -21,17 +21,27 @@
    cd AIFusionBot
    ```
 
-3. **Make deploy script executable**
+3. **Make setup scripts executable**
    ```bash
-   chmod +x deploy.sh
+   chmod +x setup_linux.sh deploy.sh
    ```
 
-4. **Run deployment script**
+4. **Run Linux setup script**
+   ```bash
+   ./setup_linux.sh
+   ```
+   This script will:
+   - Install system dependencies
+   - Set up Python virtual environment
+   - Install Python packages
+   - Configure ffmpeg and other requirements
+
+5. **Run deployment script**
    ```bash
    ./deploy.sh
    ```
 
-5. **Configure environment variables**
+6. **Configure environment variables**
    ```bash
    nano .env
    ```
@@ -42,9 +52,34 @@
    TOGETHER_API_KEY=your_together_api_key
    ```
 
-6. **Restart the service**
+7. **Restart the service**
    ```bash
    sudo systemctl restart aifusionbot
+   ```
+
+### Common Linux Issues
+
+1. **ffmpeg not found**
+   ```bash
+   sudo apt-get update
+   sudo apt-get install -y ffmpeg
+   ```
+
+2. **libmagic issues**
+   ```bash
+   sudo apt-get install -y libmagic1
+   ```
+
+3. **Permission denied**
+   ```bash
+   sudo chown -R $USER:$USER /path/to/AIFusionBot
+   chmod +x *.sh
+   ```
+
+4. **Python version issues**
+   ```bash
+   python3 --version  # Should be 3.8 or higher
+   sudo apt-get install python3.9  # If needed
    ```
 
 ### Monitoring & Maintenance
@@ -63,6 +98,8 @@
    ```bash
    cd AIFusionBot
    git pull
+   source venv/bin/activate
+   pip install -r requirements.txt
    sudo systemctl restart aifusionbot
    ```
 
@@ -72,8 +109,10 @@
    - Check logs: `sudo journalctl -u aifusionbot -f`
    - Verify .env file: `cat .env`
    - Check Python version: `python3 --version`
+   - Verify virtual environment: `source venv/bin/activate`
 
 2. **If commands don't work:**
+   - Check system dependencies: `./setup_linux.sh`
    - Restart the service: `sudo systemctl restart aifusionbot`
    - Check Telegram bot token
    - Verify internet connection
@@ -81,6 +120,12 @@
 3. **Memory issues:**
    - Check memory usage: `free -h`
    - Monitor process: `top -u $USER`
+   - Check disk space: `df -h`
+
+4. **Permission issues:**
+   - Fix ownership: `sudo chown -R $USER:$USER .`
+   - Fix permissions: `chmod -R 755 .`
+   - Check service user: `sudo systemctl status aifusionbot`
 
 ## 📞 Support
 
@@ -97,3 +142,5 @@ If you encounter any issues during deployment:
 3. Regularly update dependencies
 4. Monitor server resources
 5. Back up your data regularly
+6. Set proper file permissions
+7. Use a firewall (UFW recommended)

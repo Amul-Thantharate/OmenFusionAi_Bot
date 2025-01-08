@@ -1,3 +1,4 @@
+# Core dependencies
 flask>=3.0.1
 python-telegram-bot==20.7
 python-dotenv==1.0.0
@@ -8,13 +9,11 @@ Pillow==10.1.0
 fpdf2>=2.7.8
 pydub==0.25.1
 ffmpeg-python==0.2.0
-python-magic==0.4.27
 markdown>=3.5.2
 gTTS==2.4.0
 moviepy>=1.0.3
 psutil==5.9.7
 aiohttp==3.9.1
-asyncio==3.4.3
 colorama==0.4.6
 tqdm==4.66.1
 google-generativeai==0.3.2
@@ -22,7 +21,14 @@ pytube==15.0.0
 youtube-transcript-api>=0.6.3
 SpeechRecognition>=3.10.0
 httpx==0.25.2
-pip install --upgrade together
+together>=0.2.7
+
+# System-specific dependencies
+# Windows
+python-magic-bin>=0.4.14; sys_platform == 'win32'
+# Linux
+python-magic>=0.4.27; sys_platform == 'linux'
+
 # Development dependencies
 pytest>=8.0.0
 coverage>=7.4.1
