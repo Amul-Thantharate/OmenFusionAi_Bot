@@ -43,8 +43,8 @@ async def run_bot():
         logger.info(f"Token prefix: {token.split(':')[0]}")
         logger.info(f"Setting up bot with token: {token.split(':')[0]}...")
         
-        # Setup bot
-        application = await setup_bot()
+        # Setup bot (now synchronous)
+        application = setup_bot()
         
         # Start polling
         await application.initialize()

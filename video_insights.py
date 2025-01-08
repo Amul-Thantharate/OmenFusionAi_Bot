@@ -78,47 +78,25 @@ def initialize():
 def get_insights(video_path):
     """Get insights from a video using Gemini Vision."""
     try:
-        logging.info(f"🎥 Processing video: {video_path}")
-        
         # Initialize Gemini model with the newer 1.5 Flash version
         model = genai.GenerativeModel('gemini-1.5-flash')
         
-        # Read video frames
-        import cv2
-        cap = cv2.VideoCapture(video_path)
-        frames = []
-        frame_interval = 30  # Capture one frame every second (assuming 30fps)
-        frame_count = 0
-        
-        while cap.isOpened():
-            ret, frame = cap.read()
-            if not ret:
-                break
-                
-            if frame_count % frame_interval == 0:
-                # Convert frame to RGB
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                # Convert to format expected by Gemini
-                _, buffer = cv2.imencode('.jpg', frame_rgb)
-                frames.append({
-                    "mime_type": "image/jpeg",
-                    "data": buffer.tobytes()
-                })
-                
-                # Limit to max 10 frames to avoid token limits
-                if len(frames) >= 10:
-                    break
-                    
-            frame_count += 1
+        # Read video file
+        with open(video_path, 'rb') as f:
+            video_data = f.read()
             
-        cap.release()
+        # Create video part
+        video_part = {
+            'mime_type': 'video/mp4',
+            'data': video_data
+        }
         
-        if not frames:
-            raise ValueError("No frames could be extracted from the video")
-            
-        # Generate content with frames
+        # Generate content with specific config
         response = model.generate_content(
-            contents=[VIDEO_ANALYSIS_PROMPT] + frames,
+            contents=[
+                "Analyze this video and describe what's happening, including key events, objects, and people. Be concise but detailed.",
+                video_part
+            ],
             generation_config={
                 "temperature": 0.4,
                 "max_output_tokens": 2048
@@ -128,7 +106,7 @@ def get_insights(video_path):
         return response.text
         
     except Exception as e:
-        logging.error(f"❌ Error in get_insights: {str(e)}")
+        print(f"Error in get_insights: {str(e)}")
         raise
 
 def save_video_file(file_data, filename):
@@ -226,7 +204,7 @@ def get_video_info(video_id):
         return None
         
     except Exception as e:
-        logging.error(f"❌ Error getting video info: {str(e)}")
+        logging.error(f"Error getting video info: {str(e)}")
         return None
 
 def get_browser_cookies():
@@ -261,7 +239,7 @@ def download_youtube_audio(video_id, output_dir):
         # Get browser cookies
         cookies = get_browser_cookies()
         if not cookies:
-            logging.warning("⚠️ No browser cookies found. Download may fail.")
+            logging.warning("No browser cookies found. Download may fail.")
         
         # Create a temporary cookie file
         cookie_file = None
@@ -305,11 +283,11 @@ def download_youtube_audio(video_id, output_dir):
             logging.info(f"Successfully downloaded audio: {os.path.getsize(wav_file)} bytes")
             return wav_file
             
-        logging.error("❌ Audio file not found after download")
+        logging.error("Audio file not found after download")
         return None
         
     except Exception as e:
-        logging.error(f"❌ Error downloading audio: {str(e)}")
+        logging.error(f"Error downloading audio: {str(e)}")
         return None
         
     finally:
@@ -329,7 +307,7 @@ def download_youtube_video(video_id, output_dir):
         # Get browser cookies
         cookies = get_browser_cookies()
         if not cookies:
-            logging.warning("⚠️ No browser cookies found. Download may fail.")
+            logging.warning("No browser cookies found. Download may fail.")
         
         # Create a temporary cookie file
         cookie_file = None
@@ -367,11 +345,11 @@ def download_youtube_video(video_id, output_dir):
             logging.info(f"Successfully downloaded video: {os.path.getsize(video_file)} bytes")
             return video_file
             
-        logging.error("❌ Video file not found after download")
+        logging.error("Video file not found after download")
         return None
         
     except Exception as e:
-        logging.error(f"❌ Error downloading video: {str(e)}")
+        logging.error(f"Error downloading video: {str(e)}")
         return None
         
     finally:
@@ -425,21 +403,21 @@ def generate_captions_from_audio(video_id):
                     if text:
                         logging.info("Speech recognition successful")
                         return text
-                    logging.warning(f"⚠️ Empty transcription result on attempt {attempt + 1}")
+                    logging.warning(f"Empty transcription result on attempt {attempt + 1}")
                 except sr.UnknownValueError:
-                    logging.warning(f"⚠️ Speech recognition failed on attempt {attempt + 1}")
+                    logging.warning(f"Speech recognition failed on attempt {attempt + 1}")
                 except sr.RequestError as e:
-                    logging.error(f"❌ Speech recognition service error: {str(e)}")
+                    logging.error(f"Speech recognition service error: {str(e)}")
                     break
                 
                 if attempt < 2:
                     time.sleep(2)
             
-            logging.error("❌ All speech recognition attempts failed")
+            logging.error("All speech recognition attempts failed")
             return None
             
         except Exception as e:
-            logging.error(f"❌ Speech recognition failed: {str(e)}")
+            logging.error(f"Speech recognition failed: {str(e)}")
             return None
             
         finally:
@@ -450,10 +428,10 @@ def generate_captions_from_audio(video_id):
                     shutil.rmtree(temp_dir)
                     logging.info(f"Cleaned up temporary directory: {temp_dir}")
             except Exception as e:
-                logging.error(f"❌ Error cleaning up temporary directory: {str(e)}")
+                logging.error(f"Error cleaning up temporary directory: {str(e)}")
             
     except Exception as e:
-        logging.error(f"❌ Error generating captions from audio: {str(e)}")
+        logging.error(f"Error generating captions from audio: {str(e)}")
         return None
 
 def extract_transcript_details(youtube_video_url):
@@ -465,7 +443,7 @@ def extract_transcript_details(youtube_video_url):
         elif "youtu.be/" in youtube_video_url:
             video_id = youtube_video_url.split("youtu.be/")[1].split("?")[0]
         else:
-            logging.error("❌ Invalid YouTube URL format")
+            logging.error("Invalid YouTube URL format")
             return None
 
         try:
@@ -474,14 +452,14 @@ def extract_transcript_details(youtube_video_url):
             transcript = " ".join([item["text"] for item in transcript_list])
             return transcript
         except Exception as e:
-            logging.warning(f"❌ No manual captions available: {str(e)}")
+            logging.warning(f"No manual captions available: {str(e)}")
             try:
                 # If manual captions fail, try auto-generated ones
                 transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en-US'])
                 transcript = " ".join([item["text"] for item in transcript_list])
                 return transcript
             except Exception as e:
-                logging.warning(f"❌ No auto-generated captions available: {str(e)}")
+                logging.warning(f"No auto-generated captions available: {str(e)}")
                 try:
                     # If both fail, try to get any available transcript
                     transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
@@ -490,19 +468,19 @@ def extract_transcript_details(youtube_video_url):
                     transcript = " ".join([item["text"] for item in transcript_list])
                     return transcript
                 except Exception as e:
-                    logging.warning(f"❌ No transcripts available at all: {str(e)}")
+                    logging.warning(f"No transcripts available at all: {str(e)}")
                     
                     # Try generating captions from audio as a last resort
-                    logging.info("🎤 Attempting to generate captions from video audio...")
+                    logging.info("Attempting to generate captions from video audio...")
                     generated_transcript = generate_captions_from_audio(video_id)
                     if generated_transcript:
                         return generated_transcript
                     
-                    logging.error("❌ Could not extract or generate video transcript")
+                    logging.error("Could not extract or generate video transcript")
                     return None
                     
     except Exception as e:
-        logging.error(f"❌ Error in transcript extraction: {str(e)}")
+        logging.error(f"Error in transcript extraction: {str(e)}")
         return None
 
 def generate_gemini_content(transcript_text, prompt):
@@ -512,7 +490,7 @@ def generate_gemini_content(transcript_text, prompt):
         response = model.generate_content(prompt + transcript_text)
         return response.text
     except Exception as e:
-        logging.error(f"❌ Error generating content: {str(e)}")
+        logging.error(f"Error generating content: {str(e)}")
         raise
 
 def process_youtube_video(video_id):
@@ -542,7 +520,7 @@ def process_youtube_video(video_id):
             return summary
             
         except Exception as e:
-            logging.error(f"❌ Error processing video: {str(e)}")
+            logging.error(f"Error processing video: {str(e)}")
             return None
             
         finally:
@@ -553,10 +531,10 @@ def process_youtube_video(video_id):
                     shutil.rmtree(temp_dir)
                     logging.info(f"Cleaned up temporary directory: {temp_dir}")
             except Exception as e:
-                logging.error(f"❌ Error cleaning up temporary directory: {str(e)}")
+                logging.error(f"Error cleaning up temporary directory: {str(e)}")
             
     except Exception as e:
-        logging.error(f"❌ Error in process_youtube_video: {str(e)}")
+        logging.error(f"Error in process_youtube_video: {str(e)}")
         return None
 
 async def handle_youtube_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -565,7 +543,7 @@ async def handle_youtube_command(update: Update, context: ContextTypes.DEFAULT_T
         # Check if URL is provided
         if not context.args:
             await update.message.reply_text(
-                "❌ Please provide a YouTube URL. Example: youtube_summary https://youtu.be/VIDEO_ID"
+                "Please provide a YouTube URL. Example: youtube_summary https://youtu.be/VIDEO_ID"
             )
             return
 
@@ -574,13 +552,13 @@ async def handle_youtube_command(update: Update, context: ContextTypes.DEFAULT_T
         
         if not video_id:
             await update.message.reply_text(
-                "❌ Invalid YouTube URL. Please provide a valid YouTube video URL."
+                "Invalid YouTube URL. Please provide a valid YouTube video URL."
             )
             return
 
         # Send processing message
         processing_msg = await update.message.reply_text(
-            "🔄 Processing your YouTube video... This may take a few minutes."
+            "Processing your YouTube video... This may take a few minutes."
         )
 
         try:
@@ -631,9 +609,9 @@ async def handle_youtube_command(update: Update, context: ContextTypes.DEFAULT_T
                 duration = info.get('duration', 0)
                 
                 await processing_msg.edit_text(
-                    f"📥 Downloaded: {title}\n"
-                    f"⏱️ Duration: {duration//60}:{duration%60:02d}\n"
-                    "🔄 Generating summary..."
+                    f"Downloaded: {title}\n"
+                    f"Duration: {duration//60}:{duration%60:02d}\n"
+                    "Generating summary..."
                 )
 
             # Initialize Gemini
@@ -648,14 +626,14 @@ async def handle_youtube_command(update: Update, context: ContextTypes.DEFAULT_T
             
             # Send summary
             await processing_msg.edit_text(
-                f"📝 Summary of '{title}'\n\n{summary}\n\n"
-                f"🔗 Video: {url}"
+                f"Summary of '{title}'\n\n{summary}\n\n"
+                f"Video: {url}"
             )
 
         except Exception as e:
             logger.error(f"Error processing video: {str(e)}")
             await processing_msg.edit_text(
-                f"❌ Error processing video: {str(e)}\n"
+                f"Error processing video: {str(e)}\n"
                 "Please try again or contact support if the issue persists."
             )
 
@@ -670,7 +648,7 @@ async def handle_youtube_command(update: Update, context: ContextTypes.DEFAULT_T
     except Exception as e:
         logger.error(f"Error in handle_youtube_command: {str(e)}")
         await update.message.reply_text(
-            "❌ An unexpected error occurred. Please try again later."
+            "An unexpected error occurred. Please try again later."
         )
 
 def cleanup_video_file(file_path):
@@ -678,6 +656,6 @@ def cleanup_video_file(file_path):
     try:
         if os.path.exists(file_path):
             os.remove(file_path)
-            logging.info(f"🗑️ Cleaned up file: {file_path}")
+            logging.info(f"Cleaned up file: {file_path}")
     except Exception as e:
-        logging.error(f"❌ Error cleaning up file {file_path}: {str(e)}")
+        logging.error(f"Error cleaning up file {file_path}: {str(e)}")

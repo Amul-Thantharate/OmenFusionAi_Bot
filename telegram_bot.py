@@ -24,6 +24,11 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import video_insights
 from constants import HELP_MESSAGE, SUMMARY_PROMPT, MEDIA_FOLDER
+from image_generator import AIImageGenerator
+from video_insights import get_insights
+
+# Initialize image generator
+image_generator = AIImageGenerator()
 
 # Load environment variables
 load_dotenv()
@@ -51,45 +56,32 @@ user_sessions = {}
 
 # Dictionary of available commands and their descriptions
 COMMANDS = {
-    "Basic Commands": {
-        "/start": "🚀 Start the bot",
-        "/help": "❓ Show this help message",
-        "/chat": "💭 Chat with AI",
-        "/settings": "⚙️ Configure bot settings",
-        "/status": "📊 Check bot status"
-    },
-    "Media Commands": {
-        "/imagine": "🎨 Generate images",
-        "/enhance": "✨ Enhance prompts",
-        "/describe": "🔍 Describe images",
-        "/analyze_video": "🎥 Analyze video content"
-    },
-    "API Commands": {
-        "/setgroqkey": "🔑 Set your Groq API key",
-        "/settogetherkey": "🔐 Set your Together API key"
-    },
-    "Settings Commands": {
-        "/togglevoice": "🔊 Toggle voice responses",
-        "/subscribe": "🔔 Subscribe to bot status",
-        "/unsubscribe": "🔔 Unsubscribe from bot status",
-        "/clear_chat": "🗑️ Clear chat history",
-        "/export": "📥 Export chat history",
-        "/maintenance": "🛠️ Toggle maintenance mode (Requires root password)"
-    },
-    "Admin Commands ": {
-        "/maintenance": "🛠️ Toggle maintenance mode (Requires root password)"
-    }
+    "/start": "Start the bot",
+    "/help": "Show help message",
+    "/chat": "Start a chat conversation",
+    "/settings": "Configure bot settings",
+    "/togglevoice": "Toggle voice responses",
+    "/imagine": "Generate an image from text",
+    "/enhance": "Enhance your text",
+    "/describe": "Analyze an image",
+    "/clear_chat": "Clear chat history",
+    "/export": "Export chat history",
+    "/analyze_video": "Analyze a video file",
+    "/status": "Check bot status",
+    "/subscribe": "Subscribe to bot updates",
+    "/unsubscribe": "Unsubscribe from updates",
+    "/maintenance": "Toggle maintenance mode (Admin only)",
+    "/setup_commands": "Update bot commands (Admin only)"
 }
 
 # Group commands by category for help menu
 COMMAND_CATEGORIES = {
-    "🤖 Chat": ['chat'],
-    "🎨 Image": ['imagine', 'enhance', 'describe'],
-    "🔑 API Keys": ['setgroqkey', 'settogetherkey'],
-    "🔊 Audio": ['togglevoice'],
-    "⚙️ Settings": ['settings', 'uploadenv', 'togglevoice', 'clear_chat'],
+    "🤖 Chat": ['chat', 'clear_chat', 'export'],
+    "🎨 Media": ['imagine', 'enhance', 'describe', 'analyze_video'],
+    "🔊 Settings": ['settings', 'togglevoice'],
+    "📊 Status": ['status', 'subscribe', 'unsubscribe'],
     "ℹ️ General": ['start', 'help'],
-    "🔐 Admin": ['maintenance']  # Changed to show it requires authentication
+    "🔐 Admin": ['maintenance', 'setup_commands']  # Added admin category
 }
 
 class UserSession:
@@ -121,51 +113,21 @@ subscribed_users = {}
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
-    user = update.effective_user
+    if not update.message:
+        return
+
     welcome_message = (
-        f"👋 Hello {user.first_name}! Welcome to AIFusionBot!\n\n"
-        "🤖 I'm your AI assistant with multiple capabilities. Here are my main commands:\n\n"
-        "🗣️ Basic Commands:\n"
-        "/start - Start the bot\n"
-        "/help - Show help message\n"
-        "/chat - Start a chat conversation\n"
-        "/settings - Configure bot settings\n\n"
-        "🎨 Creative Commands:\n"
-        "/imagine - Generate an image from text\n"
-        "/enhance - Enhance your text\n"
-        "/describe - Analyze an image\n\n"
-        "📽️ Media Commands:\n"
-        "/analyze_video - Analyze a video file\n\n"
-        "⚙️ Utility Commands:\n"
-        "/clear_chat - Clear chat history\n"
-        "/export - Export chat history\n"
-        "/status - Check bot status\n"
-        "/togglevoice - Toggle voice responses\n\n"
-        "Type / to see all available commands!"
+        "🤖 Welcome to AIFusionBot!\n\n"
+        "🤖 Cereate by Amul Thantharate\n\n"
+        "I'm your AI assistant that can help you with various tasks:\n\n"
+        "🗣️ Chat - Have natural conversations with AI\n"
+        "🎨 Images - Generate and analyze images\n"
+        "🎥 Video - Analyze video content\n"
+        "📝 Text - Enhance and improve your text\n"
+        "🔊 Voice - Toggle voice responses\n"
+        "📊 Status - Get bot updates and notifications\n\n"
+        "Type /help to see all available commands!"
     )
-    
-    try:
-        # Try to set up commands menu
-        commands = [
-            BotCommand("start", "Start the bot"),
-            BotCommand("help", "Show help message"),
-            BotCommand("chat", "Start a chat conversation"),
-            BotCommand("settings", "Configure bot settings"),
-            BotCommand("togglevoice", "Toggle voice responses"),
-            BotCommand("imagine", "Generate an image from text"),
-            BotCommand("enhance", "Enhance your text"),
-            BotCommand("describe", "Analyze an image"),
-            BotCommand("clear_chat", "Clear chat history"),
-            BotCommand("export", "Export chat history"),
-            BotCommand("analyze_video", "Analyze a video file"),
-            BotCommand("status", "Check bot status"),
-            BotCommand("subscribe", "Subscribe to bot updates"),
-            BotCommand("unsubscribe", "Unsubscribe from updates")
-        ]
-        await context.bot.set_my_commands(commands)
-        logging.info("✅ Bot commands registered successfully from start command")
-    except Exception as e:
-        logging.error(f"❌ Failed to register bot commands from start: {str(e)}")
     
     await update.message.reply_text(welcome_message)
 
@@ -174,11 +136,39 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
         
-    from constants import HELP_MESSAGE
-    await update.message.reply_text(
-        HELP_MESSAGE,
-        parse_mode='Markdown'
-    )
+    help_text = "🤖 *AIFusionBot Commands*\n\n"
+    
+    # Add regular categories first
+    for category, commands in COMMAND_CATEGORIES.items():
+        if category != "🔐 Admin":  # Skip admin commands for now
+            help_text += f"\n{category}\n"
+            for cmd in commands:
+                cmd_with_slash = f"/{cmd}"
+                if cmd_with_slash in COMMANDS:
+                    description = COMMANDS[cmd_with_slash].replace("_", "\\_")  # Escape underscores
+                    help_text += f"• `{cmd_with_slash}` \\- {description}\n"
+    
+    # Add admin commands separately
+    if "🔐 Admin" in COMMAND_CATEGORIES:
+        help_text += "\n🔐 *Admin Commands*\n"
+        for cmd in COMMAND_CATEGORIES["🔐 Admin"]:
+            cmd_with_slash = f"/{cmd}"
+            if cmd_with_slash in COMMANDS:
+                description = COMMANDS[cmd_with_slash].replace("_", "\\_")  # Escape underscores
+                help_text += f"• `{cmd_with_slash}` \\- {description}\n"
+    
+    help_text += "\n_For more information about what I can do, type_ `/start`"
+    
+    try:
+        await update.message.reply_text(
+            help_text,
+            parse_mode='MarkdownV2'
+        )
+    except Exception as e:
+        # Fallback to plain text if Markdown fails
+        plain_text = help_text.replace('*', '').replace('_', '').replace('`', '')
+        await update.message.reply_text(plain_text)
+        logging.error(f"Error sending help message with Markdown: {str(e)}")
 
 async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """This command is deprecated."""
@@ -310,83 +300,70 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /imagine command for image generation with prompt enhancement."""
-    logger.info("Starting /imagine command...")
-    
     if not update.message:
-        logger.error("No message object found in update")
         return
 
+    # Check if there's a prompt
     if not context.args:
-        logger.info("No prompt provided with /imagine command")
         await update.message.reply_text(
-            "Please provide a description after /imagine\n"
-            "Example: `/imagine beautiful sunset over mountains, realistic, 4k, detailed`",
-            parse_mode='Markdown'
-        )
-        return
-
-    user_id = update.effective_user.id
-    logger.info(f"Processing /imagine command for user {user_id}")
-    
-    if user_id not in user_sessions:
-        logger.info(f"Creating new session for user {user_id}")
-        user_sessions[user_id] = UserSession()
-
-    session = user_sessions[user_id]
-    if not session.together_api_key:
-        logger.warning(f"Together API key not set for user {user_id}")
-        await update.message.reply_text(
-            " Please set your Together API key first using:\n"
-            "`/settogetherkey your_api_key`",
+            "Please provide a prompt for the image generation.\n"
+            "Example: `/imagine a beautiful sunset over mountains`",
             parse_mode='Markdown'
         )
         return
 
     prompt = ' '.join(context.args)
-    logger.info(f"Received prompt: {prompt}")
 
-    # Send a message indicating that prompt enhancement has started
-    progress_message = await update.message.reply_text(
-        " Step 1/2: Enhancing your prompt... Please wait."
+    # Send initial status
+    status_message = await update.message.reply_text(
+        "🎨 Step 1/2: Enhancing your prompt..."
     )
 
     try:
+        # Enhance the prompt
+        enhanced_prompt = image_generator.enhance_prompt(prompt)
+        if not enhanced_prompt:
+            await status_message.edit_text("❌ Failed to enhance the prompt. Please try again.")
+            return
+
+        # Update status message
+        await status_message.edit_text("🎨 Step 2/2: Generating image from enhanced prompt...")
+
+        # Generate the image
         start_time = time.time()
-        logger.info("Calling generate_image function...")
-        # Pass the user_id to generate_image
-        success, image_bytes, message, enhanced_prompt = generate_image(prompt, user_id=user_id)
+        success, image_data, error_message = image_generator.generate_image(enhanced_prompt)
         total_time = time.time() - start_time
-        logger.info(f"Image generation completed in {total_time:.2f} seconds. Success: {success}")
-        
-        if success and image_bytes:
-            logger.info("Image generated successfully, sending to user...")
-            # Update progress message for image generation
-            await progress_message.edit_text(" Step 2/2: Generating image from enhanced prompt...")
+
+        if success and image_data:
+            # Convert base64 to bytes
+            image_bytes = base64.b64decode(image_data)
             
-            # Use the returned enhanced prompt
-            enhanced_caption = (
-                f" Original prompt:\n'{prompt}'\n\n"
-                f" Enhanced prompt:\n'{enhanced_prompt}'\n\n"
-                f" Total generation time: {total_time:.2f} seconds"
+            # Create BytesIO object
+            image_io = io.BytesIO(image_bytes)
+            image_io.name = 'generated_image.png'
+
+            # Send the image with both original and enhanced prompts
+            caption = (
+                f"🎨 Original prompt:\n{prompt}\n\n"
+                f"✨ Enhanced prompt:\n{enhanced_prompt}\n\n"
+                f"⏱️ Generation time: {total_time:.2f}s"
             )
             
-            # Send the generated image with the enhanced caption
             await update.message.reply_photo(
-                photo=BytesIO(image_bytes),
-                caption=enhanced_caption,
+                photo=image_io,
+                caption=caption,
                 parse_mode='Markdown'
             )
+            await status_message.delete()
         else:
-            logger.error(f"Failed to generate image: {message}")
-            await update.message.reply_text(f" Failed to generate image: {message}")
+            error_msg = f"Failed to generate image: {error_message}"
+            logger.error(error_msg)
+            await status_message.edit_text(f"❌ {error_msg}")
+
     except Exception as e:
-        logger.error(f"Error in image generation: {str(e)}", exc_info=True)
-        await update.message.reply_text(
-            " Sorry, something went wrong while generating the image. Please try again later."
-        )
-    finally:
-        # Delete the progress message
-        await progress_message.delete()
+        error_msg = f"Error during image generation: {str(e)}"
+        logger.error(error_msg)
+        await status_message.edit_text(f"❌ {error_msg}")
 
 async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /enhance command for text enhancement."""
@@ -1116,20 +1093,213 @@ def initialize_genai():
     genai.configure(api_key=api_key)
 
 def get_video_insights(video_path):
-    video_file = genai.upload_file(path=video_path)
+    """Get insights from a video using Gemini Vision."""
+    try:
+        logging.info(f"🎥 Processing video: {video_path}")
+        
+        # Initialize Gemini model
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        # Read video file
+        with open(video_path, 'rb') as f:
+            video_data = f.read()
+            
+        # Create video part for Gemini
+        video_part = {
+            'mime_type': 'video/mp4',
+            'data': video_data
+        }
+        
+        # Generate prompt for video analysis
+        prompt = """
+        Analyze this video and provide insights on:
+        1. What's happening in the video
+        2. Key events or actions
+        3. Notable objects or people
+        4. Overall context and setting
+        
+        Please be detailed but concise in your analysis.
+        """
+        
+        # Generate response
+        response = model.generate_content([prompt, video_part])
+        
+        return response.text
+        
+    except Exception as e:
+        logging.error(f"Error in video analysis: {str(e)}")
+        raise
+
+MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
+
+async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /analyze_video command and direct video messages."""
+    try:
+        if not update.message:
+            return
+            
+        # Get video file from either command or direct message
+        video = update.message.video
+        document = update.message.document
+
+        # If neither video nor document is present, send instructions
+        if not video and not document:
+            await update.message.reply_text(
+                "Please send me a video to analyze! You can either:\n"
+                "1. Send the video directly\n"
+                "2. Use /analyze_video and attach a video\n\n"
+                "📝 Requirements:\n"
+                "• Maximum file size: 50MB\n"
+                "• Supported formats: MP4, MOV, AVI\n"
+                "• Recommended length: 1-3 minutes"
+            )
+            return
+
+        # Get file ID
+        file_id = video.file_id if video else document.file_id if document else None
+        if not file_id:
+            await update.message.reply_text("Please send a valid video file.")
+            return
+
+        # Send initial status
+        await update.message.reply_text("Starting video analysis...")
+
+        # Download video
+        file = await context.bot.get_file(file_id)
+        file_path = os.path.join(MEDIA_FOLDER, f"video_{update.message.from_user.id}_{int(time.time())}.mp4")
+        await file.download_to_drive(file_path)
+
+        # Analyze video
+        insights = get_insights(file_path)
+
+        # Send results
+        await update.message.reply_text(f"Analysis Results:\n\n{insights}")
+
+    except Exception as e:
+        await update.message.reply_text(f"Error processing video: {str(e)}")
+        
+    finally:
+        # Cleanup
+        if 'file_path' in locals() and os.path.exists(file_path):
+            os.remove(file_path)
+
+async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Admin command to set up the bot commands menu."""
+    try:
+        commands = [
+            BotCommand("start", "Start the bot"),
+            BotCommand("help", "Show help message"),
+            BotCommand("chat", "Start a chat conversation"),
+            BotCommand("settings", "Configure bot settings"),
+            BotCommand("togglevoice", "Toggle voice responses"),
+            BotCommand("imagine", "Generate an image from text"),
+            BotCommand("enhance", "Enhance your text"),
+            BotCommand("describe", "Analyze an image"),
+            BotCommand("clear_chat", "Clear chat history"),
+            BotCommand("export", "Export chat history"),
+            BotCommand("analyze_video", "Analyze a video file"),
+            BotCommand("status", "Check bot status"),
+            BotCommand("subscribe", "Subscribe to bot updates"),
+            BotCommand("unsubscribe", "Unsubscribe from updates")
+        ]
+        await context.bot.set_my_commands(commands)
+        await update.message.reply_text("✅ Bot commands have been successfully updated!")
+        logging.info("✅ Bot commands registered successfully")
+    except Exception as e:
+        error_message = f"❌ Failed to register bot commands: {str(e)}"
+        await update.message.reply_text(error_message)
+        logging.error(error_message)
+
+async def post_init(application: Application) -> None:
+    """Post-initialization hook for the bot."""
+    try:
+        commands = [
+            BotCommand("start", "Start the bot"),
+            BotCommand("help", "Show help message"),
+            BotCommand("chat", "Start a chat conversation"),
+            BotCommand("settings", "Configure bot settings"),
+            BotCommand("togglevoice", "Toggle voice responses"),
+            BotCommand("imagine", "Generate an image from text"),
+            BotCommand("enhance", "Enhance your text"),
+            BotCommand("describe", "Analyze an image"),
+            BotCommand("clear_chat", "Clear chat history"),
+            BotCommand("export", "Export chat history"),
+            BotCommand("analyze_video", "Analyze a video file"),
+            BotCommand("status", "Check bot status"),
+            BotCommand("subscribe", "Subscribe to bot updates"),
+            BotCommand("unsubscribe", "Unsubscribe from updates")
+        ]
+        await application.bot.set_my_commands(commands)
+        logging.info("✅ Bot commands registered successfully during initialization")
+    except Exception as e:
+        logging.error(f"❌ Failed to register bot commands during initialization: {str(e)}")
     
-    while video_file.state.name == "PROCESSING":
-        time.sleep(10)
-        video_file = genai.get_file(video_file.name)
+    await notify_subscribers(application, "🟢 Bot is now online and ready!")
 
-    if video_file.state.name == "FAILED":
-        raise ValueError("Video processing failed")
+async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle videos sent directly to the bot."""
+    await analyze_video_command(update, context)
 
-    prompt = "Describe the video. Provide insights from the video."
-    model = genai.GenerativeModel(model_name="models/gemini-1.5-flash")
-    response = model.generate_content([prompt, video_file], request_options={"timeout": 600})
-    genai.delete_file(video_file.name)
-    return response.text
+def setup_bot():
+    """Set up and configure the bot with all handlers."""
+    # Initialize the bot with the token
+    application = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(post_init).build()
+
+    # Add command handlers
+    application.add_handler(CommandHandler("start", start_command))
+    application.add_handler(CommandHandler("help", help_command))
+    application.add_handler(CommandHandler("chat", chat_command))
+    application.add_handler(CommandHandler("settings", settings_command))
+    application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
+    application.add_handler(CommandHandler("imagine", imagine_command))
+    application.add_handler(CommandHandler("enhance", enhance_command))
+    application.add_handler(CommandHandler("describe", describe_image))
+    application.add_handler(CommandHandler("clear_chat", clear_chat))
+    application.add_handler(CommandHandler("export", export_command))
+    application.add_handler(CommandHandler("analyze_video", analyze_video_command))
+    application.add_handler(CommandHandler("status", status_command))
+    application.add_handler(CommandHandler("subscribe", subscribe_command))
+    application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
+    application.add_handler(CommandHandler("setup_commands", setup_commands_command))
+    application.add_handler(CommandHandler("maintenance", maintenance_command))
+
+    # Add message handlers
+    application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
+    application.add_handler(MessageHandler(filters.VIDEO | filters.Document.VIDEO, handle_video))  # Add video handler
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    # Add error handler
+    application.add_error_handler(error_handler)
+
+    return application
+
+async def run_bot():
+    """Run the bot."""
+    try:
+        # Initialize Gemini AI
+        initialize_genai()
+        
+        # Set up the bot
+        application = setup_bot()
+        
+        # Start the bot
+        await application.initialize()
+        await application.start()
+        await application.run_polling()
+        
+    except Exception as e:
+        logger.error(f"Error in run_bot: {str(e)}")
+        raise
+    finally:
+        # Properly shut down the bot
+        await application.stop()
+
+if __name__ == "__main__":
+    # Initialize Gemini AI
+    initialize_genai()
+    # Run the bot using the app.py implementation
+    from app import main
+    main()
 
 def extract_transcript_details(youtube_video_url):
     try:
@@ -1144,198 +1314,3 @@ def generate_gemini_content(transcript_text, prompt):
     model = genai.GenerativeModel("gemini-pro")
     response = model.generate_content(prompt + transcript_text)
     return response.text
-
-MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
-
-async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /analyze_video command and direct video messages."""
-    if not update.message:
-        return
-        
-    # Get video file from either command or direct message
-    video = update.message.video
-    document = update.message.document
-
-    # If neither video nor document is present, send instructions
-    if not video and not document:
-        await update.message.reply_text(
-            "Please send me a video to analyze! You can either:\n"
-            "1. Send the video directly\n"
-            "2. Use /analyze_video and attach a video\n\n"
-            "📝 Requirements:\n"
-            "• Maximum file size: 50MB\n"
-            "• Supported formats: MP4, MOV, AVI\n"
-            "• Recommended length: 1-3 minutes"
-        )
-        return
-
-    # Check file size
-    file_size = video.file_size if video else document.file_size if document else 0
-    if file_size > MAX_VIDEO_SIZE:
-        await update.message.reply_text(
-            "❌ Video file is too large!\n\n"
-            "Due to Telegram's limitations, I can only process videos up to 50MB.\n"
-            "Please try:\n"
-            "• Compressing the video\n"
-            "• Trimming it to a shorter length\n"
-            "• Reducing the video quality\n"
-            "• Sending a shorter clip"
-        )
-        return
-
-    # Check if it's a video file
-    file_id = None
-    if video:
-        file_id = video.file_id
-    elif document and document.mime_type and 'video' in document.mime_type:
-        file_id = document.file_id
-    
-    if not file_id:
-        await update.message.reply_text(
-            "Please send a valid video file (MP4, MOV, AVI, etc.)\n\n"
-            "📝 Requirements:\n"
-            "• Maximum file size: 50MB\n"
-            "• Supported formats: MP4, MOV, AVI\n"
-            "• Recommended length: 1-3 minutes"
-        )
-        return
-
-    await update.message.reply_text(
-        "🔄 Processing your video...\n"
-        "This may take a few minutes depending on the video size.\n"
-        "I'll analyze it using Gemini Vision and provide you with insights!"
-    )
-    
-    try:
-        file = await context.bot.get_file(file_id)
-        
-        if not os.path.exists(MEDIA_FOLDER):
-            os.makedirs(MEDIA_FOLDER)
-            
-        file_path = os.path.join(MEDIA_FOLDER, f"video_{update.message.from_user.id}_{int(time.time())}.mp4")
-        await file.download_to_drive(file_path)
-        
-        try:
-            insights = get_insights(file_path)
-            await update.message.reply_text(
-                "📽️ Video Analysis Results:\n\n"
-                f"{insights}\n\n"
-                "Feel free to send another video for analysis!"
-            )
-        except Exception as e:
-            logging.error(f"Error analyzing video content: {str(e)}")
-            await update.message.reply_text(
-                "❌ Error analyzing video content. This could be because:\n"
-                "• The video is too long\n"
-                "• The video format is not supported\n"
-                "• The video content couldn't be processed\n\n"
-                "Please try with a different video or contact support if the issue persists."
-            )
-        finally:
-            if os.path.exists(file_path):
-                os.remove(file_path)
-                
-    except Exception as e:
-        logging.error(f"Error processing video file: {str(e)}")
-        if "File is too big" in str(e):
-            await update.message.reply_text(
-                "❌ Video file is too large!\n\n"
-                "Due to Telegram's limitations, I can only process videos up to 50MB.\n"
-                "Please try:\n"
-                "• Compressing the video\n"
-                "• Trimming it to a shorter length\n"
-                "• Reducing the video quality\n"
-                "• Sending a shorter clip"
-            )
-        else:
-            await update.message.reply_text(
-                "❌ Error processing video file. Please make sure:\n"
-                "• The file is a valid video format (MP4, MOV, AVI)\n"
-                "• The file size is under 50MB\n"
-                "• The video length is reasonable (1-3 minutes)\n\n"
-                "Try uploading the video again or use a different video file."
-            )
-
-async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Admin command to set up the bot commands menu."""
-    try:
-        commands = [
-            ("start", "Start the bot"),
-            ("help", "Show help message"),
-            ("chat", "Start a chat conversation"),
-            ("settings", "Configure bot settings"),
-            ("togglevoice", "Toggle voice responses"),
-            ("imagine", "Generate an image from text"),
-            ("enhance", "Enhance your text"),
-            ("describe", "Analyze an image"),
-            ("clear_chat", "Clear chat history"),
-            ("export", "Export chat history"),
-            ("analyze_video", "Analyze a video file"),
-            ("status", "Check bot status"),
-            ("subscribe", "Subscribe to bot updates"),
-            ("unsubscribe", "Unsubscribe from updates")
-        ]
-        await context.bot.set_my_commands(commands)
-        await update.message.reply_text("✅ Bot commands menu has been set up successfully!")
-    except Exception as e:
-        await update.message.reply_text(f"❌ Error setting up commands menu: {str(e)}")
-
-async def post_init(application: Application) -> None:
-    """Post-initialization hook for the bot."""
-    try:
-        # Set up commands
-        if hasattr(application, '_commands'):
-            await application.bot.set_my_commands(application._commands)
-            logging.info("✅ Bot commands registered successfully")
-    except Exception as e:
-        logging.error(f"❌ Failed to register bot commands: {str(e)}")
-
-async def setup_bot():
-    """Set up and configure the bot with all handlers."""
-    try:
-        initialize_genai()  # Initialize Gemini AI
-        
-        # Get bot token from environment
-        bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
-        if not bot_token:
-            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
-        
-        # Create application
-        application = Application.builder().token(bot_token).build()
-        
-        # Add command handlers
-        application.add_handler(CommandHandler('start', start_command))
-        application.add_handler(CommandHandler('help', help_command))
-        application.add_handler(CommandHandler('chat', chat_command))
-        
-        # Add message handlers
-        application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
-        application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        
-        # Add error handler
-        application.add_error_handler(error_handler)
-        
-        return application
-        
-    except Exception as e:
-        logger.error(f"Error in setup_bot: {str(e)}")
-        raise
-
-def run_bot():
-    """Run the bot."""
-    try:
-        # Initialize bot status
-        BOT_STATUS["start_time"] = time.time()
-        
-        # Create and run application
-        application = setup_bot()
-        
-        # Run the bot
-        logger.info("Starting bot...")
-        application.run_polling(allowed_updates=Update.ALL_TYPES)
-    except Exception as e:
-        logger.error(f"Error running bot: {str(e)}")
-        raise
-
-if __name__ == "__main__":
-    run_bot()
