@@ -191,12 +191,6 @@ Requirements:
 - Supported formats: MP4, MOV, AVI
 - Recommended length: 1-3 minutes
 
-## 🎥 YouTube Summaries
-```
-/summarize_youtube https://youtube.com/watch?v=VIDEO_ID
-```
-Get concise summaries of YouTube videos with key points.
-
 ## ⚙️ Settings
 ```
 /settings - Configure bot preferences

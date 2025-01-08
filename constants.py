@@ -8,7 +8,7 @@ MAX_VIDEO_SIZE = 50 * 1024 * 1024  # 50MB
 COMMAND_CATEGORIES = {
     "🤖 Chat": ['chat'],
     "🎨 Image": ['imagine', 'enhance', 'describe'],
-    "📽️ Video": ['analyze_video', 'summarize_youtube'],
+    "📽️ Video": ['analyze_video'],
     "🔧 Settings": ['settings', 'togglevoice', 'clear_chat'],
     "ℹ️ General": ['start', 'help'],
     "🔐 Admin": ['maintenance']
@@ -30,38 +30,20 @@ Be specific but concise in your analysis.
 """
 
 # Help Messages 💡
-HELP_MESSAGE = """
-*Welcome to AIFusionBot\!* Here are all available commands:
+HELP_MESSAGE = r"""
+🤖 Welcome to AIFusionBot! Here are the available commands:
 
-🤖 *Basic Commands*
-• /start \- Start the bot
-• /help \- Show this help message
-• /chat \- Chat with AI
-• /settings \- Configure bot settings
-• /status \- Check bot status
+/start - Start the bot and get a welcome message
+/help - Show this help message
+/insights <url> - Get detailed insights about a YouTube video
+/chat - Start a chat session with the bot
+/image <prompt> - Generate an image based on your prompt
+/pdf <url> - Generate a PDF from a webpage
+/tts <text> - Convert text to speech
+/translate <text> - Translate text to English
+/ocr <image> - Extract text from an image
 
-🎨 *Media Commands*
-• /imagine \- Generate images
-• /enhance \- Enhance prompts
-• /describe \- Describe images
-• /analyze\_video \- Analyze video content
-• /summarize\_youtube \- Summarize YouTube video
-
-🔑 *API Setup*
-• /setgroqkey \- Set your Groq API key
-• /settogetherkey \- Set your Together API key
-
-⚙️ *Settings & Preferences*
-• /togglevoice \- Toggle voice responses
-• /subscribe \- Subscribe to bot status
-• /unsubscribe \- Unsubscribe from bot status
-• /clear\_chat \- Clear chat history
-• /export \- Export chat history
-
-🔐 *Admin Commands*
-• /maintenance \- Toggle maintenance mode \(Requires root password\)
-
-Need help? Feel free to use any of these commands\! Start with /start to get an introduction\.
+For more information about each command, just try using it!
 """
 
 # Error Messages ❌

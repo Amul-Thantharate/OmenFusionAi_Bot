@@ -53,7 +53,6 @@ Track AIFusionBot's version history and updates.
 ### ✨ Added
 - New video analysis features:
   - `/analyze_video` command for AI-powered video insights
-  - `/summarize_youtube` command for YouTube video summaries
   - Support for video file uploads up to 50MB
   - Detailed video content analysis using Gemini Vision
 

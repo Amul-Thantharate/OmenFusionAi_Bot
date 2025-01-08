@@ -15,7 +15,7 @@ A powerful Telegram bot that combines multiple AI capabilities including chat, i
 
 ### 📽️ Video Analysis
 - `/analyze_video` - Get AI insights from video content
-- `/summarize_youtube` - Summarize YouTube videos
+- `youtube_summary` - Summarize YouTube videos
 - Supports video files up to 50MB
 - Powered by Google's Gemini Vision
 
@@ -74,9 +74,7 @@ Send a video (up to 50MB) and get detailed insights about:
 - Overall context and setting
 
 ### YouTube Summaries
-```
-/summarize_youtube https://youtube.com/watch?v=video_id
-```
+youtube_summary https://youtube.com/watch?v=video_id
 Get concise summaries of YouTube videos with key points and insights.
 
 ## 🤝 Contributing

@@ -1,32 +1,29 @@
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes, CallbackQueryHandler
-import logging
+from telegram import Update, BotCommand
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    CallbackContext,
+    CallbackQueryHandler,
+    filters,
+    ContextTypes
+)
 import os
-import sys
-import tempfile
-import base64
-import logging
-from typing import Optional, Dict, List, Any
-from datetime import datetime, timedelta
-from pathlib import Path
-from dotenv import load_dotenv
-from io import BytesIO
 import time
-import json
-from main import interactive_chat, save_chat_history, generate_image
-from flask import Flask, request, jsonify
+import logging
+import tempfile
+from pathlib import Path
+import base64
 from groq import Groq
 import asyncio
 from gtts import gTTS
-import html  # Add this import
+import html
 from PIL import Image
 import io
-from pytube import YouTube
-from youtube_transcript_api import YouTubeTranscriptApi
 import google.generativeai as genai
-from video_insights import process_youtube_video, get_insights
-from constants import SUMMARY_PROMPT, MEDIA_FOLDER, HELP_MESSAGE
-from telegram import BotCommand
+from dotenv import load_dotenv
+import video_insights
+from constants import HELP_MESSAGE, SUMMARY_PROMPT, MEDIA_FOLDER
 
 # Load environment variables
 load_dotenv()
@@ -39,14 +36,15 @@ if not ROOT_PASSWORD:
 
 # Configure logging
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+
 logger = logging.getLogger(__name__)
 
 # Create temp directory for files
 TEMP_DIR = Path(tempfile.gettempdir()) / "aifusionbot_temp"
-TEMP_DIR.mkdir(exist_ok=True, parents=True)
+TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
 # Global variable for user sessions
 user_sessions = {}
@@ -64,8 +62,7 @@ COMMANDS = {
         "/imagine": "🎨 Generate images",
         "/enhance": "✨ Enhance prompts",
         "/describe": "🔍 Describe images",
-        "/analyze_video": "🎥 Analyze video content",
-        "/summarize_youtube": "📺 Summarize YouTube video"
+        "/analyze_video": "🎥 Analyze video content"
     },
     "API Commands": {
         "/setgroqkey": "🔑 Set your Groq API key",
@@ -138,8 +135,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "/enhance - Enhance your text\n"
         "/describe - Analyze an image\n\n"
         "📽️ Media Commands:\n"
-        "/analyze_video - Analyze a video file\n"
-        "/summarize_youtube - Summarize YouTube video\n\n"
+        "/analyze_video - Analyze a video file\n\n"
         "⚙️ Utility Commands:\n"
         "/clear_chat - Clear chat history\n"
         "/export - Export chat history\n"
@@ -162,7 +158,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             BotCommand("clear_chat", "Clear chat history"),
             BotCommand("export", "Export chat history"),
             BotCommand("analyze_video", "Analyze a video file"),
-            BotCommand("summarize_youtube", "Summarize YouTube video"),
             BotCommand("status", "Check bot status"),
             BotCommand("subscribe", "Subscribe to bot updates"),
             BotCommand("unsubscribe", "Unsubscribe from updates")
@@ -1261,33 +1256,6 @@ async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TY
                 "Try uploading the video again or use a different video file."
             )
 
-async def summarize_youtube_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /summarize_youtube command."""
-    if not update.message:
-        return
-        
-    if not context.args:
-        await update.message.reply_text("Please provide a YouTube URL. Example: /summarize_youtube https://youtube.com/watch?v=...")
-        return
-
-    youtube_url = context.args[0]
-    await update.message.reply_text("🔄 Processing YouTube video...")
-    
-    try:
-        summary = process_youtube_video(youtube_url)
-        if summary:
-            # Split long messages if needed (Telegram has a 4096 character limit)
-            if len(summary) > 4000:
-                chunks = [summary[i:i+4000] for i in range(0, len(summary), 4000)]
-                for chunk in chunks:
-                    await update.message.reply_text(chunk)
-            else:
-                await update.message.reply_text(summary)
-        else:
-            await update.message.reply_text("❌ Could not generate summary. Please try another video.")
-    except Exception as e:
-        await update.message.reply_text(f"❌ Error processing YouTube video: {str(e)}")
-
 async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Admin command to set up the bot commands menu."""
     try:
@@ -1303,7 +1271,6 @@ async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_T
             ("clear_chat", "Clear chat history"),
             ("export", "Export chat history"),
             ("analyze_video", "Analyze a video file"),
-            ("summarize_youtube", "Summarize YouTube video"),
             ("status", "Check bot status"),
             ("subscribe", "Subscribe to bot updates"),
             ("unsubscribe", "Unsubscribe from updates")
@@ -1323,64 +1290,30 @@ async def post_init(application: Application) -> None:
     except Exception as e:
         logging.error(f"❌ Failed to register bot commands: {str(e)}")
 
-async def setup_bot(token: str):
+async def setup_bot():
     """Set up and configure the bot with all handlers."""
     try:
         initialize_genai()  # Initialize Gemini AI
         
-        # Build application with post_init
-        application = (
-            Application.builder()
-            .token(token)
-            .post_init(post_init)
-            .build()
-        )
+        # Get bot token from environment
+        bot_token = os.getenv('TELEGRAM_BOT_TOKEN')
+        if not bot_token:
+            raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
         
-        # Add command handlers first
-        application.add_handler(CommandHandler("start", start_command))
-        application.add_handler(CommandHandler("help", help_command))
-        application.add_handler(CommandHandler("chat", chat_command))
-        application.add_handler(CommandHandler("settings", settings_command))
-        application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
-        application.add_handler(CommandHandler("subscribe", subscribe_command))
-        application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
-        application.add_handler(CommandHandler("status", status_command))
-        application.add_handler(CommandHandler("imagine", imagine_command))
-        application.add_handler(CommandHandler("enhance", enhance_command))
-        application.add_handler(CommandHandler("describe", describe_image))
-        application.add_handler(CommandHandler("clear_chat", clear_chat))
-        application.add_handler(CommandHandler("maintenance", maintenance_command))
-        application.add_handler(CommandHandler("export", export_command))
-        application.add_handler(CommandHandler("analyze_video", analyze_video_command))
-        application.add_handler(CommandHandler("summarize_youtube", summarize_youtube_command))
+        # Create application
+        application = Application.builder().token(bot_token).build()
+        
+        # Add command handlers
+        application.add_handler(CommandHandler('start', start_command))
+        application.add_handler(CommandHandler('help', help_command))
+        application.add_handler(CommandHandler('chat', chat_command))
         
         # Add message handlers
         application.add_handler(MessageHandler(filters.PHOTO & ~filters.COMMAND, handle_photo))
         application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-        application.add_handler(MessageHandler(filters.VIDEO & ~filters.COMMAND, analyze_video_command))
         
         # Add error handler
         application.add_error_handler(error_handler)
-        
-        # Define commands
-        commands = [
-            BotCommand("start", "Start the bot"),
-            BotCommand("help", "Show help message"),
-            BotCommand("chat", "Start a chat conversation"),
-            BotCommand("settings", "Configure bot settings"),
-            BotCommand("togglevoice", "Toggle voice responses"),
-            BotCommand("imagine", "Generate an image from text"),
-            BotCommand("enhance", "Enhance your text"),
-            BotCommand("describe", "Analyze an image"),
-            BotCommand("clear_chat", "Clear chat history"),
-            BotCommand("export", "Export chat history"),
-            BotCommand("analyze_video", "Analyze a video file"),
-            BotCommand("summarize_youtube", "Summarize YouTube video"),
-            BotCommand("status", "Check bot status")
-        ]
-        
-        # Set commands for the bot - we'll do this after the bot starts
-        application._commands = commands  # Store commands for later use
         
         return application
         
@@ -1395,7 +1328,7 @@ def run_bot():
         BOT_STATUS["start_time"] = time.time()
         
         # Create and run application
-        application = setup_bot(TELEGRAM_BOT_TOKEN)
+        application = setup_bot()
         
         # Run the bot
         logger.info("Starting bot...")
