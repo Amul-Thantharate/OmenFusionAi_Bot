@@ -342,18 +342,19 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             image_io = io.BytesIO(image_bytes)
             image_io.name = 'generated_image.png'
 
-            # Send the image with both original and enhanced prompts
-            caption = (
-                f"🎨 Original prompt:\n{prompt}\n\n"
-                f"✨ Enhanced prompt:\n{enhanced_prompt}\n\n"
-                f"⏱️ Generation time: {total_time:.2f}s"
-            )
-            
+            # Send the image first
             await update.message.reply_photo(
                 photo=image_io,
-                caption=caption,
+                caption=f"⏱️ Generated in {total_time:.1f}s",
                 parse_mode='Markdown'
             )
+
+            # Send prompts as a separate message
+            prompts_message = (
+                f"🎨 *Original prompt:*\n`{prompt}`\n\n"
+                f"✨ *Enhanced prompt:*\n`{enhanced_prompt}`"
+            )
+            await update.message.reply_text(prompts_message, parse_mode='Markdown')
             await status_message.delete()
         else:
             error_msg = f"Failed to generate image: {error_message}"
