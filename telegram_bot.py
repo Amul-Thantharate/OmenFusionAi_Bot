@@ -61,7 +61,7 @@ COMMANDS = {
     "/chat": "Start a chat conversation",
     "/settings": "Configure bot settings",
     "/togglevoice": "Toggle voice responses",
-    "/imagine": "Generate an image from text",
+    "/imagine": "Generate an image from text using Replicate",
     "/enhance": "Enhance your text",
     "/describe": "Analyze an image",
     "/clear_chat": "Clear chat history",
@@ -91,7 +91,7 @@ class UserSession:
         self.last_image_prompt = None
         self.last_image_url = None
         self.selected_model = "mistral-7b-instruct"  # Default Groq model
-        self.together_api_key = os.getenv('TOGETHER_API_KEY')
+        self.replicate_api_key = os.getenv('REPLICATE_API_KEY')
         self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.last_enhanced_prompt = None
         self.voice_response = True
@@ -178,31 +178,10 @@ async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYP
     )
 
 async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /settogetherkey command."""
-    # Delete the message containing the API key for security
-    await update.message.delete()
-
-    if not context.args:
-        await update.message.reply_text(
-            "Please provide your Together API key after /settogetherkey\n"
-            "Example: `/settogetherkey your_api_key`\n"
-            " Your message will be deleted immediately for security.",
-            parse_mode='Markdown'
-        )
-        return
-
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-
-    session = user_sessions[user_id]
-    session.together_api_key = context.args[0]
-
-    # Send confirmation in private message
+    """This command is deprecated."""
     await update.message.reply_text(
-        " Together API key set successfully!\n"
-        "Try generating an image with `/imagine beautiful sunset`",
-        parse_mode='Markdown'
+        "Together AI integration has been replaced with Replicate. "
+        "Please set your Replicate API key in the .env file."
     )
 
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -384,10 +363,10 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    if not session.together_api_key:
+    if not session.replicate_api_key:
         await update.message.reply_text(
-            " Please set your Together API key first using:\n"
-            "`/settogetherkey your_api_key`",
+            " Please set your Replicate API key first using:\n"
+            "`/setreplicatekey your_api_key`",
             parse_mode='Markdown'
         )
         return
@@ -404,7 +383,7 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         enhancer = ToneEnhancer()
         
         # Set the API key from session
-        enhancer.together_api_key = session.together_api_key
+        enhancer.replicate_api_key = session.replicate_api_key
         
         start_time = time.time()
         success, enhanced_text, error = await enhancer.enhance_text(text)
@@ -438,7 +417,7 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     settings_text = (
         " Current Settings:\n\n"
         f"Groq API Key: {' Set' if session.groq_api_key else ' Not Set'}\n"
-        f"Together API Key: {' Set' if session.together_api_key else ' Not Set'}\n"
+        f"Replicate API Key: {' Set' if session.replicate_api_key else ' Not Set'}\n"
         f"Voice Response: {' Enabled' if session.voice_response else ' Disabled'}\n"
         f"Selected Model: {session.selected_model}"
     )
@@ -1193,7 +1172,7 @@ async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_T
             BotCommand("chat", "Start a chat conversation"),
             BotCommand("settings", "Configure bot settings"),
             BotCommand("togglevoice", "Toggle voice responses"),
-            BotCommand("imagine", "Generate an image from text"),
+            BotCommand("imagine", "Generate an image from text using Replicate"),
             BotCommand("enhance", "Enhance your text"),
             BotCommand("describe", "Analyze an image"),
             BotCommand("clear_chat", "Clear chat history"),
@@ -1220,7 +1199,7 @@ async def post_init(application: Application) -> None:
             BotCommand("chat", "Start a chat conversation"),
             BotCommand("settings", "Configure bot settings"),
             BotCommand("togglevoice", "Toggle voice responses"),
-            BotCommand("imagine", "Generate an image from text"),
+            BotCommand("imagine", "Generate an image from text using Replicate"),
             BotCommand("enhance", "Enhance your text"),
             BotCommand("describe", "Analyze an image"),
             BotCommand("clear_chat", "Clear chat history"),

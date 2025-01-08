@@ -41,7 +41,7 @@
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
 GROQ_API_KEY=your_groq_api_key
-TOGETHER_API_KEY=your_together_api_key
+REPLICATE_API_KEY=your_replicate_api_key
 ```
 
 ### Server Deployment Steps
@@ -199,271 +199,39 @@ TOGETHER_API_KEY=your_together_api_key
 
 ## Version History
 
-## Version 2.2.0 - 2025-02-01
-
-### New Features
-- **Text-to-Speech Functionality**: The bot can now convert text responses into audio messages, enhancing user interaction.
-- **Image Description**: The bot can analyze images and provide detailed descriptions, now supporting both text and voice outputs.
-
-### Commands Added
-- `/togglevoice`: Toggles voice responses on or off for the bot.
-- `/describe`: Analyzes an image sent to the bot and provides a detailed description in text and voice formats.
-
-### Improvements
-- Enhanced error handling and logging for better debugging and user feedback.
-- Updated documentation to reflect new features and commands.
-
-## Version 2.1.0 - 2025-01-04
-
-### Major Changes 
-- Enhanced maintenance mode with user subscriptions
-- Added system monitoring and auto-recovery
-- Improved Groq integration for better chat responses
-
-### New Features 
-- **Maintenance System**
-   - User-accessible maintenance mode
-   - Duration-based maintenance scheduling
-   - Auto-recovery after maintenance period
-   - Status notification system
-   - User subscription for updates
-
-- **Voice Features**
-   - Enhanced text-to-speech quality
-   - Improved voice message handling
-   - Better audio format support
-   - Voice response toggles
-
-- **Image Generation**
-   - Better prompt handling
-   - Enhanced image quality
-   - Faster generation times
-   - More style options
-
-- **YouTube Integration**
-   - Improved download stability
-   - Better format handling
-   - Enhanced error recovery
-   - Progress tracking
-
-### Features Removed
-1. **Admin System**
-   - Removed `/getid` command
-   - Removed `/addadmin` command
-   - Removed `/removeadmin` command
-   - Removed user ID display
-   - Removed admin checks
-
-### Improvements
-1. **Performance**
-   - Optimized API calls
-   - Better error handling
-   - Improved response times
-   - Enhanced stability
-
-2. **User Experience**
-   - Clearer error messages
-   - Better command feedback
-   - Simplified interactions
-   - Improved help system
-
-3. **Security**
-   - Enhanced API key handling
-   - Better file management
-   - Improved error logging
-   - Secure maintenance mode
-
-### Bug Fixes
-1. **Voice Processing**
-   - Fixed audio format issues
-   - Resolved transcription errors
-   - Fixed voice message delays
-   - Improved error recovery
-
-2. **Image Generation**
-   - Fixed timeout issues
-   - Resolved style conflicts
-   - Fixed prompt handling
-   - Better error messages
-
-3. **System**
-   - Fixed maintenance timing
-   - Resolved notification issues
-   - Fixed subscription handling
-   - Better status tracking
-
-### Technical Details
-1. **API Changes**
-   - Enhanced Groq API integration
-   - Updated Together AI integration
-   - Enhanced YouTube API usage
-   - Better API error handling
-
-2. **Dependencies**
-   - Updated Python requirements
-   - Enhanced package management
-   - Better version control
-   - Improved compatibility
-
-### Documentation
-1. **Updates**
-   - New setup instructions
-   - Updated command list
-   - Better troubleshooting guide
-   - Enhanced examples
-
-2. **New Sections**
-   - Maintenance guide
-   - Voice feature guide
-   - YouTube usage guide
-   - Status system guide
-
-## Version 2.0.0 - 2025-01-04
+## Version 2.3.0 - 2025-01-08
 
 ### Major Changes
-- Removed admin functionality for simplified user experience
-- Enhanced maintenance mode with user subscriptions
-- Added system monitoring and auto-recovery
-- Improved Groq integration for better chat responses
+- 🔄 Replaced Together AI with Replicate for image generation
+- 🎨 Integrated Recraft AI v3 model for enhanced image quality
+- ⚡ Improved image generation reliability and speed
 
-### Features Added
-1. **Maintenance System**
-   - User-accessible maintenance mode
-   - Duration-based maintenance scheduling
-   - Auto-recovery after maintenance period
-   - Status notification system
-   - User subscription for updates
+### Updates
+- 📦 Updated dependencies:
+  - Removed Together AI dependency
+  - Added Replicate SDK >= 0.22.0
+- 🔑 API Key Management:
+  - Removed Together AI key requirement
+  - Added Replicate API key support
+  - Updated environment variable configuration
 
-2. **Voice Features**
-   - Enhanced text-to-speech quality
-   - Improved voice message handling
-   - Better audio format support
-   - Voice response toggles
-
-3. **Image Generation**
-   - Better prompt handling
-   - Enhanced image quality
-   - Faster generation times
-   - More style options
-
-4. **YouTube Integration**
-   - Improved download stability
-   - Better format handling
-   - Enhanced error recovery
-   - Progress tracking
-
-### Features Removed
-1. **Admin System**
-   - Removed `/getid` command
-   - Removed `/addadmin` command
-   - Removed `/removeadmin` command
-   - Removed user ID display
-   - Removed admin checks
-
-### Improvements
-1. **Performance**
-   - Optimized API calls
-   - Better error handling
-   - Improved response times
-   - Enhanced stability
-
-2. **User Experience**
-   - Clearer error messages
-   - Better command feedback
-   - Simplified interactions
-   - Improved help system
-
-3. **Security**
-   - Enhanced API key handling
-   - Better file management
-   - Improved error logging
-   - Secure maintenance mode
-
-### Bug Fixes
-1. **Voice Processing**
-   - Fixed audio format issues
-   - Resolved transcription errors
-   - Fixed voice message delays
-   - Improved error recovery
-
-2. **Image Generation**
-   - Fixed timeout issues
-   - Resolved style conflicts
-   - Fixed prompt handling
-   - Better error messages
-
-3. **System**
-   - Fixed maintenance timing
-   - Resolved notification issues
-   - Fixed subscription handling
-   - Better status tracking
-
-### Technical Details
-1. **API Changes**
-   - Enhanced Groq API integration
-   - Updated Together AI integration
-   - Enhanced YouTube API usage
-   - Better API error handling
-
-2. **Dependencies**
-   - Updated Python requirements
-   - Enhanced package management
-   - Better version control
-   - Improved compatibility
+### Technical Improvements
+- 🛠️ Refactored image generation module
+- 🔧 Enhanced error handling for image generation
+- 📝 Updated documentation and help messages
+- 🔄 Streamlined API response handling
 
 ### Documentation
-1. **Updates**
-   - New setup instructions
-   - Updated command list
-   - Better troubleshooting guide
-   - Enhanced examples
+- 📚 Updated setup instructions for Replicate API
+- 🔑 Added Replicate API key configuration guide
+- 🎨 Updated image generation command descriptions
 
-2. **New Sections**
-   - Maintenance guide
-   - Voice feature guide
-   - YouTube usage guide
-   - Status system guide
+### Bug Fixes
+- 🐛 Fixed image generation timeout issues
+- 🔧 Improved error messaging for API failures
+- 🔄 Enhanced response format handling
 
-## Version 1.1.0 - 2024-12-31
-
-### Added
-- Voice response capability
-- Image description feature
-- YouTube audio download
-- Chat history export
-
-### Changed
-- Improved error handling
-- Enhanced prompt engineering
-- Better API key management
-- Updated documentation
-
-### Fixed
-- Memory usage optimization
-- API rate limiting
-- File cleanup process
-- Error message clarity
-
-## Version 1.0.0 - 2024-12-15
-
-### Initial Release
-- Basic chat functionality
-- Image generation
-- Text enhancement
-- Voice message support
-- YouTube integration
-- Basic error handling
-
-## Future Plans
-
-### Version 2.3.0
-- Enhanced audio processing
-- Better image generation
-- Improved chat context
-- More maintenance features
-
-### Version 2.4.0
-- Multi-language support
-- Advanced image editing
-- Better YouTube integration
-- Enhanced voice features
+### Security
+- 🔒 Improved API key management
+- 🛡️ Enhanced error logging for better debugging
+- 🔐 Updated secure key storage methods
