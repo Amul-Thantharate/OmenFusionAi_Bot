@@ -8,10 +8,12 @@ A powerful Telegram bot that combines multiple AI capabilities including chat, i
 - `/chat` - Have an intelligent conversation with the bot
 - Powered by Groq's advanced language models
 
-### 🎨 Image Generation & Analysis
-- `/imagine` - Generate images from text descriptions
-- `/enhance` - Enhance image generation prompts
-- `/describe` - Analyze and describe images
+### 🎨 Image Analysis
+- 🖼️ **Interactive Image Analysis**: Send any image to get analysis options:
+  - 📝 **Describe Image**: Get detailed analysis using Groq's LLaMA model
+  - 🔍 **Generate Caption**: Get creative captions using Replicate
+- 🎨 **Smart Image Generation**: Generate images from text descriptions
+- 🔊 **Voice Descriptions**: Get voice descriptions of images (optional)
 
 ### 📽️ Video Analysis
 - `/analyze_video` - Get AI insights from video content
@@ -24,6 +26,9 @@ A powerful Telegram bot that combines multiple AI capabilities including chat, i
 - `/togglevoice` - Toggle voice responses
 - `/clear_chat` - Clear chat history
 - `/help` - View all commands
+
+## 🚀 Try it Live!
+Try the bot now: [@AIFusionCom_Bot](https://t.me/AIFusionCom_Bot)
 
 ## 🚀 Setup
 
@@ -38,6 +43,7 @@ API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_token
 ROOT_PASSWORD=your_admin_password
 REPLICATE_API_KEY=your_replicate_api_key
+GROQ_API_KEY=your_groq_api_key
 ```
 
 3. Run the bot:
@@ -51,6 +57,7 @@ python app.py
 - Telegram Bot Token
 - Google Gemini API Key
 - Replicate API Key
+- Groq API Key
 - Internet connection
 
 ## 🛠️ Technical Details
@@ -67,6 +74,19 @@ python app.py
 - Secure file handling
 
 ## 📚 Usage Examples
+
+### Image Analysis
+1. Send any image to the bot
+2. Choose from two options:
+   - 📝 **Describe Image**: Get a detailed analysis of the image
+   - 🔍 **Generate Caption**: Get a creative caption
+3. Or use direct commands:
+   - Reply to an image with `/describe` for analysis
+   - Reply to an image with `/caption` for a caption
+
+### Voice Responses
+- Toggle voice responses with `/togglevoice`
+- When enabled, get both text and voice descriptions
 
 ### Video Analysis
 Send a video (up to 50MB) and get detailed insights about:

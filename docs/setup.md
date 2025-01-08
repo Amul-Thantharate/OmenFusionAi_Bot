@@ -18,7 +18,14 @@ Learn how to set up and deploy NovaChat AI.
 
 ---
 
-## Prerequisites 📋
+## Quick Start
+Want to try the bot without setup? Use our live instance:
+[@AIFusionCom_Bot](https://t.me/AIFusionCom_Bot)
+
+## Self-Hosting Guide
+Follow these steps if you want to host your own instance of AIFusionBot.
+
+## Prerequisites 
 
 - Python 3.8 or higher
 - pip (Python package manager)
@@ -26,11 +33,31 @@ Learn how to set up and deploy NovaChat AI.
 - A Telegram account
 - Required API keys:
   - Telegram Bot Token
-  - OpenAI API Key
-  - Together AI API Key
   - Groq API Key
+  - Replicate API Key
 
-## Installation Steps 🚀
+## API Keys Required
+
+The bot requires several API keys to function:
+
+1. **Telegram Bot Token** (Required)
+   - Get from [@BotFather](https://t.me/botfather)
+   - Used for bot authentication
+
+2. **Groq API Key** (Required)
+   - Sign up at [Groq](https://www.groq.com)
+   - Used for:
+     - Image analysis with LLaMA model
+     - Text chat functionality
+     - Voice transcription
+
+3. **Replicate API Key** (Required)
+   - Sign up at [Replicate](https://replicate.com)
+   - Used for:
+     - Image generation with Recraft v3
+     - Creative caption generation
+
+## Installation Steps 
 
 ### 1. Clone the Repository
 
@@ -50,10 +77,13 @@ pip install -r requirements.txt
 Create a `.env` file in the project root:
 
 ```env
+# Required API Keys
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-OPENAI_API_KEY=your_openai_api_key
-TOGETHER_API_KEY=your_together_api_key
 GROQ_API_KEY=your_groq_api_key
+REPLICATE_API_KEY=your_replicate_api_key
+
+# Optional Settings
+ROOT_PASSWORD=your_admin_password  # For admin commands
 ```
 
 ### 4. Get Required API Keys
@@ -64,20 +94,12 @@ GROQ_API_KEY=your_groq_api_key
    - Follow instructions to create bot
    - Copy the provided token
 
-2. **OpenAI API Key**:
-   - Visit [OpenAI](https://platform.openai.com/)
-   - Create an account or log in
-   - Go to API section
-   - Generate new API key
+2. **Groq API Key**:
+   - Sign up at [Groq](https://www.groq.com)
+   - Generate an API key
 
-3. **Together AI API Key**:
-   - Visit [Together AI](https://www.together.ai/)
-   - Create an account
-   - Navigate to API section
-   - Generate API key
-
-4. **Groq API Key**:
-   - Sign up at [Groq Console](https://console.groq.com)
+3. **Replicate API Key**:
+   - Sign up at [Replicate](https://replicate.com)
    - Generate an API key
 
 ### 5. Configure the Bot
@@ -85,9 +107,8 @@ GROQ_API_KEY=your_groq_api_key
 1. Set environment variables:
    ```bash
    export TELEGRAM_BOT_TOKEN=your_token
-   export OPENAI_API_KEY=your_key
-   export TOGETHER_API_KEY=your_key
    export GROQ_API_KEY=your_key
+   export REPLICATE_API_KEY=your_key
    ```
    Or use the `.env` file as shown above.
 
@@ -103,7 +124,7 @@ GROQ_API_KEY=your_groq_api_key
 python telegram_bot.py
 ```
 
-## Features Setup ⚙️
+## Features Setup 
 
 ### Voice Features
 
@@ -114,7 +135,7 @@ Voice features are enabled by default. Users can:
 
 ### Image Generation
 
-Image generation is ready to use with Together AI:
+Image generation is ready to use with Replicate:
 - Generate images: `/imagine <description>`
 - Enhance prompts: `/enhance`
 - Describe images: `/describe`
@@ -133,7 +154,7 @@ Maintenance features are available to all users:
 - Check status: `/status`
 - Subscribe to updates: `/subscribe`
 
-## Troubleshooting 🔧
+## Troubleshooting 
 
 ### Common Issues
 
@@ -171,7 +192,7 @@ Error: File permission denied
 Solution: Check directory permissions
 ```
 
-## Security Considerations 🔒
+## Security Considerations 
 
 1. **API Keys**
    - Never share API keys
@@ -188,7 +209,7 @@ Solution: Check directory permissions
    - Clear regularly
    - Respect privacy
 
-## Updating the Bot 🔄
+## Updating the Bot 
 
 1. Pull latest changes:
    ```bash
@@ -204,7 +225,7 @@ Solution: Check directory permissions
 
 4. Restart the bot
 
-## Need Help? 🆘
+## Need Help? 
 
 - Check documentation
 - Use `/help` command

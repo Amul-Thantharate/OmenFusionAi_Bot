@@ -8,6 +8,14 @@ nav_order: 3
 
 This document provides a comprehensive guide to all available commands in AIFusionBot.
 
+# Bot Commands
+
+Try these commands with our live bot: [@AIFusionCom_Bot](https://t.me/AIFusionCom_Bot)
+
+## Getting Started
+- `/start` - Start the bot
+- `/help` - Show available commands
+
 ## 🎯 General Commands 
 
 ### 🚀 /start
@@ -43,6 +51,30 @@ Improve the last image generation prompt.
 Generate caption for an image.
 - Usage: Send image followed by `/describe`
 - Response: AI-generated image description
+
+## 📸 Image Analysis Commands
+
+### Direct Image Interaction
+When you send an image to the bot, you'll get an interactive menu with two options:
+- 📝 **Describe Image**: Get a detailed analysis using Groq's LLaMA model
+- 🔍 **Generate Caption**: Get a creative caption using Replicate
+
+### Image Analysis Commands
+- `/describe` - Analyze an image in detail
+  - Reply to any image with this command
+  - Uses Groq's LLaMA model for detailed analysis
+  - Supports voice output if enabled
+  - Example: Reply to an image with `/describe`
+
+- `/caption` - Generate a creative caption
+  - Reply to any image with this command
+  - Uses Replicate for creative captions
+  - Example: Reply to an image with `/caption`
+
+### Image Generation
+- `/imagine` - Generate images from text descriptions
+  - Uses Replicate's Recraft v3 model
+  - Example: `/imagine a beautiful sunset over mountains`
 
 ## 🔊 Audio Commands 
 

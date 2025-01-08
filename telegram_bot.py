@@ -1,4 +1,4 @@
-from telegram import Update, BotCommand
+from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -25,10 +25,12 @@ from dotenv import load_dotenv
 import video_insights
 from constants import HELP_MESSAGE, SUMMARY_PROMPT, MEDIA_FOLDER
 from image_generator import AIImageGenerator
+from image_caption import ImageCaptioner
 from video_insights import get_insights
 
-# Initialize image generator
+# Initialize image generator and captioner
 image_generator = AIImageGenerator()
+image_captioner = ImageCaptioner()
 
 # Load environment variables
 load_dotenv()
@@ -62,6 +64,7 @@ COMMANDS = {
     "/settings": "Configure bot settings",
     "/togglevoice": "Toggle voice responses",
     "/imagine": "Generate an image from text using Replicate",
+    "/caption": "Generate a detailed caption for an image",
     "/enhance": "Enhance your text",
     "/describe": "Analyze an image",
     "/clear_chat": "Clear chat history",
@@ -77,11 +80,11 @@ COMMANDS = {
 # Group commands by category for help menu
 COMMAND_CATEGORIES = {
     "🤖 Chat": ['chat', 'clear_chat', 'export'],
-    "🎨 Media": ['imagine', 'enhance', 'describe', 'analyze_video'],
+    "🎨 Media": ['imagine', 'caption', 'enhance', 'describe', 'analyze_video'],
     "🔊 Settings": ['settings', 'togglevoice'],
     "📊 Status": ['status', 'subscribe', 'unsubscribe'],
     "ℹ️ General": ['start', 'help'],
-    "🔐 Admin": ['maintenance', 'setup_commands']  # Added admin category
+    "🔐 Admin": ['maintenance', 'setup_commands']
 }
 
 class UserSession:
@@ -90,6 +93,7 @@ class UserSession:
         self.last_response = None
         self.last_image_prompt = None
         self.last_image_url = None
+        self.last_photo = None  # Store last photo for inline keyboard actions
         self.selected_model = "mistral-7b-instruct"  # Default Groq model
         self.replicate_api_key = os.getenv('REPLICATE_API_KEY')
         self.groq_api_key = os.getenv('GROQ_API_KEY')
@@ -576,39 +580,90 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle photos sent directly to the bot"""
-    await describe_image(update, context)
+    await handle_photo(update, context)
 
-# Supported audio formats
-SUPPORTED_FORMATS = {'.mp3', '.wav', '.m4a', '.ogg', '.oga', '.opus', '.mp4', '.mpeg', '.mpga', '.webm'}
+async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle photos sent directly to the bot with analysis options."""
+    if not update.message or not update.message.photo:
+        return
 
-def get_file_extension(file_name: str) -> str:
-    """Get the file extension from the file name."""
-    return Path(file_name).suffix.lower()
+    # Create inline keyboard with options
+    keyboard = [
+        [
+            InlineKeyboardButton("📝 Describe Image", callback_data=f"describe_{update.message.message_id}"),
+            InlineKeyboardButton("🔍 Generate Caption", callback_data=f"caption_{update.message.message_id}")
+        ]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard)
 
-def is_supported_format(file_name: str) -> bool:
-    """Check if the file format is supported."""
-    return get_file_extension(file_name) in SUPPORTED_FORMATS
-
-def transcribe_audio(filename, prompt=None):
-    """Transcribe English audio file using Groq API."""
-    # Initialize the Groq client
-    client = Groq()  # Make sure GROQ_API_KEY is set in your environment variables
+    # Store the photo information in user session
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
     
+    session = user_sessions[user_id]
+    session.last_photo = update.message.photo[-1]  # Store the largest photo
+
+    await update.message.reply_text(
+        "What would you like to do with this image?",
+        reply_markup=reply_markup
+    )
+
+async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle button clicks from inline keyboard."""
+    query = update.callback_query
+    await query.answer()
+
+    if not query.data:
+        return
+
+    action, message_id = query.data.split('_')
+    user_id = query.from_user.id
+
+    if user_id not in user_sessions:
+        await query.edit_message_text("Session expired. Please send the image again.")
+        return
+
+    session = user_sessions[user_id]
+    if not hasattr(session, 'last_photo'):
+        await query.edit_message_text("Image not found. Please send the image again.")
+        return
+
     try:
-        # Open the audio file
-        with open(filename, "rb") as file:
-            # Create a translation of the audio file
-            translation = client.audio.translations.create(
-                file=(filename, file.read()),  # Required audio file
-                model="whisper-large-v3",  # Required model to use for translation
-                prompt=prompt or "This is English audio, transcribe accurately",  # Set English context
-                response_format="json",  # Optional
-                temperature=0.0  # Optional
+        photo_file = await context.bot.get_file(session.last_photo.file_id)
+        photo_url = photo_file.file_path
+        
+        if action == "describe":
+            # Create a mock update object to reuse describe_image
+            mock_message = type('MockMessage', (), {
+                'photo': [session.last_photo],
+                'reply_text': query.edit_message_text,
+                'effective_chat': query.message.chat
+            })
+            mock_update = type('MockUpdate', (), {
+                'message': mock_message,
+                'effective_user': query.from_user,
+                'effective_chat': query.message.chat
+            })
+            
+            # Call the existing describe_image function
+            await describe_image(mock_update, context)
+
+        elif action == "caption":
+            await query.edit_message_text("🤔 Generating creative caption...")
+            success, caption = await image_captioner.generate_caption(
+                photo_url, 
+                "Generate a creative and engaging caption for this image."
             )
-            return translation.text
+            
+            if success:
+                await query.edit_message_text(f"🎨 Creative Caption:\n\n{caption}")
+            else:
+                await query.edit_message_text(f"❌ Error: {caption}")
+
     except Exception as e:
-        logger.error(f"Error during transcription: {str(e)}")
-        raise
+        logger.error(f"Error in button callback: {str(e)}")
+        await query.edit_message_text("❌ Sorry, something went wrong. Please try again later.")
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle text messages and respond with both voice and text."""
@@ -1173,6 +1228,7 @@ async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_T
             BotCommand("settings", "Configure bot settings"),
             BotCommand("togglevoice", "Toggle voice responses"),
             BotCommand("imagine", "Generate an image from text using Replicate"),
+            BotCommand("caption", "Generate a detailed caption for an image"),
             BotCommand("enhance", "Enhance your text"),
             BotCommand("describe", "Analyze an image"),
             BotCommand("clear_chat", "Clear chat history"),
@@ -1200,6 +1256,7 @@ async def post_init(application: Application) -> None:
             BotCommand("settings", "Configure bot settings"),
             BotCommand("togglevoice", "Toggle voice responses"),
             BotCommand("imagine", "Generate an image from text using Replicate"),
+            BotCommand("caption", "Generate a detailed caption for an image"),
             BotCommand("enhance", "Enhance your text"),
             BotCommand("describe", "Analyze an image"),
             BotCommand("clear_chat", "Clear chat history"),
@@ -1220,9 +1277,61 @@ async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle videos sent directly to the bot."""
     await analyze_video_command(update, context)
 
+async def caption_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Handle the /caption command for generating image captions."""
+    if not update.message:
+        return
+
+    # Check if an image was provided
+    if not update.message.reply_to_message or not update.message.reply_to_message.photo:
+        await update.message.reply_text(
+            "Please use this command as a reply to an image with an optional custom prompt.\n"
+            "Example:\n"
+            "1. Send an image\n"
+            "2. Reply to it with `/caption` or `/caption your custom prompt`",
+            parse_mode='Markdown'
+        )
+        return
+
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+
+    session = user_sessions[user_id]
+    if not session.replicate_api_key:
+        await update.message.reply_text(
+            "Please set your Replicate API key in the .env file first.",
+            parse_mode='Markdown'
+        )
+        return
+
+    # Get the custom prompt if provided
+    custom_prompt = ' '.join(context.args) if context.args else None
+
+    # Get the largest photo (best quality)
+    photo = update.message.reply_to_message.photo[-1]
+    
+    # Get photo file and generate caption
+    try:
+        photo_file = await context.bot.get_file(photo.file_id)
+        photo_url = photo_file.file_path
+
+        # Send a processing message
+        processing_message = await update.message.reply_text("🤔 Analyzing the image...")
+
+        # Generate caption
+        success, caption = await image_captioner.generate_caption(photo_url, custom_prompt)
+        
+        if success:
+            await processing_message.edit_text(f"🖼️ Image Analysis:\n\n{caption}")
+        else:
+            await processing_message.edit_text(f"❌ {caption}")  # caption contains error message
+            
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error processing image: {str(e)}")
+
 def setup_bot():
     """Set up and configure the bot with all handlers."""
-    # Initialize the bot with the token
     application = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(post_init).build()
 
     # Add command handlers
@@ -1230,8 +1339,8 @@ def setup_bot():
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("chat", chat_command))
     application.add_handler(CommandHandler("settings", settings_command))
-    application.add_handler(CommandHandler("togglevoice", toggle_voice_command))
     application.add_handler(CommandHandler("imagine", imagine_command))
+    application.add_handler(CommandHandler("caption", caption_command))
     application.add_handler(CommandHandler("enhance", enhance_command))
     application.add_handler(CommandHandler("describe", describe_image))
     application.add_handler(CommandHandler("clear_chat", clear_chat))
@@ -1240,13 +1349,16 @@ def setup_bot():
     application.add_handler(CommandHandler("status", status_command))
     application.add_handler(CommandHandler("subscribe", subscribe_command))
     application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
-    application.add_handler(CommandHandler("setup_commands", setup_commands_command))
     application.add_handler(CommandHandler("maintenance", maintenance_command))
+    application.add_handler(CommandHandler("setup_commands", setup_commands_command))
 
     # Add message handlers
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
-    application.add_handler(MessageHandler(filters.VIDEO | filters.Document.VIDEO, handle_video))  # Add video handler
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+    application.add_handler(MessageHandler(filters.VIDEO, handle_video))
+
+    # Add callback query handler for inline keyboard buttons
+    application.add_handler(CallbackQueryHandler(button_callback))
 
     # Add error handler
     application.add_error_handler(error_handler)
@@ -1280,17 +1392,3 @@ if __name__ == "__main__":
     # Run the bot using the app.py implementation
     from app import main
     main()
-
-def extract_transcript_details(youtube_video_url):
-    try:
-        video_id = youtube_video_url.split("=")[1]
-        transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en', 'hi'])
-        transcript = " ".join([item["text"] for item in transcript_list])
-        return transcript
-    except Exception as e:
-        raise e
-
-def generate_gemini_content(transcript_text, prompt):
-    model = genai.GenerativeModel("gemini-pro")
-    response = model.generate_content(prompt + transcript_text)
-    return response.text

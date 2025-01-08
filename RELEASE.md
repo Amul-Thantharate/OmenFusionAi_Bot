@@ -199,6 +199,43 @@ REPLICATE_API_KEY=your_replicate_api_key
 
 ## Version History
 
+## Version 2.3.1 - 2025-01-08
+
+### Major Changes
+- 🔄 Enhanced Image Analysis UI
+  - Added interactive buttons for image analysis options
+  - Unified image description using Groq's LLaMA model
+  - Added Replicate-powered creative captions
+
+### Features Added
+- 🖼️ New Image Analysis Options:
+  - "Describe Image": Detailed analysis using Groq
+  - "Generate Caption": Creative captions using Replicate
+- 🎨 Improved User Experience:
+  - Inline keyboard for easy selection
+  - Real-time processing status updates
+  - Better error handling and feedback
+
+### Technical Improvements
+- 🛠️ Code Refactoring:
+  - Unified image analysis using Groq's LLaMA model
+  - Streamlined caption generation with Replicate
+  - Enhanced error handling and logging
+- 🔧 Performance:
+  - Optimized image processing
+  - Better memory management
+  - Improved response times
+
+### Documentation
+- 📚 Updated image analysis commands
+- 🔑 Added new environment variable requirements
+- 📝 Enhanced troubleshooting guide
+
+### Bug Fixes
+- 🐛 Fixed image processing errors
+- 🔧 Improved error messages
+- 🔄 Enhanced session handling
+
 ## Version 2.3.0 - 2025-01-08
 
 ### Major Changes

@@ -8,91 +8,59 @@ permalink: /
 
 # AIFusionBot Documentation
 
-Welcome to the AIFusionBot documentation! This guide will help you understand and use all the features of our Telegram bot.
+Welcome to AIFusionBot, your versatile Telegram bot powered by advanced AI models!
 
-## Overview
+## 🎯 Try the Bot
+Start using AIFusionBot now: [@AIFusionCom_Bot](https://t.me/AIFusionCom_Bot)
 
-AIFusionBot is a versatile Telegram bot that combines multiple AI capabilities:
-- Natural language chat using Groq's Mixtral-8x7b model
-- Image generation with Together AI
-- Voice interaction with text-to-speech
-- YouTube audio processing
-- Maintenance and monitoring
+## 🌟 Key Features
 
-## Key Features
+### 🤖 Chat & Conversation
+- Natural language conversations
+- Context-aware responses
+- Multiple chat models support
 
-### AI Chat
-- Powered by Groq's Mixtral-8x7b model
-- Natural language understanding
-- Context-aware conversations
-- Customizable response parameters
-- Voice response support
+### 📸 Image Analysis & Generation
+- **Interactive Image Analysis**
+  - 📝 Detailed descriptions using Groq's LLaMA
+  - 🔍 Creative captions using Replicate
+  - 🎨 Voice descriptions (optional)
+- **Image Generation**
+  - Create images from text descriptions
+  - Enhance generation prompts
 
-### Image Generation
-- High-quality image creation
-- Prompt enhancement
-- Style customization
-- Image analysis and description
+### 🎥 Video Analysis
+- Analyze video content
+- Extract key moments
+- Generate insights
 
-### Voice & Audio
+### 🔊 Voice & Audio
+- Voice message transcription
 - Text-to-speech responses
-- Audio file transcription
-- YouTube video processing
-- Multiple format support
+- Multi-language support
 
-### Management
-- Chat history export
-- Maintenance mode
-- Status monitoring
-- User subscriptions
+## 🚀 Quick Start
 
-## Quick Start
+1. **Setup**
+   - Install dependencies
+   - Configure API keys
+   - Start the bot
 
-1. **Installation**
-   ```bash
-   git clone https://github.com/yourusername/AIFusionBot.git
-   cd AIFusionBot
-   pip install -r requirements.txt
-   ```
+2. **Basic Usage**
+   - Send images for analysis
+   - Use `/help` for commands
+   - Try voice features
 
-2. **Configuration**
-   Create a `.env` file with your API keys:
-   ```
-   GROQ_API_KEY=your_groq_key
-   TOGETHER_API_KEY=your_together_key
-   TELEGRAM_BOT_TOKEN=your_telegram_token
-   ```
+3. **Advanced Features**
+   - Customize responses
+   - Toggle voice output
+   - Export chat history
 
-3. **Run the Bot**
-   ```bash
-   python app.py
-   ```
+## 📚 Documentation Sections
 
-## Basic Usage
-
-1. Start a chat with the bot on Telegram
-2. Use `/help` to see available commands
-3. Try basic commands:
-   - `/chat Hello` - Start a conversation
-   - `/imagine sunset` - Generate an image
-   - `/describe` - Analyze an image
-
-## Advanced Features
-
-### Voice Responses
-- Toggle with `/togglevoice`
-- Automatic text-to-speech
-- Multiple language support
-
-### Image Generation
-- Enhanced prompts
-- Style customization
-- Image analysis
-
-### Chat Management
-- Export history
-- Clear conversations
-- Adjust AI parameters
+- [Setup Guide](setup.md)
+- [Commands List](commands.md)
+- [Changelog](changelog.md)
 
 ## Security
 

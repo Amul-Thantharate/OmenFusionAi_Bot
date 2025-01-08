@@ -101,6 +101,41 @@ Track AIFusionBot's version history and updates.
 - Various bug fixes and improvements
 - Enhanced stability
 
+## [2.3.1] - 2025-01-08
+
+### Added
+- 🎨 Interactive Image Analysis Menu
+  - New inline keyboard for image analysis options
+  - Two options: "Describe Image" and "Generate Caption"
+- 🔍 Enhanced Image Description
+  - Integrated Groq's LLaMA model for detailed analysis
+  - Improved voice output support
+- 📝 Creative Caption Generation
+  - Added Replicate-powered caption generation
+  - New `/caption` command
+
+### Changed
+- 🔄 Unified Image Analysis
+  - Migrated to Groq's LLaMA model for descriptions
+  - Improved response formatting
+- 🎯 Better User Experience
+  - Added real-time processing status
+  - Enhanced error messages
+  - Improved session handling
+
+### Fixed
+- 🐛 Image processing errors
+- 🔧 Session management issues
+- 📊 Response formatting
+
+### Technical
+- 📦 Updated Dependencies
+  - Added Groq SDK v0.3.1
+  - Updated Replicate to v0.22.0
+- 🔐 Enhanced Security
+  - Better API key management
+  - Improved error handling
+
 ## [2.0.0] - 2024-12-15 🌟
 
 ### ✨ Added
