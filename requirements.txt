@@ -19,7 +19,8 @@ colorama==0.4.6
 tqdm==4.66.1
 google-generativeai==0.3.2
 pytube==15.0.0
-youtube-transcript-api==0.6.1
+youtube-transcript-api>=0.6.3
+SpeechRecognition>=3.10.0
 httpx==0.25.2
 pip install --upgrade together
 # Development dependencies

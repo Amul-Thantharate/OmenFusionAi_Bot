@@ -84,6 +84,56 @@ def save_video_file(file_data, filename):
         f.write(file_data)
     return file_path
 
+def generate_captions_from_audio(video_id):
+    """Generate captions from video audio using speech recognition when no captions are available."""
+    try:
+        # Download video audio
+        yt = YouTube(f"https://www.youtube.com/watch?v={video_id}")
+        audio_stream = yt.streams.filter(only_audio=True).first()
+        
+        if not audio_stream:
+            logging.warning("❌ No audio stream available for this video")
+            return None
+            
+        # Download to a temporary file
+        temp_dir = os.path.join(MEDIA_FOLDER, "temp_audio")
+        os.makedirs(temp_dir, exist_ok=True)
+        audio_file = audio_stream.download(output_path=temp_dir)
+        
+        try:
+            import speech_recognition as sr
+            from pydub import AudioSegment
+            
+            # Convert to WAV format for speech recognition
+            audio = AudioSegment.from_file(audio_file)
+            wav_path = os.path.join(temp_dir, "temp_audio.wav")
+            audio.export(wav_path, format="wav")
+            
+            # Initialize recognizer
+            recognizer = sr.Recognizer()
+            with sr.AudioFile(wav_path) as source:
+                audio_data = recognizer.record(source)
+                
+            # Perform speech recognition
+            text = recognizer.recognize_google(audio_data)
+            
+            return text
+            
+        except Exception as e:
+            logging.error(f"❌ Speech recognition failed: {str(e)}")
+            return None
+            
+        finally:
+            # Cleanup temporary files
+            if os.path.exists(audio_file):
+                os.remove(audio_file)
+            if os.path.exists(os.path.join(temp_dir, "temp_audio.wav")):
+                os.remove(os.path.join(temp_dir, "temp_audio.wav"))
+            
+    except Exception as e:
+        logging.error(f"❌ Error generating captions from audio: {str(e)}")
+        return None
+
 def extract_transcript_details(youtube_video_url):
     """Extract transcript from YouTube video and handle cases where transcripts are unavailable."""
     try:
@@ -93,26 +143,45 @@ def extract_transcript_details(youtube_video_url):
         elif "youtu.be/" in youtube_video_url:
             video_id = youtube_video_url.split("youtu.be/")[1].split("?")[0]
         else:
-            raise ValueError("❌ Invalid YouTube URL format")
+            logging.error("❌ Invalid YouTube URL format")
+            return None
 
         try:
             # Try to get manual captions first
             transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en'])
-        except Exception:
+            transcript = " ".join([item["text"] for item in transcript_list])
+            return transcript
+        except Exception as e:
+            logging.warning(f"❌ No manual captions available: {str(e)}")
             try:
                 # If manual captions fail, try auto-generated ones
                 transcript_list = YouTubeTranscriptApi.get_transcript(video_id, languages=['en-US'])
-            except Exception:
-                # If both fail, try to get any available transcript
-                transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
-                transcript = transcript_list.find_transcript(['en'])
-                transcript_list = transcript.fetch()
-
-        transcript = " ".join([item["text"] for item in transcript_list])
-        return transcript
+                transcript = " ".join([item["text"] for item in transcript_list])
+                return transcript
+            except Exception as e:
+                logging.warning(f"❌ No auto-generated captions available: {str(e)}")
+                try:
+                    # If both fail, try to get any available transcript
+                    transcript_list = YouTubeTranscriptApi.list_transcripts(video_id)
+                    transcript = transcript_list.find_transcript(['en'])
+                    transcript_list = transcript.fetch()
+                    transcript = " ".join([item["text"] for item in transcript_list])
+                    return transcript
+                except Exception as e:
+                    logging.warning(f"❌ No transcripts available at all: {str(e)}")
+                    
+                    # Try generating captions from audio as a last resort
+                    logging.info("🎤 Attempting to generate captions from video audio...")
+                    generated_transcript = generate_captions_from_audio(video_id)
+                    if generated_transcript:
+                        return generated_transcript
+                    
+                    logging.error("❌ Could not extract or generate video transcript")
+                    return None
+                    
     except Exception as e:
-        logging.error(f"❌ Error extracting transcript: {str(e)}")
-        raise ValueError("❌ Could not extract video transcript. The video might not have captions available.")
+        logging.error(f"❌ Error in transcript extraction: {str(e)}")
+        return None
 
 def generate_gemini_content(transcript_text, prompt):
     """Generate content using Gemini Pro model."""
