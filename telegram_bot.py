@@ -1262,7 +1262,8 @@ async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_T
             BotCommand("analyze_video", "Analyze a video file"),
             BotCommand("status", "Check bot status"),
             BotCommand("subscribe", "Subscribe to bot updates"),
-            BotCommand("unsubscribe", "Unsubscribe from updates")
+            BotCommand("unsubscribe", "Unsubscribe from updates"),
+            BotCommand("maintenance", "Set bot maintenance mode (Admin only)")
         ]
         await context.bot.set_my_commands(commands)
         await update.message.reply_text("✅ Bot commands have been successfully updated!")
@@ -1290,7 +1291,8 @@ async def post_init(application: Application) -> None:
             BotCommand("analyze_video", "Analyze a video file"),
             BotCommand("status", "Check bot status"),
             BotCommand("subscribe", "Subscribe to bot updates"),
-            BotCommand("unsubscribe", "Unsubscribe from updates")
+            BotCommand("unsubscribe", "Unsubscribe from updates"),
+            BotCommand("maintenance", "Set bot maintenance mode (Admin only)")
         ]
         await application.bot.set_my_commands(commands)
         logging.info("✅ Bot commands registered successfully during initialization")
