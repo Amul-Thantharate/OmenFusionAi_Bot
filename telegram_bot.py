@@ -94,7 +94,7 @@ class UserSession:
         self.last_image_prompt = None
         self.last_image_url = None
         self.last_photo = None  # Store last photo for inline keyboard actions
-        self.selected_model = "mistral-7b-instruct"  # Default Groq model
+        self.selected_model = "llama3-70b-8192"  # Default Groq model
         self.replicate_api_key = os.getenv('REPLICATE_API_KEY')
         self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.last_enhanced_prompt = None
@@ -188,6 +188,32 @@ async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_T
         "Please set your Replicate API key in the .env file."
     )
 
+async def interactive_chat(text: str, model_type: str, api_key: str) -> str:
+    """Handle chat interaction with Groq API."""
+    try:
+        # Initialize Groq client
+        client = Groq(api_key=api_key)
+        
+        # Create chat completion (not async)
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": text
+                }
+            ],
+            model=model_type,
+            temperature=0.7,
+            max_tokens=1000,
+        )
+        
+        # Return the response text
+        return chat_completion.choices[0].message.content
+        
+    except Exception as e:
+        logger.error(f"Error in interactive_chat: {e}")
+        raise Exception(f"Failed to get response from Groq API: {str(e)}")
+
 async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /chat command."""
     try:
@@ -224,9 +250,9 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await context.bot.send_chat_action(chat_id=update.message.chat_id, action="typing")
         
         # Get AI response with proper API key
-        response = interactive_chat(
+        response = await interactive_chat(
             text=message,
-            model_type="mistral-7b-instruct",
+            model_type="llama3-70b-8192",
             api_key=session.groq_api_key
         )
         
