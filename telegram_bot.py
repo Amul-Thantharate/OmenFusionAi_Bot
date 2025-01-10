@@ -1,4 +1,4 @@
-from telegram import Update, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, Bot, BotCommand, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     Application,
     CommandHandler,
@@ -17,7 +17,6 @@ from pathlib import Path
 import base64
 from groq import Groq
 import asyncio
-from gtts import gTTS
 import html
 from PIL import Image
 import io
@@ -37,10 +36,14 @@ image_captioner = ImageCaptioner()
 load_dotenv()
 TELEGRAM_BOT_TOKEN = os.getenv('TELEGRAM_BOT_TOKEN')
 ROOT_PASSWORD = os.getenv('ROOT_PASSWORD')
+ADMIN_USER_ID = int(os.getenv('ADMIN_USER_ID', '0'))  # Default to 0 if not set
+
 if not TELEGRAM_BOT_TOKEN:
     raise ValueError("TELEGRAM_BOT_TOKEN not found in environment variables")
 if not ROOT_PASSWORD:
     raise ValueError("ROOT_PASSWORD not found in environment variables")
+if not ADMIN_USER_ID:
+    raise ValueError("ADMIN_USER_ID not found in environment variables")
 
 # Configure logging
 logging.basicConfig(
@@ -63,7 +66,6 @@ COMMANDS = {
     "/help": "Show help message",
     "/chat": "Start a chat conversation",
     "/settings": "Configure bot settings",
-    "/togglevoice": "Toggle voice responses",
     "/imagine": "Generate an image from text using Replicate",
     "/caption": "Generate a detailed caption for an image",
     "/enhance": "Enhance your text",
@@ -75,17 +77,18 @@ COMMANDS = {
     "/subscribe": "Subscribe to bot updates",
     "/unsubscribe": "Unsubscribe from updates",
     "/maintenance": "Toggle maintenance mode (Admin only)",
-    "/setup_commands": "Update bot commands (Admin only)"
+    "/setgroqapi": "Set your Groq API key",
+    "/setreplicateapi": "Set your Replicate API key"
 }
 
 # Group commands by category for help menu
 COMMAND_CATEGORIES = {
     "🤖 Chat": ['chat', 'clear_chat', 'export'],
     "🎨 Media": ['imagine', 'caption', 'enhance', 'describe', 'analyze_video'],
-    "🔊 Settings": ['settings', 'togglevoice'],
+    "🔊 Settings": ['settings', 'setgroqapi', 'setreplicateapi'],
     "📊 Status": ['status', 'subscribe', 'unsubscribe'],
     "ℹ️ General": ['start', 'help'],
-    "🔐 Admin": ['maintenance', 'setup_commands']
+    "🔐 Admin": ['maintenance']
 }
 
 class UserSession:
@@ -99,7 +102,6 @@ class UserSession:
         self.replicate_api_key = os.getenv('REPLICATE_API_KEY')
         self.groq_api_key = os.getenv('GROQ_API_KEY')
         self.last_enhanced_prompt = None
-        self.voice_response = True
         self.subscribed_to_status = False  # New field for status subscription
 
 BOT_STATUS = {
@@ -114,7 +116,8 @@ BOT_STATUS = {
     "last_offline_time": None
 }
 
-subscribed_users = {}
+# Dictionary to store subscribed users
+subscribed_users = set()
 
 async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Send a message when the command /start is issued."""
@@ -129,7 +132,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "🎨 Images - Generate and analyze images\n"
         "🎥 Video - Analyze video content\n"
         "📝 Text - Enhance and improve your text\n"
-        "🔊 Voice - Toggle voice responses\n"
         "📊 Status - Get bot updates and notifications\n\n"
         "Type /help to see all available commands!"
     )
@@ -150,7 +152,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             for cmd in commands:
                 cmd_with_slash = f"/{cmd}"
                 if cmd_with_slash in COMMANDS:
-                    description = COMMANDS[cmd_with_slash].replace("_", "\\_")  # Escape underscores
+                    # Escape special characters
+                    description = COMMANDS[cmd_with_slash].replace("(", "\\(").replace(")", "\\)").replace("_", "\\_").replace("-", "\\-").replace(".", "\\.")
                     help_text += f"• `{cmd_with_slash}` \\- {description}\n"
     
     # Add admin commands separately
@@ -159,7 +162,8 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         for cmd in COMMAND_CATEGORIES["🔐 Admin"]:
             cmd_with_slash = f"/{cmd}"
             if cmd_with_slash in COMMANDS:
-                description = COMMANDS[cmd_with_slash].replace("_", "\\_")  # Escape underscores
+                # Escape special characters
+                description = COMMANDS[cmd_with_slash].replace("(", "\\(").replace(")", "\\)").replace("_", "\\_").replace("-", "\\-").replace(".", "\\.")
                 help_text += f"• `{cmd_with_slash}` \\- {description}\n"
     
     help_text += "\n_For more information about what I can do, type_ `/start`"
@@ -171,7 +175,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
     except Exception as e:
         # Fallback to plain text if Markdown fails
-        plain_text = help_text.replace('*', '').replace('_', '').replace('`', '')
+        plain_text = help_text.replace('*', '').replace('_', '').replace('`', '').replace('\\', '')
         await update.message.reply_text(plain_text)
         logging.error(f"Error sending help message with Markdown: {str(e)}")
 
@@ -185,7 +189,7 @@ async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYP
 async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """This command is deprecated."""
     await update.message.reply_text(
-        "Together AI integration has been replaced with Replicate. "
+        " Together AI integration has been replaced with Replicate. "
         "Please set your Replicate API key in the .env file."
     )
 
@@ -269,38 +273,6 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         # Store the last response
         session.last_response = response
 
-        # Handle voice response if enabled
-        if session.voice_response:
-            try:
-                # Send recording action to show progress
-                await context.bot.send_chat_action(chat_id=update.message.chat_id, action="record_voice")
-                status_message = await update.message.reply_text(" Converting text to speech...")
-                
-                # Create voice file
-                voice_path = os.path.join(tempfile.gettempdir(), f'response_{user_id}.mp3')
-                success = await text_to_speech_chunk(response, voice_path)
-                
-                if success and os.path.exists(voice_path):
-                    # Update status
-                    await status_message.edit_text(" Sending voice message...")
-                    
-                    # Send the voice message
-                    with open(voice_path, 'rb') as voice:
-                        await update.message.reply_voice(
-                            voice=voice,
-                            caption=" Voice Message"
-                        )
-                    
-                    # Clean up
-                    os.remove(voice_path)
-                    await status_message.delete()
-                else:
-                    await status_message.edit_text(" Could not generate voice message.")
-                
-            except Exception as voice_error:
-                logger.error(f"Voice message error: {str(voice_error)}")
-                await update.message.reply_text("Note: Voice message could not be generated.")
-        
     except Exception as e:
         logger.error(f"Error in chat: {str(e)}")
         await update.message.reply_text(
@@ -443,17 +415,18 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /settings command."""
-    session = context.user_data.get('session', UserSession())
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
     
-    settings_text = (
+    session = user_sessions[user_id]
+    
+    await update.message.reply_text(
         " Current Settings:\n\n"
         f"Groq API Key: {' Set' if session.groq_api_key else ' Not Set'}\n"
         f"Replicate API Key: {' Set' if session.replicate_api_key else ' Not Set'}\n"
-        f"Voice Response: {' Enabled' if session.voice_response else ' Disabled'}\n"
         f"Selected Model: {session.selected_model}"
     )
-    
-    await update.message.reply_text(settings_text)
 
 async def save_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle the /save command."""
@@ -574,31 +547,6 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(description)
         logging.info("Text description sent to user")
 
-        # Generate and send voice response if enabled
-        if session.voice_response:
-            logging.info("Starting voice response generation...")
-            await context.bot.send_chat_action(chat_id=update.effective_chat.id, action="upload_voice")
-            
-            # Create voice file path
-            voice_path = os.path.join(TEMP_DIR, f"description_{photo.file_id}.mp3")
-            
-            # Convert text to speech
-            success = await text_to_speech_chunk(description, voice_path)
-            
-            if success:
-                # Send voice message
-                with open(voice_path, 'rb') as voice_file:
-                    await context.bot.send_voice(
-                        chat_id=update.effective_chat.id,
-                        voice=voice_file,
-                        caption="🎧 Voice description"
-                    )
-                # Clean up voice file
-                os.remove(voice_path)
-            else:
-                await update.message.reply_text("Sorry, I couldn't generate the voice description.")
-                logging.error("Failed to generate voice description")
-
     except Exception as e:
         logging.error(f"Error in image description: {str(e)}")
         await update.message.reply_text(
@@ -693,203 +641,72 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text("❌ Sorry, something went wrong. Please try again later.")
 
 async def handle_text_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle text messages and respond with both voice and text."""
-    try:
-        user_id = update.effective_user.id
-        if user_id not in user_sessions:
-            user_sessions[user_id] = UserSession()
-        
-        session = user_sessions[user_id]
-        
-        # Get the message text
-        message_text = update.message.text.strip()
-        
-        # Process the message and get response
-        response = await process_message(message_text, session)
-        
-        # Send text response
-        await update.message.reply_text(response)
-        
-        # Send voice response if enabled
-        if session.voice_response:
-            audio_file = await text_to_speech(response)
-            if audio_file:
-                await context.bot.send_voice(
-                    chat_id=update.effective_chat.id,
-                    voice=open(audio_file, 'rb')
-                )
-                os.remove(audio_file)  # Clean up the audio file
-                
-    except Exception as e:
-        await update.message.reply_text(f"Error: {str(e)}")
-
-async def toggle_voice_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Toggle voice responses on/off."""
-    try:
-        user_id = update.effective_user.id
-        if user_id not in user_sessions:
-            user_sessions[user_id] = UserSession()
-        
-        session = user_sessions[user_id]
-        session.voice_response = not session.voice_response
-        
-        status = "enabled " if session.voice_response else "disabled "
-        await update.message.reply_text(
-            f"Voice responses are now {status}",
-            parse_mode='HTML'
-        )
-    except Exception as e:
-        logger.error(f"Error in toggle_voice_command: {str(e)}")
-        await update.message.reply_text("Sorry, I encountered an error while toggling voice responses.")
-
-async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Handle the /maintenance command. Requires root password."""
-    
-    # Check if password is provided
-    if not context.args:
-        await update.message.reply_text(
-            " Admin authentication required.\n\n"
-            "Usage: `/maintenance <password> [on/off] [duration] [message]`\n"
-            "Example: `/maintenance yourpassword on 30 System upgrade`",
-            parse_mode='Markdown'
-        )
-        return
-    
-    # Verify password
-    provided_password = context.args[0]
-    if provided_password != ROOT_PASSWORD:
-        await update.message.reply_text(" Invalid admin password.")
-        return
-    
-    # Remove password from args before processing command
-    context.args = context.args[1:]
-    
-    # If no further arguments, show current status
-    if not context.args:
-        status = " ON" if BOT_STATUS["is_maintenance"] else " OFF"
-        message = BOT_STATUS["maintenance_message"] or "No message set"
-        end_time = BOT_STATUS["maintenance_end"]
-        
-        if end_time:
-            time_left = end_time - datetime.now()
-            if time_left.total_seconds() > 0:
-                time_str = str(time_left).split('.')[0]
-            else:
-                time_str = "Expired"
-        else:
-            time_str = "No duration set"
-        
-        await update.message.reply_text(
-            f"Maintenance Mode: {status}\n"
-            f"Message: {message}\n"
-            f"Time Remaining: {time_str}"
-        )
+    """Handle text messages and respond with text."""
+    if not update.message:
         return
 
-    # Parse maintenance command
-    if context.args[0].lower() in ['on', 'true', '1']:
-        # Get duration (in minutes) and message
-        duration = 30  # Default 30 minutes
-        message = "Scheduled maintenance"
-        
-        if len(context.args) > 1:
-            try:
-                duration = int(context.args[1])
-            except ValueError:
-                await update.message.reply_text("Duration must be a number in minutes. Using default 30 minutes.")
-        
-        if len(context.args) > 2:
-            message = ' '.join(context.args[2:])
-
-        # Set maintenance mode
-        BOT_STATUS["is_maintenance"] = True
-        BOT_STATUS["maintenance_message"] = message
-        BOT_STATUS["maintenance_start"] = datetime.now()
-        BOT_STATUS["maintenance_end"] = datetime.now() + timedelta(minutes=duration)
-
-        # Schedule end of maintenance
-        asyncio.create_task(end_maintenance(context.bot, duration))
-
-        # Notify all users
-        notification = (
-            " Bot entering maintenance mode\n\n"
-            f"Message: {message}\n"
-            f"Duration: {duration} minutes"
-        )
-        await notify_subscribers(context.application, notification)
-
-        await update.message.reply_text(
-            f" Maintenance mode activated for {duration} minutes\n"
-            f"Message: {message}"
-        )
-
-    elif context.args[0].lower() in ['off', 'false', '0']:
-        # Turn off maintenance mode
-        BOT_STATUS["is_maintenance"] = False
-        BOT_STATUS["maintenance_message"] = ""
-        BOT_STATUS["maintenance_start"] = None
-        BOT_STATUS["maintenance_end"] = None
-
-        # Notify all users
-        notification = " Maintenance mode ended"
-        await notify_subscribers(context.application, notification)
-
-        await update.message.reply_text(" Maintenance mode deactivated")
-
-    else:
-        await update.message.reply_text(
-            "Invalid command. Use:\n"
-            "/maintenance <password> on [duration] [message] - Turn on maintenance mode\n"
-            "/maintenance <password> off - Turn off maintenance mode\n"
-            "/maintenance <password> - Show current status"
-        )
-
-async def end_maintenance(bot, duration):
-    """Automatically end maintenance after specified duration."""
-    try:
-        await asyncio.sleep(duration * 60)  # Convert minutes to seconds
-        if BOT_STATUS["is_maintenance"]:
-            BOT_STATUS["is_maintenance"] = False
-            BOT_STATUS["maintenance_message"] = ""
-            BOT_STATUS["maintenance_start"] = None
-            BOT_STATUS["maintenance_end"] = None
-
-            # Notify all users
-            notification = " Scheduled maintenance completed"
-            for user_id in get_subscribers():
-                try:
-                    await bot.send_message(chat_id=user_id, text=notification)
-                except Exception as e:
-                    logger.error(f"Failed to notify user {user_id}: {str(e)}")
-
-    except Exception as e:
-        logger.error(f"Error ending maintenance: {str(e)}", exc_info=True)
-
-async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Subscribe to bot status notifications."""
+    # Get or create user session
     user_id = update.effective_user.id
     if user_id not in user_sessions:
         user_sessions[user_id] = UserSession()
     
-    user_sessions[user_id].subscribed_to_status = True
-    subscribed_users[user_id] = update.effective_chat.id
+    session = user_sessions[user_id]
     
-    await update.message.reply_text(
-        " You are now subscribed to bot status notifications.\n"
-        "You will receive alerts when the bot goes offline or comes back online."
-    )
+    # Get the message text
+    message_text = update.message.text
+    
+    try:
+        # Generate response using chat function
+        response = await interactive_chat(message_text, session.selected_model, session.groq_api_key)
+        
+        # Send the text response
+        await update.message.reply_text(response)
+        
+    except Exception as e:
+        error_message = f"Error processing message: {str(e)}"
+        logging.error(error_message)
+        await update.message.reply_text(error_message)
 
-async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Unsubscribe from bot status notifications."""
+def is_admin(user_id: int) -> bool:
+    """Check if a user is an admin."""
+    return user_id == ADMIN_USER_ID
+
+async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Toggle maintenance mode. Only available to admin users."""
+    if not update.message or not update.effective_user:
+        return
+
     user_id = update.effective_user.id
-    if user_id in user_sessions:
-        user_sessions[user_id].subscribed_to_status = False
-    if user_id in subscribed_users:
-        del subscribed_users[user_id]
-    
-    await update.message.reply_text(
-        " You are now unsubscribed from bot status notifications."
-    )
+    if not is_admin(user_id):
+        await update.message.reply_text("❌ Sorry, this command is only available to admin users.")
+        return
+
+    try:
+        BOT_STATUS["is_maintenance"] = not BOT_STATUS["is_maintenance"]
+        status = "enabled" if BOT_STATUS["is_maintenance"] else "disabled"
+        
+        if BOT_STATUS["is_maintenance"]:
+            BOT_STATUS["maintenance_start"] = datetime.now()
+            BOT_STATUS["maintenance_end"] = None
+            BOT_STATUS["maintenance_message"] = "Bot is currently under maintenance. Please try again later."
+            
+            # Notify all subscribed users about maintenance mode
+            maintenance_notification = "🔧 Bot is entering maintenance mode. Some features may be temporarily unavailable."
+            await notify_subscribers(context.bot, maintenance_notification)
+        else:
+            BOT_STATUS["maintenance_end"] = datetime.now()
+            BOT_STATUS["maintenance_message"] = ""
+            
+            # Notify all subscribed users about end of maintenance
+            end_maintenance_notification = "✅ Maintenance complete! All features are now available."
+            await notify_subscribers(context.bot, end_maintenance_notification)
+        
+        await update.message.reply_text(f"✅ Maintenance mode {status}")
+        logging.info(f"Maintenance mode {status} by admin {user_id}")
+        
+    except Exception as e:
+        logging.error(f"Error in maintenance command: {str(e)}")
+        await update.message.reply_text("❌ Error toggling maintenance mode")
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Check if the bot is online."""
@@ -934,7 +751,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def notify_subscribers(application: Application, message: str):
     """Send notification to all subscribed users."""
-    for chat_id in subscribed_users.values():
+    for chat_id in subscribed_users:
         try:
             await application.bot.send_message(
                 chat_id=chat_id,
@@ -1115,18 +932,6 @@ async def export_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             " Sorry, an error occurred while exporting your chat history."
         )
 
-async def text_to_speech_chunk(text: str, output_path: str) -> bool:
-    """Convert text to speech using gTTS and save to file."""
-    try:
-        # Create gTTS object
-        tts = gTTS(text=text, lang='en', slow=False)
-        # Save to file
-        tts.save(output_path)
-        return True
-    except Exception as e:
-        logging.error(f"Error in text to speech conversion: {str(e)}")
-        return False
-
 async def resize_image(image_path, max_size=(800, 800)):
     """Resize image to reduce file size while maintaining aspect ratio"""
     try:
@@ -1245,63 +1050,6 @@ async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TY
         if 'file_path' in locals() and os.path.exists(file_path):
             os.remove(file_path)
 
-async def setup_commands_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Admin command to set up the bot commands menu."""
-    try:
-        commands = [
-            BotCommand("start", "Start the bot"),
-            BotCommand("help", "Show help message"),
-            BotCommand("chat", "Start a chat conversation"),
-            BotCommand("settings", "Configure bot settings"),
-            BotCommand("togglevoice", "Toggle voice responses"),
-            BotCommand("imagine", "Generate an image from text using Replicate"),
-            BotCommand("caption", "Generate a detailed caption for an image"),
-            BotCommand("enhance", "Enhance your text"),
-            BotCommand("describe", "Analyze an image"),
-            BotCommand("clear_chat", "Clear chat history"),
-            BotCommand("export", "Export chat history"),
-            BotCommand("analyze_video", "Analyze a video file"),
-            BotCommand("status", "Check bot status"),
-            BotCommand("subscribe", "Subscribe to bot updates"),
-            BotCommand("unsubscribe", "Unsubscribe from updates"),
-            BotCommand("maintenance", "Set bot maintenance mode (Admin only)")
-        ]
-        await context.bot.set_my_commands(commands)
-        await update.message.reply_text("✅ Bot commands have been successfully updated!")
-        logging.info("✅ Bot commands registered successfully")
-    except Exception as e:
-        error_message = f"❌ Failed to register bot commands: {str(e)}"
-        await update.message.reply_text(error_message)
-        logging.error(error_message)
-
-async def post_init(application: Application) -> None:
-    """Post-initialization hook for the bot."""
-    try:
-        commands = [
-            BotCommand("start", "Start the bot"),
-            BotCommand("help", "Show help message"),
-            BotCommand("chat", "Start a chat conversation"),
-            BotCommand("settings", "Configure bot settings"),
-            BotCommand("togglevoice", "Toggle voice responses"),
-            BotCommand("imagine", "Generate an image from text using Replicate"),
-            BotCommand("caption", "Generate a detailed caption for an image"),
-            BotCommand("enhance", "Enhance your text"),
-            BotCommand("describe", "Analyze an image"),
-            BotCommand("clear_chat", "Clear chat history"),
-            BotCommand("export", "Export chat history"),
-            BotCommand("analyze_video", "Analyze a video file"),
-            BotCommand("status", "Check bot status"),
-            BotCommand("subscribe", "Subscribe to bot updates"),
-            BotCommand("unsubscribe", "Unsubscribe from updates"),
-            BotCommand("maintenance", "Set bot maintenance mode (Admin only)")
-        ]
-        await application.bot.set_my_commands(commands)
-        logging.info("✅ Bot commands registered successfully during initialization")
-    except Exception as e:
-        logging.error(f"❌ Failed to register bot commands during initialization: {str(e)}")
-    
-    await notify_subscribers(application, "🟢 Bot is now online and ready!")
-
 async def handle_video(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Handle videos sent directly to the bot."""
     await analyze_video_command(update, context)
@@ -1359,9 +1107,125 @@ async def caption_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     except Exception as e:
         await update.message.reply_text(f"❌ Error processing image: {str(e)}")
 
+async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Subscribe to bot updates and notifications."""
+    if not update.effective_user:
+        return
+        
+    user_id = update.effective_user.id
+    if user_id in subscribed_users:
+        await update.message.reply_text("You are already subscribed to bot updates! 📬")
+        return
+        
+    subscribed_users.add(user_id)
+    await update.message.reply_text(
+        "✅ You have successfully subscribed to bot updates!\n"
+        "You will now receive notifications about:\n"
+        "• Bot maintenance and downtime\n"
+        "• New features and improvements\n"
+        "• Important announcements\n\n"
+        "To unsubscribe, use /unsubscribe"
+    )
+
+async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Unsubscribe from bot updates and notifications."""
+    if not update.effective_user:
+        return
+        
+    user_id = update.effective_user.id
+    if user_id not in subscribed_users:
+        await update.message.reply_text("You are not currently subscribed to bot updates.")
+        return
+        
+    subscribed_users.remove(user_id)
+    await update.message.reply_text(
+        "✅ You have been unsubscribed from bot updates.\n"
+        "You will no longer receive notifications.\n\n"
+        "To subscribe again, use /subscribe"
+    )
+
+async def notify_subscribers(bot: Bot, message: str):
+    """Send a notification to all subscribed users."""
+    for user_id in subscribed_users:
+        try:
+            await bot.send_message(
+                chat_id=user_id,
+                text=message,
+                parse_mode='Markdown'
+            )
+        except Exception as e:
+            logging.error(f"Failed to notify user {user_id}: {str(e)}")
+
+async def setgroqapi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Set Groq API key for the user."""
+    if not update.message or not context.args:
+        await update.message.reply_text(
+            "Please provide your Groq API key.\n"
+            "Usage: /setgroqapi <your_api_key>\n"
+            "Example: /setgroqapi gsk_abcd1234..."
+        )
+        return
+
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+    
+    api_key = context.args[0]
+    user_sessions[user_id].groq_api_key = api_key
+    
+    # Delete the message containing the API key for security
+    await update.message.delete()
+    
+    # Send confirmation
+    await update.message.reply_text(
+        "✅ Your Groq API key has been set successfully!\n"
+        "You can now use the chat features."
+    )
+
+async def setreplicateapi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Set Replicate API key for the user."""
+    if not update.message or not context.args:
+        await update.message.reply_text(
+            "Please provide your Replicate API key.\n"
+            "Usage: /setreplicateapi <your_api_key>\n"
+            "Example: /setreplicateapi r8_abcd1234..."
+        )
+        return
+
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+    
+    api_key = context.args[0]
+    user_sessions[user_id].replicate_api_key = api_key
+    
+    # Delete the message containing the API key for security
+    await update.message.delete()
+    
+    # Send confirmation
+    await update.message.reply_text(
+        "✅ Your Replicate API key has been set successfully!\n"
+        "You can now use the image generation features."
+    )
+
 def setup_bot():
     """Set up and configure the bot with all handlers."""
-    application = Application.builder().token(TELEGRAM_BOT_TOKEN).post_init(post_init).build()
+    # Print bot info first
+    print_bot_info()
+    
+    # Configure the application with custom settings
+    application = (
+        Application.builder()
+        .token(TELEGRAM_BOT_TOKEN)
+        .connection_pool_size(8)
+        .pool_timeout(30.0)
+        .connect_timeout(30.0)
+        .read_timeout(30.0)
+        .write_timeout(30.0)
+        .get_updates_connection_pool_size(8)
+        .concurrent_updates(True)
+        .build()
+    )
 
     # Add command handlers
     application.add_handler(CommandHandler("start", start_command))
@@ -1379,18 +1243,43 @@ def setup_bot():
     application.add_handler(CommandHandler("subscribe", subscribe_command))
     application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
     application.add_handler(CommandHandler("maintenance", maintenance_command))
-    application.add_handler(CommandHandler("setup_commands", setup_commands_command))
+    application.add_handler(CommandHandler("setgroqapi", setgroqapi_command))
+    application.add_handler(CommandHandler("setreplicateapi", setreplicateapi_command))
 
     # Add message handlers
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     application.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
-    # Add callback query handler for inline keyboard buttons
+    # Add callback query handlers
     application.add_handler(CallbackQueryHandler(button_callback))
 
     # Add error handler
     application.add_error_handler(error_handler)
+
+    # Create the list of commands
+    commands = [
+        BotCommand("start", "Start the bot"),
+        BotCommand("help", "Show help message"),
+        BotCommand("chat", "Start a chat conversation"),
+        BotCommand("settings", "Configure bot settings"),
+        BotCommand("imagine", "Generate an image from text"),
+        BotCommand("caption", "Generate a caption for an image"),
+        BotCommand("enhance", "Enhance your text"),
+        BotCommand("describe", "Analyze an image"),
+        BotCommand("clear_chat", "Clear chat history"),
+        BotCommand("export", "Export chat history"),
+        BotCommand("analyze_video", "Analyze a video file"),
+        BotCommand("status", "Check bot status"),
+        BotCommand("subscribe", "Subscribe to bot updates"),
+        BotCommand("unsubscribe", "Unsubscribe from updates"),
+        BotCommand("maintenance", "Toggle maintenance mode (Admin only)"),
+        BotCommand("setgroqapi", "Set your Groq API key"),
+        BotCommand("setreplicateapi", "Set your Replicate API key")
+    ]
+    
+    # Set up commands
+    application.bot.set_my_commands(commands)
 
     return application
 

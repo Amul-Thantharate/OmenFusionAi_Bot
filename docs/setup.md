@@ -7,7 +7,7 @@ nav_order: 2
 # Setup Guide
 {: .no_toc }
 
-Learn how to set up and deploy NovaChat AI.
+Learn how to set up and deploy AIFusionBot.
 {: .fs-6 .fw-300 }
 
 ## Table of Contents
@@ -19,257 +19,133 @@ Learn how to set up and deploy NovaChat AI.
 ---
 
 ## Quick Start
-Want to try the bot without setup? Use our live instance:
-[@AIFusionCom_Bot](https://t.me/AIFusionCom_Bot)
 
-## Self-Hosting Guide
-Follow these steps if you want to host your own instance of AIFusionBot.
-
-## Prerequisites 
-
-- Python 3.8 or higher
+### Prerequisites
+- Python 3.8+
 - pip (Python package manager)
 - Git
 - A Telegram account
-- Required API keys:
-  - Telegram Bot Token
-  - Groq API Key
-  - Replicate API Key
+- A bot token from [@BotFather](https://t.me/botfather)
 
-## API Keys Required
-
-The bot requires several API keys to function:
-
-1. **Telegram Bot Token** (Required)
-   - Get from [@BotFather](https://t.me/botfather)
-   - Used for bot authentication
-
-2. **Groq API Key** (Required)
-   - Sign up at [Groq](https://www.groq.com)
-   - Used for:
-     - Image analysis with LLaMA model
-     - Text chat functionality
-     - Voice transcription
-
-3. **Replicate API Key** (Required)
-   - Sign up at [Replicate](https://replicate.com)
-   - Used for:
-     - Image generation with Recraft v3
-     - Creative caption generation
-
-## Installation Steps 
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/NovaChat-AI.git
-cd NovaChat-AI
+### Required Environment Variables
+Create a `.env` file in the root directory with these variables:
+```env
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+ROOT_PASSWORD=your_admin_password
+ADMIN_USER_ID=your_admin_telegram_id
 ```
 
-### 2. Install Dependencies
+### Optional API Keys
+Users can set these directly through the bot:
+- Groq API Key (`/setgroqapi`) - Get from [Groq](https://groq.com)
+- Replicate API Key (`/setreplicateapi`) - Get from [Replicate](https://replicate.com)
 
+### Installation Steps
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/AIFusionBot.git
+cd AIFusionBot
+```
+
+2. Install dependencies:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Set Up Environment Variables
-
-Create a `.env` file in the project root:
-
-```env
-# Required API Keys
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-GROQ_API_KEY=your_groq_api_key
-REPLICATE_API_KEY=your_replicate_api_key
-
-# Optional Settings
-ROOT_PASSWORD=your_admin_password  # For admin commands
-```
-
-### 4. Get Required API Keys
-
-1. **Telegram Bot Token**:
-   - Message [@BotFather](https://t.me/botfather) on Telegram
-   - Use `/newbot` command
-   - Follow instructions to create bot
-   - Copy the provided token
-
-2. **Groq API Key**:
-   - Sign up at [Groq](https://www.groq.com)
-   - Generate an API key
-
-3. **Replicate API Key**:
-   - Sign up at [Replicate](https://replicate.com)
-   - Generate an API key
-
-### 5. Configure the Bot
-
-1. Set environment variables:
-   ```bash
-   export TELEGRAM_BOT_TOKEN=your_token
-   export GROQ_API_KEY=your_key
-   export REPLICATE_API_KEY=your_key
-   ```
-   Or use the `.env` file as shown above.
-
-2. Or use the bot's built-in configuration:
-   ```
-   /uploadenv
-   ```
-   Then upload your `.env` file.
-
-### 6. Run the Bot
-
+3. Set up environment variables:
 ```bash
-python telegram_bot.py
+cp .env.example .env
+# Edit .env with your actual values
 ```
 
-## Features Setup 
-
-### Voice Features
-
-Voice features are enabled by default. Users can:
-- Toggle voice responses: `/togglevoice`
-- Send voice messages for transcription
-- Convert text to speech
-
-### Image Generation
-
-Image generation is ready to use with Replicate:
-- Generate images: `/imagine <description>`
-- Enhance prompts: `/enhance`
-- Describe images: `/describe`
-
-### YouTube Integration
-
-YouTube features are ready to use:
-- Download audio: `/audio <url>`
-- List downloads: `/videos`
-- Clear downloads: `/clear`
-
-### Maintenance Mode
-
-Maintenance features are available to all users:
-- Set maintenance: `/maintenance <duration> <message>`
-- Check status: `/status`
-- Subscribe to updates: `/subscribe`
-
-## Troubleshooting 
-
-### Common Issues
-
-1. **Bot Not Responding**
-   - Check if bot is running
-   - Verify Telegram token
-   - Check maintenance status
-
-2. **API Errors**
-   - Verify API keys
-   - Check API quotas
-   - Ensure proper formatting
-
-3. **Voice Features Not Working**
-   - Check ffmpeg installation
-   - Verify file permissions
-   - Check supported formats
-
-### Error Messages
-
-Common error messages and solutions:
-
-```
-Error: API key not found
-Solution: Set API key in .env file or using /uploadenv
+4. Run the bot:
+```bash
+python app.py
 ```
 
-```
-Error: Could not connect to Telegram
-Solution: Check internet connection and bot token
-```
+## Configuration
 
-```
-Error: File permission denied
-Solution: Check directory permissions
-```
+### Environment Variables
 
-## Security Considerations 
+#### Required Variables
+- `TELEGRAM_BOT_TOKEN`: Your Telegram bot token from BotFather
+- `ROOT_PASSWORD`: Password for admin operations
+- `ADMIN_USER_ID`: Your Telegram user ID for admin access
 
-1. **API Keys**
-   - Never share API keys
-   - Use environment variables
-   - Rotate keys regularly
+#### Optional Variables
+These can be set by users through bot commands:
+- Groq API Key: Set via `/setgroqapi`
+- Replicate API Key: Set via `/setreplicateapi`
 
-2. **File Uploads**
-   - Limit file sizes
-   - Check file types
-   - Clean up temporary files
+### Security Notes
+- API keys are stored in memory only
+- Keys are not persisted between bot restarts
+- Messages containing API keys are automatically deleted
+- Admin commands are protected by user ID verification
 
-3. **User Data**
-   - Handle with care
-   - Clear regularly
-   - Respect privacy
+## Server Requirements
 
-## Updating the Bot 
+### Minimum Requirements
+- 1GB RAM
+- Python 3.8+
+- Stable internet connection
+- 1GB free disk space
 
-1. Pull latest changes:
-   ```bash
-   git pull origin main
-   ```
+### Recommended Requirements
+- 2GB RAM
+- Python 3.10+
+- High-speed internet connection
+- 2GB free disk space
+- SSL certificate (for production)
 
-2. Update dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+## Deployment
 
-3. Check for new environment variables
+### Local Development
+1. Follow the Quick Start guide
+2. Use development environment variables
+3. Run with debug logging enabled
 
-4. Restart the bot
+### Production Deployment
+1. Set up a production server
+2. Configure SSL certificates
+3. Use production environment variables
+4. Set up logging
+5. Configure automatic restarts
 
-## Need Help? 
-
-- Check documentation
-- Use `/help` command
-- Report issues on GitHub
-- Join support channel
-
-## Video Management
-
-### Video Download
-
-- The bot will automatically download videos from YouTube
-- Videos are stored in the `downloaded_videos/` directory
-
-### Video Storage
-
-- The bot will store videos in the `downloaded_videos/` directory
-- You can configure the storage directory in the `.env` file
-
-### Video Deletion
-
-- The bot will automatically delete videos after a certain period of time
-- You can configure the deletion period in the `.env` file
+### Docker Deployment
+Coming soon!
 
 ## Maintenance
 
 ### Regular Tasks
+- Monitor log files
+- Check disk usage
+- Update dependencies
+- Backup configuration
 
-1. Clear downloaded videos:
-```
-/clear
-```
+### Troubleshooting
+- Check log files for errors
+- Verify environment variables
+- Ensure API keys are valid
+- Check network connectivity
 
-2. Check storage usage:
-```
-/videos
-```
+## Security Best Practices
 
-3. Update dependencies:
-```bash
-pip install -r requirements.txt --upgrade
-```
+### API Key Management
+- Never share API keys
+- Use bot commands to set keys
+- Regularly rotate keys
+- Monitor for unauthorized usage
 
-### Storage Management
+### Bot Security
+- Keep Python updated
+- Update dependencies regularly
+- Monitor bot activity
+- Use strong admin password
 
-- Ensure sufficient disk space
-- Use `/clear` to remove old videos
-- Check directory permissions
+### Data Protection
+- No persistent storage of API keys
+- Automatic message deletion for sensitive data
+- Session data cleared on restart
+- Secure environment variable handling

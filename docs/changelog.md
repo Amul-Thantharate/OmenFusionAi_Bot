@@ -85,97 +85,133 @@ Track AIFusionBot's version history and updates.
 - Improved command documentation
 - Added usage examples
 
-## [2.4.0] - Previous Release
+## [2.4.0] - 2025-01-10 🚀
 
-### Added
-- Image description using Groq's vision model
-- Enhanced voice response system
-- Optimized image processing pipeline
+### ✨ New Features
+- Added `/setgroqapi` command for users to set their own Groq API key
+- Added `/setreplicateapi` command for users to set their own Replicate API key
+- API keys can now be set individually by each user
+- API keys are stored securely in memory
 
-### Changed
-- Better error handling
-- Updated dependencies
-- Performance improvements
+### 🔄 Changes
+- Removed voice response functionality
+- Removed `/togglevoice` command
+- Removed setup command functionality
+- Simplified maintenance mode toggle
+- Moved API keys to per-user session storage
 
-### Fixed
-- Various bug fixes and improvements
-- Enhanced stability
+### 🔧 Core Improvements
+- Enhanced security for API key handling
+- Improved command registration system
+- Better error handling and user feedback
+- Optimized memory usage for user sessions
 
-## [2.3.1] - 2025-01-08
+### 🔒 Security
+- API keys are now stored per user in memory
+- Messages containing API keys are automatically deleted
+- Added ADMIN_USER_ID to environment variables
+- Improved environment variable handling
 
-### Added
-- 🎨 Interactive Image Analysis Menu
-  - New inline keyboard for image analysis options
-  - Two options: "Describe Image" and "Generate Caption"
-- 🔍 Enhanced Image Description
-  - Integrated Groq's LLaMA model for detailed analysis
-  - Improved voice output support
-- 📝 Creative Caption Generation
-  - Added Replicate-powered caption generation
-  - New `/caption` command
+### 📚 Documentation
+- Updated README with new API key commands
+- Added API key setup instructions
+- Removed voice-related documentation
+- Updated environment variable requirements
 
-### Changed
-- 🔄 Unified Image Analysis
-  - Migrated to Groq's LLaMA model for descriptions
-  - Improved response formatting
-- 🎯 Better User Experience
-  - Added real-time processing status
-  - Enhanced error messages
-  - Improved session handling
+## [2.3.1] - 2025-01-08 🛠️
 
-### Fixed
-- 🐛 Image processing errors
-- 🔧 Session management issues
-- 📊 Response formatting
+### Major Changes
+- 🔄 Enhanced Image Analysis UI
+  - Added interactive buttons for image analysis options
+  - Unified image description using Groq's LLaMA model
+  - Improved response formatting and clarity
 
-### Technical
-- 📦 Updated Dependencies
-  - Added Groq SDK v0.3.1
-  - Updated Replicate to v0.22.0
-- 🔐 Enhanced Security
-  - Better API key management
-  - Improved error handling
+### Features Added
+- 🖼️ New Image Analysis Options:
+  - "Describe Image": Detailed analysis using Groq
+  - "Generate Caption": Creative captions using Replicate
+  - "Analyze Objects": Object detection and scene analysis
 
-## [2.0.0] - 2024-12-15 🌟
+### Technical Improvements
+- 🛠️ Code Refactoring:
+  - Unified image analysis using Groq's LLaMA model
+  - Streamlined caption generation with Replicate
+  - Enhanced error handling and feedback
+  - Better memory management
+  - Improved response times
 
-### ✨ Added
-- 🎨 Together AI integration for image generation
-- 🔊 Voice response capabilities
-- 🛠️ Maintenance mode features
-- 📊 Status monitoring and subscriptions
+### Documentation
+- 📚 Updated image analysis commands
+- 🔑 Added new environment variable requirements
+- 📝 Enhanced troubleshooting guide
 
-### 🔄 Changed
-- 💾 Improved chat history management
-- 🐛 Enhanced error handling
-- 🔧 Updated command structure
-- 📚 Better documentation
+## [2.3.0] - 2025-01-08 🚀
 
-### 🐛 Fixed
-- 🔊 Audio processing issues
-- 📁 File handling bugs
-- ⏱️ Command response delays
+### Major Changes
+- 🔄 Replaced Together AI with Replicate for image generation
+- 🎨 Integrated Recraft AI v3 model for enhanced image quality
+- ⚡ Improved image generation reliability and speed
 
-## [1.0.0] - 2024-11-30 🎉
+### Updates
+- 📦 Updated dependencies:
+  - Removed Together AI dependency
+  - Added Replicate SDK >= 0.22.0
+  - Updated environment variable configuration
 
-### ✨ Added
-- 🚀 Initial release
-- 💬 Basic chat functionality
-- 🔧 Simple command structure
-- 📝 Text-only responses
+### Technical Improvements
+- 🛠️ Refactored image generation module
+- 🔧 Enhanced error handling for image generation
+- 📝 Updated documentation and help messages
 
-## 🔄 Migration Guides
+### Documentation
+- 📚 Updated setup instructions for Replicate API
+- 🔑 Added Replicate API key configuration guide
+- 🎨 Updated image generation command descriptions
 
-### 🚀 Migrating to v3.0.0
-1. 🔑 Update your `.env` file to include `GROQ_API_KEY`
-2. 🗑️ Remove any OpenAI-related configurations
-3. 📦 Update to latest dependencies
-4. 🔄 Restart the bot
+### Bug Fixes
+- 🐛 Fixed image generation timeout issues
+- 🔧 Improved error messaging for API failures
+- 🔄 Enhanced response format handling
 
-### 🌟 Migrating to v2.0.0
-1. 🎨 Add Together AI configuration
-2. 🔊 Set up voice processing requirements
-3. 🔧 Update command permissions
-4. ⚙️ Configure maintenance settings
+### Security
+- 🔒 Improved API key management
+- 🛡️ Enhanced error logging for better debugging
+- 🔐 Updated secure key storage methods
+
+## [2.2.0] - 2025-01-06 🎨
+
+### New Features
+- 🖼️ Added image-to-text functionality using Groq Vision API
+- 🔄 Support for direct image uploads and URL analysis
+- 📝 Intelligent image description with detailed context
+- 🎯 Three ways to analyze images:
+  - Direct image uploads
+  - Reply to images with `/describe`
+  - URL analysis with `/describe [URL]`
+
+### Improvements
+- 🔧 Enhanced error handling and user feedback
+- 📚 Updated documentation and help messages
+- ⚡ Improved response times and reliability
+
+## [1.4.0] - 2025-01-06 📚
+
+### Enhancements
+- 📚 Improved `/help` command with better categorization
+- 🔄 Updated Together AI package to version 1.3.11
+- 🎨 Enhanced message formatting for better readability
+- 🛠️ Fixed Markdown formatting issues in help messages
+
+### Bug Fixes
+- 🔧 Fixed entity parsing error in help command
+- ✨ Improved command descriptions and categorization
+- 🎯 Fixed Markdown escaping in bot messages
+
+### Dependencies
+- ⬆️ Upgraded `together` package to v1.3.11
+- ⬆️ Updated `aiohttp` to v3.11.11
+- ⬆️ Updated `pillow` to v10.4.0
+- ⬆️ Updated `tqdm` to v4.67.1
 
 ## 🔮 Upcoming Features
 

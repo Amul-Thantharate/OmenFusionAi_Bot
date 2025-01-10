@@ -1,213 +1,63 @@
-# AIFusionBot AI v2.3.0 Release Notes
+# AIFusionBot AI Release Notes
 
-## 🚀 Latest Updates (January 8, 2025)
+## Latest Release - v2.4.0 (January 10, 2025)
+
+### ✨ New Features
+- Added `/setgroqapi` command for users to set their own Groq API key
+- Added `/setreplicateapi` command for users to set their own Replicate API key
+- API keys can now be set individually by each user
+- API keys are stored securely in memory
+
+### 🔄 Changes
+- Removed voice response functionality
+- Removed `/togglevoice` command
+- Removed setup command functionality
+- Simplified maintenance mode toggle
+- Moved API keys to per-user session storage
 
 ### 🔧 Core Improvements
-- Fixed event loop handling and bot initialization
-- Enhanced command registration system
-- Improved error handling and cleanup processes
-- Added proper async polling mechanism
-- Enhanced application shutdown process
-
-### 🎯 Features
-- Improved bot command menu display
-- Enhanced bot stability and reliability
-- Better error reporting and logging
-- Optimized application lifecycle management
+- Enhanced security for API key handling
+- Improved command registration system
+- Better error handling and user feedback
+- Optimized memory usage for user sessions
 
 ### 🔒 Security
+- API keys are now stored per user in memory
+- Messages containing API keys are automatically deleted
+- Added ADMIN_USER_ID to environment variables
 - Improved environment variable handling
-- Enhanced token validation and verification
 
 ### 📚 Documentation
-- Updated deployment instructions
-- Added server setup guidelines
-- Enhanced troubleshooting documentation
+- Updated README with new API key commands
+- Added API key setup instructions
+- Removed voice-related documentation
+- Updated environment variable requirements
 
-### 🛠️ Technical Details
-- Refactored event loop management
-- Improved async/await patterns
-- Enhanced error boundary handling
-- Optimized resource cleanup
-
-## 🔄 Installation & Deployment
-
-### Prerequisites
-- Python 3.8+
-- pip (Python package manager)
-- Git
-
-### Required Environment Variables
+## Required Environment Variables
 ```env
 TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-GROQ_API_KEY=your_groq_api_key
-REPLICATE_API_KEY=your_replicate_api_key
+ADMIN_USER_ID=your_admin_telegram_id
+ROOT_PASSWORD=your_admin_password
 ```
 
-### Server Deployment Steps
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/AIFusionBot.git
-   cd AIFusionBot
-   ```
+## Optional API Keys
+Users can set these directly through the bot:
+- Groq API Key (`/setgroqapi`)
+- Replicate API Key (`/setreplicateapi`)
 
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-3. Set up environment variables:
-   ```bash
-   cp .env.example .env
-   # Edit .env with your actual values
-   ```
+## Previous Releases
 
-4. Run the application:
-   ```bash
-   python app.py
-   ```
+### v2.3.1 (January 8, 2025)
 
-## 📋 Server Requirements
-- 1GB RAM minimum (2GB recommended)
-- Python 3.8 or higher
-- Stable internet connection
-- SSL certificate (for production)
-
-## 🛠️ Technical Updates
-- Updated Python dependencies
-- Enhanced API integrations
-- Improved async operations
-- Better error recovery
-
-# Release Notes 📝
-
-## Version 1.4.0 (2025-01-06) 🚀
-
-### Enhancements 🌟
-- 📚 Improved `/help` command with comprehensive command listing and better categorization
-- 🔄 Updated Together AI package to version 1.3.11
-- 🎨 Enhanced message formatting for better readability
-- 🛠️ Fixed Markdown formatting issues in help messages
-
-### Bug Fixes 🐛
-- 🔧 Fixed entity parsing error in help command
-- ✨ Improved command descriptions and categorization
-- 🎯 Fixed Markdown escaping in bot messages
-
-### Dependencies 📦
-- ⬆️ Upgraded `together` package to v1.3.11
-- ⬆️ Updated `aiohttp` to v3.11.11
-- ⬆️ Updated `pillow` to v10.4.0
-- ⬆️ Updated `tqdm` to v4.67.1
-
-# NovaChat AI v2.2.0 Release Notes
-
-## 🚀 Major Enhancements
-
-### New Image Analysis System
-- Added image-to-text functionality using Groq Vision API
-- Support for direct image uploads and URL analysis
-- Intelligent image description with detailed context
-- Three convenient ways to analyze images:
-  - Direct image uploads
-  - Reply to images with `/describe`
-  - URL analysis with `/describe [URL]`
-
-### Enhanced Error Handling
-- Improved API key validation and error messages
-- Better feedback during image processing
-- Graceful handling of various image formats
-
-### Command System Updates
-- Added new `/describe` command for image analysis
-- Updated help system with image analysis examples
-- Enhanced command documentation
-
-## 🛠️ Technical Improvements
-
-### Core Updates
-- Integrated Groq Vision API for image analysis
-- Improved async/await handling
-- Enhanced session management for image processing
-- Better error handling and user feedback
-
-### Performance & Reliability
-- Optimized image processing pipeline
-- Improved error reporting
-- Enhanced session state management
-- Better API interaction handling
-
-## 📚 Documentation Updates
-
-### New Documentation
-- Image analysis usage guide
-- Command reference for `/describe`
-- Best practices for image analysis
-- Troubleshooting guide for image processing
-
-### Updated Guides
-- Installation instructions for Groq Vision
-- API key setup guide
-- Configuration optimization tips
-
-## 🔧 Configuration Changes
-
-### New Environment Variables
-- Added support for Groq Vision API
-- Updated API key validation
-- Enhanced error messages for missing keys
-
-## 📋 Requirements
-
-### System Requirements
-- Python 3.12+
-- Updated dependency versions
-- Enhanced API compatibility
-
-## 🔄 Migration Guide
-
-### Upgrading from v1.2.0
-1. Update your Python environment
-2. Run `pip install -r requirements.txt`
-3. Update your `.env` configuration
-4. Clear old session data
-5. Restart the bot
-
-## 🐛 Bug Fixes
-- Improved error handling in image generation
-- Fixed token limit issues
-- Enhanced session management
-- Better API error recovery
-
-## 📝 Notes
-- This version introduces breaking changes in configuration
-- Backup your `.env` file before upgrading
-- Review new command parameters
-- Test enhanced features in development first
-
-## 🔜 Coming Soon
-- Multi-language support
-- Voice message processing
-- Advanced image editing
-- Group chat enhancements
-- Custom model selection
-
-## 🙏 Acknowledgments
-- Thanks to all contributors
-- Special thanks to beta testers
-- Community feedback and suggestions
-
-## Version History
-
-## Version 2.3.1 - 2025-01-08
-
-### Major Changes
+#### Major Changes
 - 🔄 Enhanced Image Analysis UI
   - Added interactive buttons for image analysis options
   - Unified image description using Groq's LLaMA model
   - Added Replicate-powered creative captions
 
-### Features Added
+#### Features Added
 - 🖼️ New Image Analysis Options:
   - "Describe Image": Detailed analysis using Groq
   - "Generate Caption": Creative captions using Replicate
@@ -216,7 +66,7 @@ REPLICATE_API_KEY=your_replicate_api_key
   - Real-time processing status updates
   - Better error handling and feedback
 
-### Technical Improvements
+#### Technical Improvements
 - 🛠️ Code Refactoring:
   - Unified image analysis using Groq's LLaMA model
   - Streamlined caption generation with Replicate
@@ -226,24 +76,24 @@ REPLICATE_API_KEY=your_replicate_api_key
   - Better memory management
   - Improved response times
 
-### Documentation
+#### Documentation
 - 📚 Updated image analysis commands
 - 🔑 Added new environment variable requirements
 - 📝 Enhanced troubleshooting guide
 
-### Bug Fixes
+#### Bug Fixes
 - 🐛 Fixed image processing errors
 - 🔧 Improved error messages
 - 🔄 Enhanced session handling
 
-## Version 2.3.0 - 2025-01-08
+### v2.3.0 (January 8, 2025)
 
-### Major Changes
+#### Major Changes
 - 🔄 Replaced Together AI with Replicate for image generation
 - 🎨 Integrated Recraft AI v3 model for enhanced image quality
 - ⚡ Improved image generation reliability and speed
 
-### Updates
+#### Updates
 - 📦 Updated dependencies:
   - Removed Together AI dependency
   - Added Replicate SDK >= 0.22.0
@@ -252,23 +102,35 @@ REPLICATE_API_KEY=your_replicate_api_key
   - Added Replicate API key support
   - Updated environment variable configuration
 
-### Technical Improvements
+#### Technical Improvements
 - 🛠️ Refactored image generation module
 - 🔧 Enhanced error handling for image generation
 - 📝 Updated documentation and help messages
 - 🔄 Streamlined API response handling
 
-### Documentation
+#### Documentation
 - 📚 Updated setup instructions for Replicate API
 - 🔑 Added Replicate API key configuration guide
 - 🎨 Updated image generation command descriptions
 
-### Bug Fixes
+#### Bug Fixes
 - 🐛 Fixed image generation timeout issues
 - 🔧 Improved error messaging for API failures
 - 🔄 Enhanced response format handling
 
-### Security
+#### Security
 - 🔒 Improved API key management
 - 🛡️ Enhanced error logging for better debugging
 - 🔐 Updated secure key storage methods
+
+
+## Upcoming Features
+- Enhanced error handling
+- More AI model options
+- Improved image generation
+- Better video analysis
+- Group chat enhancements
+- Custom model selection
+
+## Acknowledgments
+- Thanks to all contributors

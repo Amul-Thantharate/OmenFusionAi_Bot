@@ -7,23 +7,24 @@ A powerful Telegram bot that combines multiple AI capabilities including chat, i
 ### 💬 Chat
 - `/chat` - Have an intelligent conversation with the bot
 - Powered by Groq's advanced language models
+- Set your own Groq API key with `/setgroqapi`
 
-### 🎨 Image Analysis
+### 🎨 Image Analysis & Generation
 - 🖼️ **Interactive Image Analysis**: Send any image to get analysis options:
   - 📝 **Describe Image**: Get detailed analysis using Groq's LLaMA model
   - 🔍 **Generate Caption**: Get creative captions using Replicate
 - 🎨 **Smart Image Generation**: Generate images from text descriptions
-- 🔊 **Voice Descriptions**: Get voice descriptions of images (optional)
+- Set your own Replicate API key with `/setreplicateapi`
 
 ### 📽️ Video Analysis
 - `/analyze_video` - Get AI insights from video content
-- `youtube_summary` - Summarize YouTube videos
 - Supports video files up to 50MB
 - Powered by Google's Gemini Vision
 
 ### 🔧 Settings & Utilities
 - `/settings` - Configure bot settings
-- `/togglevoice` - Toggle voice responses
+- `/setgroqapi` - Set your Groq API key
+- `/setreplicateapi` - Set your Replicate API key
 - `/clear_chat` - Clear chat history
 - `/help` - View all commands
 
@@ -42,8 +43,7 @@ pip install -r requirements.txt
 API_KEY=your_gemini_api_key
 TELEGRAM_BOT_TOKEN=your_telegram_token
 ROOT_PASSWORD=your_admin_password
-REPLICATE_API_KEY=your_replicate_api_key
-GROQ_API_KEY=your_groq_api_key
+ADMIN_USER_ID=your_admin_telegram_id
 ```
 
 3. Run the bot:
@@ -56,9 +56,9 @@ python app.py
 - Python 3.8+
 - Telegram Bot Token
 - Google Gemini API Key
-- Replicate API Key
-- Groq API Key
 - Internet connection
+- (Optional) Groq API Key - Can be set via `/setgroqapi`
+- (Optional) Replicate API Key - Can be set via `/setreplicateapi`
 
 ## 🛠️ Technical Details
 
@@ -72,6 +72,8 @@ python app.py
 - Environment variables for sensitive data
 - Admin-only maintenance commands
 - Secure file handling
+- API keys can be set individually by each user
+- API keys are stored securely in memory
 
 ## 📚 Usage Examples
 
@@ -84,9 +86,11 @@ python app.py
    - Reply to an image with `/describe` for analysis
    - Reply to an image with `/caption` for a caption
 
-### Voice Responses
-- Toggle voice responses with `/togglevoice`
-- When enabled, get both text and voice descriptions
+### Setting Up API Keys
+1. Get your Groq API key from [Groq](https://groq.com)
+2. Set it in the bot: `/setgroqapi your_api_key`
+3. Get your Replicate API key from [Replicate](https://replicate.com)
+4. Set it in the bot: `/setreplicateapi your_api_key`
 
 ### Video Analysis
 Send a video (up to 50MB) and get detailed insights about:
@@ -94,10 +98,6 @@ Send a video (up to 50MB) and get detailed insights about:
 - Key objects and people
 - Notable actions or events
 - Overall context and setting
-
-### YouTube Summaries
-youtube_summary https://youtube.com/watch?v=video_id
-Get concise summaries of YouTube videos with key points and insights.
 
 ## 🤝 Contributing
 
