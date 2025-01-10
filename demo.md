@@ -1,6 +1,15 @@
-# NovaChat AI v2.4.0 Demo Guide 🚀
+# OmenFusionAi_Bot v2.4.0 Documentation 📚
 
-This document showcases the enhanced features and capabilities of NovaChat AI v2.4.0.
+> A comprehensive guide to using OmenFusionAi_Bot's features and capabilities
+
+## Quick Start Guide 🚀
+
+### Basic Commands
+```bash
+/chat     - Start a conversation
+/imagine  - Generate images
+/enhance  - Improve text or previous response
+```
 
 ## Enhanced Chat Examples 💬
 
@@ -157,7 +166,7 @@ Bot: Max tokens set to 2048 - Allowing for more detailed responses
 - Check documentation for detailed guides
 - Report issues on GitHub
 
-## 🎮 AIFusionBot Demo
+## 🎮 OmenFusionAi_Bot Demo
 
 ## 🤖 Chat Features
 ```
@@ -204,4 +213,64 @@ Requirements:
 /status - Check bot health
 ```
 
-Try these commands to explore AIFusionBot's capabilities! 🚀
+## Core Features
+
+### 1. Conversational AI 💬
+- Natural language processing
+- Context-aware responses
+- Multi-turn conversations
+- Style customization
+
+### 2. Image Processing 🎨
+- Generation (/imagine)
+- Analysis (/describe)
+- Style transfer
+- Voice descriptions
+
+## System Requirements
+
+### Hardware
+- RAM: 4GB minimum
+- Storage: 2GB free space
+- Internet: Stable connection
+
+### Software
+- Latest web browser
+- JavaScript enabled
+- Cookies enabled
+
+## Version History
+
+### v2.4.0 (Current)
+- Added YouTube integration
+- Improved image generation
+- Enhanced voice processing
+- Advanced image analysis
+
+### v2.3.0
+- Added voice descriptions
+- Improved chat response time
+- Enhanced prompt engineering
+
+## Troubleshooting
+
+### Common Issues
+1. Slow responses
+   - Check internet connection
+   - Clear chat history
+   - Reduce image size
+
+2. Image generation fails
+   - Verify prompt length
+   - Check API quota
+   - Try simpler descriptions
+
+## Support
+
+### Contact
+- Email: support@omenfusion.ai
+- Discord: discord.gg/omenfusion
+- GitHub: github.com/omenfusion/bot
+
+### Documentation
+Full documentation available at: docs.omenfusion.ai
