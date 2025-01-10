@@ -1,11 +1,12 @@
 import os
 import logging
 import asyncio
+import time
 from threading import Thread, Event
 from flask import Flask
 from telegram.ext import Application
 from dotenv import load_dotenv
-from telegram_bot import setup_bot
+from telegram_bot import setup_bot, print_bot_info
 
 # Configure logging
 logging.basicConfig(
@@ -40,6 +41,9 @@ async def run_bot():
         # Start the bot
         await application.initialize()
         await application.start()
+        
+        # Print bot info after initialization
+        await print_bot_info(application.bot)
         
         # Define allowed update types
         allowed_updates = [
@@ -113,22 +117,18 @@ def main():
         bot_thread.start()
         
         # Keep the main thread running
-        try:
-            while True:
-                if not flask_thread.is_alive() or not bot_thread.is_alive():
-                    logger.error("One of the threads died. Shutting down...")
-                    break
-                asyncio.get_event_loop().run_until_complete(asyncio.sleep(1))
-        except KeyboardInterrupt:
-            logger.info("Shutting down by user request...")
-        finally:
-            stop_event.set()  # Signal the bot to stop
-            flask_thread.join(timeout=5)
-            bot_thread.join(timeout=5)
-            logger.info("All threads terminated")
-            
-    except Exception as e:
-        logger.error(f"Error in main: {str(e)}")
+        while True:
+            if not flask_thread.is_alive() or not bot_thread.is_alive():
+                logger.error("One of the threads died. Shutting down...")
+                break
+            time.sleep(1)
+    except KeyboardInterrupt:
+        logger.info("Shutting down by user request...")
+    finally:
+        stop_event.set()  # Signal the bot to stop
+        flask_thread.join(timeout=5)
+        bot_thread.join(timeout=5)
+        logger.info("All threads terminated")
 
 if __name__ == '__main__':
     main()

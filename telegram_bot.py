@@ -677,8 +677,14 @@ async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
 
     user_id = update.effective_user.id
-    if not is_admin(user_id):
-        await update.message.reply_text("❌ Sorry, this command is only available to admin users.")
+    
+    # Strict admin check
+    if user_id != ADMIN_USER_ID:
+        await update.message.reply_text(
+            "🚫 Access Denied: This command is restricted to admin use only.",
+            parse_mode='Markdown'
+        )
+        logger.warning(f"Unauthorized maintenance command attempt by user {user_id}")
         return
 
     try:
@@ -688,25 +694,43 @@ async def maintenance_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         if BOT_STATUS["is_maintenance"]:
             BOT_STATUS["maintenance_start"] = datetime.now()
             BOT_STATUS["maintenance_end"] = None
-            BOT_STATUS["maintenance_message"] = "Bot is currently under maintenance. Please try again later."
+            BOT_STATUS["maintenance_message"] = (
+                "🛠️ Bot is currently under maintenance.\n"
+                "We apologize for the inconvenience.\n"
+                "Please try again later."
+            )
             
-            # Notify all subscribed users about maintenance mode
-            maintenance_notification = "🔧 Bot is entering maintenance mode. Some features may be temporarily unavailable."
+            maintenance_notification = (
+                "🔧 *Maintenance Mode Activated*\n\n"
+                "The bot is entering maintenance mode.\n"
+                "Some features may be temporarily unavailable.\n"
+                "We'll notify you once maintenance is complete."
+            )
             await notify_subscribers(context.bot, maintenance_notification)
         else:
             BOT_STATUS["maintenance_end"] = datetime.now()
             BOT_STATUS["maintenance_message"] = ""
             
-            # Notify all subscribed users about end of maintenance
-            end_maintenance_notification = "✅ Maintenance complete! All features are now available."
+            end_maintenance_notification = (
+                "✅ *Maintenance Complete*\n\n"
+                "All bot features are now available.\n"
+                "Thank you for your patience!"
+            )
             await notify_subscribers(context.bot, end_maintenance_notification)
         
-        await update.message.reply_text(f"✅ Maintenance mode {status}")
-        logging.info(f"Maintenance mode {status} by admin {user_id}")
+        await update.message.reply_text(
+            f"✅ Maintenance mode {status}\n"
+            f"Status updated by admin {user_id}"
+        )
+        logger.info(f"Maintenance mode {status} by admin {user_id}")
         
     except Exception as e:
-        logging.error(f"Error in maintenance command: {str(e)}")
-        await update.message.reply_text("❌ Error toggling maintenance mode")
+        error_msg = f"Error toggling maintenance mode: {str(e)}"
+        logger.error(error_msg)
+        await update.message.reply_text(
+            f"❌ Error: {error_msg}\n"
+            "Please try again or check the logs."
+        )
 
 async def status_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Check if the bot is online."""
@@ -1208,11 +1232,14 @@ async def setreplicateapi_command(update: Update, context: ContextTypes.DEFAULT_
         "You can now use the image generation features."
     )
 
+async def print_bot_info(bot):
+    """Print basic information about the bot"""
+    logger.info(f"Bot Username: {bot.username}")
+    logger.info(f"Bot ID: {bot.id}")
+    logger.info("Bot started successfully!")
+
 def setup_bot():
     """Set up and configure the bot with all handlers."""
-    # Print bot info first
-    print_bot_info()
-    
     # Configure the application with custom settings
     application = (
         Application.builder()
@@ -1251,35 +1278,14 @@ def setup_bot():
     application.add_handler(MessageHandler(filters.PHOTO, handle_photo))
     application.add_handler(MessageHandler(filters.VIDEO, handle_video))
 
-    # Add callback query handlers
+    # Add callback query handler
     application.add_handler(CallbackQueryHandler(button_callback))
 
-    # Add error handler
-    application.add_error_handler(error_handler)
-
     # Create the list of commands
-    commands = [
-        BotCommand("start", "Start the bot"),
-        BotCommand("help", "Show help message"),
-        BotCommand("chat", "Start a chat conversation"),
-        BotCommand("settings", "Configure bot settings"),
-        BotCommand("imagine", "Generate an image from text"),
-        BotCommand("caption", "Generate a caption for an image"),
-        BotCommand("enhance", "Enhance your text"),
-        BotCommand("describe", "Analyze an image"),
-        BotCommand("clear_chat", "Clear chat history"),
-        BotCommand("export", "Export chat history"),
-        BotCommand("analyze_video", "Analyze a video file"),
-        BotCommand("status", "Check bot status"),
-        BotCommand("subscribe", "Subscribe to bot updates"),
-        BotCommand("unsubscribe", "Unsubscribe from updates"),
-        BotCommand("maintenance", "Toggle maintenance mode (Admin only)"),
-        BotCommand("setgroqapi", "Set your Groq API key"),
-        BotCommand("setreplicateapi", "Set your Replicate API key")
-    ]
+    commands = [BotCommand(cmd.strip('/'), desc) for cmd, desc in COMMANDS.items()]
     
-    # Set up commands
-    application.bot.set_my_commands(commands)
+    # Set up commands asynchronously
+    asyncio.create_task(application.bot.set_my_commands(commands))
 
     return application
 
