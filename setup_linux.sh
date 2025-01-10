@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Setting up AIFusionBot dependencies for Linux..."
+echo "🚀 Setting up OmenFusionAi_Bot dependencies for Linux..."
 
 # Update package list
 sudo apt-get update

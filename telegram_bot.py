@@ -125,7 +125,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     welcome_message = (
-        "🤖 Welcome to AIFusionBot!\n\n"
+        "🤖 Welcome to OmenFusionAi_Bot!\n\n"
         "🤖 Cereate by Amul Thantharate\n\n"
         "I'm your AI assistant that can help you with various tasks:\n\n"
         "🗣️ Chat - Have natural conversations with AI\n"
@@ -143,7 +143,7 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message:
         return
         
-    help_text = "🤖 *AIFusionBot Commands*\n\n"
+    help_text = "🤖 *OmenFusionAi_Bot Commands*\n\n"
     
     # Add regular categories first
     for category, commands in COMMAND_CATEGORIES.items():

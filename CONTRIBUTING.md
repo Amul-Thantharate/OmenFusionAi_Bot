@@ -1,8 +1,8 @@
-# Contributing to AIFusionBot
+# Contributing to OmenFusionAi_Bot
 
 ## 🌟 Welcome
 
-Thank you for considering contributing to AIFusionBot! This document provides guidelines and steps for contributing to make the process smooth and effective.
+Thank you for considering contributing to OmenFusionAi_Bot! This document provides guidelines and steps for contributing to make the process smooth and effective.
 
 ## 📋 Table of Contents
 
@@ -28,8 +28,8 @@ By participating in this project, you agree to abide by our Code of Conduct:
 1. Fork the repository
 2. Clone your fork:
 ```bash
-git clone https://github.com/Amul-Thantharate/AIFusionBot.git
-cd AIFusionBot
+git clone https://github.com/Amul-Thantharate/OmenFusionAi_Bot.git
+cd OmenFusionAi_Bot
 ```
 3. Create a virtual environment:
 ```bash
@@ -150,4 +150,4 @@ cp .env.example .env
 - Join our community
 - Contact maintainers
 
-Thank you for contributing to AIFusionBot! 🚀
+Thank you for contributing to OmenFusionAi_Bot! 🚀

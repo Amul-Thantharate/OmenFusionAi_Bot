@@ -14,7 +14,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
     welcome_message = (
-        "👋 Hello! I'm AIFusionBot, your AI-powered assistant. Here's what I can do:\n\n"
+        "👋 Hello! I'm OmenFusionAi_Bot, your AI-powered assistant. Here's what I can do:\n\n"
         "🤖 Chat - Have natural conversations\n"
         "🎨 Generate Images - Create art from descriptions\n"
         "📝 Caption Images - Describe images in detail\n"

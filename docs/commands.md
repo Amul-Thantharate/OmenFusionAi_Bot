@@ -4,9 +4,9 @@ title: Command Reference
 nav_order: 3
 ---
 
-# 🤖 AIFusionBot Commands
+# 🤖 OmenFusionAi_Bot Commands
 
-This document provides a comprehensive guide to all available commands in AIFusionBot.
+This document provides a comprehensive guide to all available commands in OmenFusionAi_Bot.
 
 ## 🌟 Available Commands
 

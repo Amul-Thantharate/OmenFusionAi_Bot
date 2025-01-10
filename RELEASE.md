@@ -1,4 +1,4 @@
-# AIFusionBot AI Release Notes
+# OmenFusionAi_Bot AI Release Notes
 
 ## Latest Release - v2.4.0 (January 10, 2025)
 

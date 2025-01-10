@@ -2,8 +2,8 @@ remote_theme: pages-themes/midnight@v0.2.0
 plugins:
 - jekyll-remote-theme
 
-title: AIFusionBot Documentation
-description: Documentation for AIFusionBot AI Assistant
+title: OmenFusionAi_Bot Documentation
+description: Documentation for OmenFusionAi_Bot AI Assistant
 show_downloads: true
 google_analytics:
 theme: jekyll-theme-midnight
@@ -25,4 +25,4 @@ nav:
 
 # Footer
 footer:
-  copyright: " 2024 AIFusionBot. All rights reserved."
+  copyright: " 2024 OmenFusionAi_Bot. All rights reserved."

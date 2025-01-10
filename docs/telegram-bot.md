@@ -1,6 +1,6 @@
-# Telegram Bot Integration
+# Telegram Bot Integration Guide
 
-This guide explains how to integrate and use AIFusionBot with Telegram.
+This guide explains how to integrate and use OmenFusionAi_Bot with Telegram.
 
 ## Setup
 
@@ -25,12 +25,9 @@ This guide explains how to integrate and use AIFusionBot with Telegram.
 ### Media
 - `/imagine` - Generate images
 - `/transcribe` - Convert speech to text
-- `/voice` - Convert text to speech
-- `/audio` - Download YouTube audio
 
 ### Settings
 - `/settings` - View configuration
-- `/togglevoice` - Toggle voice responses
 
 ### Maintenance
 - `/maintenance` - Set maintenance mode

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "🚀 Starting AIFusionBot deployment..."
+echo "🚀 Starting OmenFusionAi_Bot deployment..."
 
 # Update system packages
 echo "📦 Updating system packages..."
@@ -32,7 +32,7 @@ fi
 echo "🔧 Creating systemd service..."
 sudo tee /etc/systemd/system/aifusionbot.service << EOF
 [Unit]
-Description=AIFusionBot Telegram Bot
+Description=OmenFusionAi_Bot Telegram Bot
 After=network.target
 
 [Service]
@@ -48,7 +48,7 @@ WantedBy=multi-user.target
 EOF
 
 # Start the service
-echo "🎯 Starting AIFusionBot service..."
+echo "🎯 Starting OmenFusionAi_Bot service..."
 sudo systemctl daemon-reload
 sudo systemctl enable aifusionbot
 sudo systemctl start aifusionbot

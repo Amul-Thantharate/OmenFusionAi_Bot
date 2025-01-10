@@ -7,7 +7,7 @@ nav_order: 2
 # Setup Guide
 {: .no_toc }
 
-Learn how to set up and deploy AIFusionBot.
+Learn how to set up and deploy OmenFusionAi_Bot.
 {: .fs-6 .fw-300 }
 
 ## Table of Contents
@@ -44,8 +44,8 @@ Users can set these directly through the bot:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/AIFusionBot.git
-cd AIFusionBot
+git clone https://github.com/yourusername/OmenFusionAi_Bot.git
+cd OmenFusionAi_Bot
 ```
 
 2. Install dependencies:

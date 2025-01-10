@@ -1,17 +1,17 @@
 ---
 layout: default
-title: AIFusionBot Documentation
+title: OmenFusionAi_Bot Documentation
 nav_order: 1
-description: "AIFusionBot - A Flask-based Telegram Bot powered by Groq and Together AI"
+description: "OmenFusionAi_Bot - A Flask-based Telegram Bot powered by Groq and Together AI"
 permalink: /
 ---
 
-# AIFusionBot Documentation
+# OmenFusionAi_Bot Documentation
 
-Welcome to AIFusionBot, your versatile Telegram bot powered by advanced AI models!
+Welcome to OmenFusionAi_Bot, your versatile Telegram bot powered by advanced AI models!
 
 ## 🎯 Try the Bot
-Start using AIFusionBot now: [@AIFusionCom_Bot](https://t.me/AIFusionCom_Bot)
+Start using OmenFusionAi_Bot now: [@OmenFusionAi_Bot](https://t.me/OmenFusionAi_Bot)
 
 ## 🌟 Key Features
 
@@ -79,7 +79,7 @@ Need help? Try these resources:
 
 ## Contributing
 
-We welcome contributions! See our [GitHub repository](https://github.com/yourusername/AIFusionBot) for:
+We welcome contributions! See our [GitHub repository](https://github.com/yourusername/OmenFusionAi_Bot) for:
 - Issue reporting
 - Feature requests
 - Pull requests
@@ -87,4 +87,4 @@ We welcome contributions! See our [GitHub repository](https://github.com/youruse
 
 ## License
 
-AIFusionBot is open source software licensed under the MIT license.
+OmenFusionAi_Bot is open source software licensed under the MIT license.

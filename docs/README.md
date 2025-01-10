@@ -1,6 +1,6 @@
-# AIFusionBot Documentation
+# OmenFusionAi_Bot Documentation
 
-AIFusionBot is a powerful Telegram bot that combines multiple AI capabilities including chat, image generation, voice interaction, and more. Built with Python, it leverages Groq and Together AI for advanced AI features.
+OmenFusionAi_Bot is a powerful Telegram bot that combines multiple AI capabilities including chat, image generation, voice interaction, and more. Built with Python, it leverages Groq and Together AI for advanced AI features.
 
 ## Features
 

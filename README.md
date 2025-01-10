@@ -1,6 +1,6 @@
-# 🤖 AI Fusion Bot
+# OmenFusionAi_Bot
 
-A powerful Telegram bot that combines multiple AI capabilities including chat, image generation, video analysis, and YouTube summarization.
+Welcome to OmenFusionAi_Bot, your AI-powered Telegram assistant! This bot combines multiple AI capabilities including chat, image generation, voice interaction, and more.
 
 ## 🌟 Features
 

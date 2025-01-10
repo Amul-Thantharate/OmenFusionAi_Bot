@@ -1,4 +1,4 @@
-# AIFusionBot Deployment Guide
+# OmenFusionAi_Bot Deployment Guide
 
 ## 🚀 Server Deployment
 
@@ -17,8 +17,8 @@
 
 2. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/AIFusionBot.git
-   cd AIFusionBot
+   git clone https://github.com/yourusername/OmenFusionAi_Bot.git
+   cd OmenFusionAi_Bot
    ```
 
 3. **Make setup scripts executable**
@@ -72,7 +72,7 @@
 
 3. **Permission denied**
    ```bash
-   sudo chown -R $USER:$USER /path/to/AIFusionBot
+   sudo chown -R $USER:$USER /path/to/OmenFusionAi_Bot
    chmod +x *.sh
    ```
 
@@ -96,7 +96,7 @@
 
 3. **Update the bot**
    ```bash
-   cd AIFusionBot
+   cd OmenFusionAi_Bot
    git pull
    source venv/bin/activate
    pip install -r requirements.txt

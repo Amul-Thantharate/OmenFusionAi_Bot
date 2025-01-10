@@ -7,7 +7,7 @@ nav_order: 4
 # 📝 Changelog
 {: .no_toc }
 
-Track AIFusionBot's version history and updates.
+Track OmenFusionAi_Bot's version history and updates.
 {: .fs-6 .fw-300 }
 
 ## 📋 Table of Contents

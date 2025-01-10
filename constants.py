@@ -1,4 +1,4 @@
-"""Shared constants for the AIFusionBot."""
+"""Shared constants for the OmenFusionAi_Bot."""
 
 # File and Directory Settings
 MEDIA_FOLDER = 'medias'
@@ -31,7 +31,7 @@ Be specific but concise in your analysis.
 
 # Help Messages 💡
 HELP_MESSAGE = r"""
-🤖 Welcome to AIFusionBot! Here are the available commands:
+🤖 Welcome to OmenFusionAi_Bot! Here are the available commands:
 
 /start - Start the bot and get a welcome message
 /help - Show this help message
