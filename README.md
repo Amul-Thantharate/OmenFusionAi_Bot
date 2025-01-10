@@ -7,7 +7,8 @@ A powerful Telegram bot that combines multiple AI capabilities including chat, i
 ### 💬 Chat
 - `/chat` - Have an intelligent conversation with the bot
 - Powered by Groq's advanced language models
-- Set your own Groq API key with `/setgroqapi`
+- Context-aware conversations with memory
+- Supports multiple languages
 
 ### 🎨 Image Analysis & Generation
 - 🖼️ **Interactive Image Analysis**: Send any image to get analysis options:
@@ -16,8 +17,12 @@ A powerful Telegram bot that combines multiple AI capabilities including chat, i
 - 🎨 **Smart Image Generation**: Generate images from text descriptions
 - Set your own Replicate API key with `/setreplicateapi`
 
-### 📽️ Video Analysis
+### 📽️ Video & YouTube Analysis
 - `/analyze_video` - Get AI insights from video content
+- `/summarize_youtube` - Get summaries of YouTube videos
+  - Supports full videos and clips
+  - Generates key points and timestamps
+  - Extracts main topics and themes
 - Supports video files up to 50MB
 - Powered by Google's Gemini Vision
 
@@ -99,6 +104,35 @@ Send a video (up to 50MB) and get detailed insights about:
 - Notable actions or events
 - Overall context and setting
 
+### Future Features
+- Database for storing user data and settings
+- Audio analysis
+- Video summarization
+
 ## 🤝 Contributing
 
 Feel free to submit issues and enhancement requests!
+
+## 🚀 Technical Stack
+
+- **AI Models**:
+  - Groq LLM for chat
+  - Gemini Pro for text analysis
+  - Gemini Vision for media analysis
+  - Replicate for image generation
+- **Backend**: Python 3.8+ with asyncio
+- **Storage**: In-memory with Redis support
+- **API Integration**: REST APIs with rate limiting
+- **Security**: AES encryption for API keys
+
+## ⚠️ Troubleshooting
+
+Common issues and solutions:
+- **API Key Issues**: Ensure keys are entered without quotes
+- **Video Upload Fails**: Check file size and format
+- **Rate Limits**: Wait a few minutes between requests
+- **Memory Issues**: Use `/clear_chat` to reset context
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
