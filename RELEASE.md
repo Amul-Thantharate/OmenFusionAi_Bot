@@ -1,6 +1,51 @@
 # OmenFusionAi_Bot AI Release Notes
 
-## Latest Release - v2.4.0 (January 10, 2025)
+## Latest Release - v2.5.0 (January 19, 2025)
+
+### ✨ New Features
+- Migrated all image generation to Groq's advanced models
+- Enhanced image caption generation using Groq LLaMA
+- Streamlined API key management with single provider
+
+### 🔄 Changes
+- Removed Replicate integration
+- Consolidated image generation under Groq
+- Simplified API key management
+- Enhanced image quality and generation speed
+
+### 🔧 Core Improvements
+- Optimized image generation pipeline
+- Improved prompt enhancement for better results
+- Better error handling for API requests
+- Enhanced memory management
+
+### 🔒 Security
+- Simplified API key storage and management
+- Enhanced error handling for API authentication
+- Improved key validation process
+
+### 📚 Documentation
+- Updated all documentation to reflect Groq integration
+- Removed legacy API references
+- Added new image generation examples
+- Updated setup instructions
+
+## Required Environment Variables
+```env
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+ADMIN_USER_ID=your_admin_telegram_id
+ROOT_PASSWORD=your_admin_password
+```
+
+## Optional API Keys
+Users can set these directly through the bot:
+- Groq API Key (`/setgroqapi`)
+
+---
+
+## Previous Releases
+
+### v2.4.0 (January 10, 2025)
 
 ### ✨ New Features
 - Added `/setgroqapi` command for users to set their own Groq API key
@@ -32,22 +77,6 @@
 - Added API key setup instructions
 - Removed voice-related documentation
 - Updated environment variable requirements
-
-## Required Environment Variables
-```env
-TELEGRAM_BOT_TOKEN=your_telegram_bot_token
-ADMIN_USER_ID=your_admin_telegram_id
-ROOT_PASSWORD=your_admin_password
-```
-
-## Optional API Keys
-Users can set these directly through the bot:
-- Groq API Key (`/setgroqapi`)
-- Replicate API Key (`/setreplicateapi`)
-
----
-
-## Previous Releases
 
 ### v2.3.1 (January 8, 2025)
 

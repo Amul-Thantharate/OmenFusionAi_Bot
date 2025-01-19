@@ -13,9 +13,9 @@ Welcome to OmenFusionAi_Bot, your AI-powered Telegram assistant! This bot combin
 ### 🎨 Image Analysis & Generation
 - 🖼️ **Interactive Image Analysis**: Send any image to get analysis options:
   - 📝 **Describe Image**: Get detailed analysis using Groq's LLaMA model
-  - 🔍 **Generate Caption**: Get creative captions using Replicate
-- 🎨 **Smart Image Generation**: Generate images from text descriptions
-- Set your own Replicate API key with `/setreplicateapi`
+  - 🔍 **Generate Caption**: Get creative captions using advanced AI
+- 🎨 **Smart Image Generation**: Generate images from text descriptions using Groq's advanced models
+- Set your own Groq API key with `/setgroqapi`
 
 ### 📽️ Video & YouTube Analysis
 - `/analyze_video` - Get AI insights from video content
@@ -29,7 +29,6 @@ Welcome to OmenFusionAi_Bot, your AI-powered Telegram assistant! This bot combin
 ### 🔧 Settings & Utilities
 - `/settings` - Configure bot settings
 - `/setgroqapi` - Set your Groq API key
-- `/setreplicateapi` - Set your Replicate API key
 - `/clear_chat` - Clear chat history
 - `/help` - View all commands
 
@@ -63,7 +62,6 @@ python app.py
 - Google Gemini API Key
 - Internet connection
 - (Optional) Groq API Key - Can be set via `/setgroqapi`
-- (Optional) Replicate API Key - Can be set via `/setreplicateapi`
 
 ## 🛠️ Technical Details
 
@@ -94,8 +92,6 @@ python app.py
 ### Setting Up API Keys
 1. Get your Groq API key from [Groq](https://groq.com)
 2. Set it in the bot: `/setgroqapi your_api_key`
-3. Get your Replicate API key from [Replicate](https://replicate.com)
-4. Set it in the bot: `/setreplicateapi your_api_key`
 
 ### Video Analysis
 Send a video (up to 50MB) and get detailed insights about:
@@ -119,7 +115,6 @@ Feel free to submit issues and enhancement requests!
   - Groq LLM for chat
   - Gemini Pro for text analysis
   - Gemini Vision for media analysis
-  - Replicate for image generation
 - **Backend**: Python 3.8+ with asyncio
 - **Storage**: In-memory with Redis support
 - **API Integration**: REST APIs with rate limiting

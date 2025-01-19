@@ -62,16 +62,16 @@ Bot: 🎧 *Sends voice description of the image*
 ### Detailed Scene Generation
 ```
 You: /imagine A cyberpunk cityscape at sunset with neon signs and flying vehicles
-Bot: 🎨 Enhancing your prompt...
+Bot: 🎨 Enhancing your prompt with Groq...
 Bot: Enhanced prompt: "Hyper-detailed cyberpunk megalopolis during golden hour, massive holographic advertisements floating between towering skyscrapers, flying vehicles creating light trails, ray-traced lighting, cinematic composition, 8K resolution"
-Bot: *Generates high-quality image based on enhanced prompt*
+Bot: *Generates high-quality image using Groq's advanced models*
 ```
 
 ### Artistic Style Specification
 ```
 You: /imagine A portrait in the style of Van Gogh's Starry Night
-Bot: 🎨 Enhancing your prompt...
-Bot: *Generates artistic interpretation with enhanced style elements*
+Bot: 🎨 Enhancing your prompt with Groq's style transfer...
+Bot: *Generates artistic interpretation using advanced AI models*
 ```
 
 ## Latest Features (January 2025) 🆕
@@ -79,8 +79,8 @@ Bot: *Generates artistic interpretation with enhanced style elements*
 ### Advanced Image Analysis
 ```
 You: *Send any image*
-Bot: *Provides detailed analysis with voice description*
-Bot: *Identifies key elements, colors, composition*
+Bot: *Provides detailed analysis using Groq Vision*
+Bot: *Identifies key elements, colors, composition using advanced AI*
 ```
 
 ### Enhanced Voice Processing
@@ -89,11 +89,11 @@ You: /voice "Convert this text to natural speech"
 Bot: *Generates more natural and fluid voice output*
 ```
 
-### Improved Image Generation
+### Image Generation Improvements
 ```
 You: /imagine "A futuristic city with floating gardens"
-Bot: 🎨 Processing with enhanced image generation...
-Bot: *Generates higher quality image with improved details*
+Bot: 🎨 Processing with Groq's enhanced image generation...
+Bot: *Generates higher quality image with improved details and coherence*
 ```
 
 ### YouTube Integration
