@@ -1,12 +1,12 @@
 # Core dependencies
 flask>=3.0.1
-python-telegram-bot>=20.7
+python-telegram-bot==20.7
 replicate>=0.22.0
-groq>=0.3.1
-google-generativeai>=0.3.1
-python-dotenv>=1.0.0
-Pillow>=10.1.0
-requests>=2.31.0
+groq==0.3.2
+google-generativeai==0.3.2
+python-dotenv==1.0.1
+Pillow==10.2.0
+requests==2.31.0
 gtts>=2.4.0
 gunicorn>=21.2.0
 fpdf2>=2.7.8
@@ -22,8 +22,8 @@ youtube-transcript-api>=0.6.3
 SpeechRecognition>=3.10.0
 httpx==0.25.2
 yt-dlp>=2023.12.30
-browser-cookie3>=0.19.1  # Added for YouTube authentication
-
+pytube>=11.0.0
+python-mysql-connector
 # System-specific dependencies
 # Windows
 python-magic-bin>=0.4.14; sys_platform == 'win32'
@@ -39,3 +39,7 @@ flake8>=7.0.0
 isort>=5.13.2
 mypy>=1.8.0
 opencv-python>=4.8.1
+together==0.2.11
+
+# Additional dependencies
+mysql-connector-python==8.3.0

@@ -1,6 +1,6 @@
-import replicate
-from groq import Groq
 import base64
+from groq import Groq
+from together import Together
 from PIL import Image
 import io
 import os
@@ -15,16 +15,17 @@ logging.basicConfig(level=logging.INFO)
 class AIImageGenerator:
     def __init__(self):
         load_dotenv(override=True)  # Force reload environment variables
-        replicate_api_key = os.getenv('REPLICATE_API_KEY')
+        together_api_key = os.getenv('TOGETHER_API_KEY')
         groq_api_key = os.getenv('GROQ_API_KEY')
 
-        if not replicate_api_key:
-            raise ValueError("Replicate API key not found. Please set REPLICATE_API_KEY in your .env file")
+        if not together_api_key:
+            raise ValueError("Together API key not found. Please set TOGETHER_API_KEY in your .env file")
         if not groq_api_key:
             raise ValueError("Groq API key not found. Please set GROQ_API_KEY in your .env file")
 
-        # Set Replicate API key
-        os.environ['REPLICATE_API_TOKEN'] = replicate_api_key
+        # Set the API key for Together
+        Together().api_key = together_api_key
+        self.together_client = Together()
         self.groq_client = Groq(api_key=groq_api_key)
         self.last_enhanced_prompt = None
 
@@ -64,45 +65,27 @@ class AIImageGenerator:
             return None
 
     def generate_image(self, prompt):
-        """Generate images using the Replicate API."""
+        """Generate images using the Together AI API."""
         try:
-            logger.info("Attempting to generate image with Replicate API...")
+            logger.info("Attempting to generate image with Together AI...")
             logger.info(f"Using prompt: {prompt}")
 
-            # Generate image using Replicate
-            logger.info("Making API call to Replicate...")
-            output = replicate.run(
-                "recraft-ai/recraft-v3",
-                input={
-                    "size": "1024x1024",
-                    "style": "any",
-                    "prompt": prompt
-                }
+            response = self.together_client.images.generate(
+                prompt=prompt,
+                model="black-forest-labs/FLUX.1-schnell-Free",
+                width=1024,
+                height=768,
+                steps=1,
+                n=1,
+                response_format="b64_json"
             )
-            
-            logger.info(f"API Response type: {type(output)}")
-            logger.info(f"Raw API Response: {output}")
 
-            # Handle the FileOutput response
-            try:
-                # Convert FileOutput to URL string
-                image_url = str(output)
-                logger.info(f"Image URL extracted: {image_url}")
-
-                # Download the image and convert to base64
-                logger.info(f"Downloading image from URL: {image_url}")
-                response = requests.get(image_url)
-                if response.status_code == 200:
-                    image_data = base64.b64encode(response.content).decode('utf-8')
-                    logger.info("Successfully downloaded and converted image to base64")
-                    return True, image_data, ""
-                else:
-                    error_msg = f"Failed to download image. Status code: {response.status_code}"
-                    logger.error(error_msg)
-                    return False, None, error_msg
-
-            except Exception as e:
-                error_msg = f"Error processing image URL: {str(e)}"
+            if response and hasattr(response, 'data') and len(response.data) > 0:
+                image_data = response.data[0].b64_json
+                logger.info("Successfully generated image")
+                return True, image_data, ""
+            else:
+                error_msg = "No image data received from API"
                 logger.error(error_msg)
                 return False, None, error_msg
 

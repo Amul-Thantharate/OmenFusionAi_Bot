@@ -27,6 +27,7 @@ from constants import HELP_MESSAGE, SUMMARY_PROMPT, MEDIA_FOLDER
 from image_generator import AIImageGenerator
 from image_caption import ImageCaptioner
 from video_insights import get_insights
+from database_helper import DatabaseHelper
 
 # Initialize image generator and captioner
 image_generator = AIImageGenerator()
@@ -60,6 +61,9 @@ TEMP_DIR.mkdir(parents=True, exist_ok=True)
 # Global variable for user sessions
 user_sessions = {}
 
+# Initialize database
+db = DatabaseHelper()
+
 # Dictionary of available commands and their descriptions
 COMMANDS = {
     "/start": "Start the bot",
@@ -77,15 +81,14 @@ COMMANDS = {
     "/subscribe": "Subscribe to bot updates",
     "/unsubscribe": "Unsubscribe from updates",
     "/maintenance": "Toggle maintenance mode (Admin only)",
-    "/setgroqapi": "Set your Groq API key",
-    "/setreplicateapi": "Set your Replicate API key"
+    "/setgroqapi": "Set your Groq API key"
 }
 
 # Group commands by category for help menu
 COMMAND_CATEGORIES = {
     "🤖 Chat": ['chat', 'clear_chat', 'export'],
     "🎨 Media": ['imagine', 'caption', 'enhance', 'describe', 'analyze_video'],
-    "🔊 Settings": ['settings', 'setgroqapi', 'setreplicateapi'],
+    "🔊 Settings": ['settings', 'setgroqapi'],
     "📊 Status": ['status', 'subscribe', 'unsubscribe'],
     "ℹ️ General": ['start', 'help'],
     "🔐 Admin": ['maintenance']
@@ -99,8 +102,8 @@ class UserSession:
         self.last_image_url = None
         self.last_photo = None  # Store last photo for inline keyboard actions
         self.selected_model = "llama3-70b-8192"  # Default Groq model
-        self.replicate_api_key = os.getenv('REPLICATE_API_KEY')
         self.groq_api_key = os.getenv('GROQ_API_KEY')
+        self.together_api_key = os.getenv('TOGETHER_API_KEY')
         self.last_enhanced_prompt = None
         self.subscribed_to_status = False  # New field for status subscription
 
@@ -179,18 +182,37 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(plain_text)
         logging.error(f"Error sending help message with Markdown: {str(e)}")
 
-async def setopenaikey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """This command is deprecated."""
+async def setgroqapi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    """Set Groq API key for the user."""
+    if not update.message or not context.args:
+        await update.message.reply_text(
+            "Please provide your Groq API key.\n"
+            "Usage: /setgroqapi <your_api_key>\n"
+            "Example: /setgroqapi gsk_abcd1234..."
+        )
+        return
+
+    user_id = update.effective_user.id
+    if user_id not in user_sessions:
+        user_sessions[user_id] = UserSession()
+    
+    api_key = context.args[0]
+    user_sessions[user_id].groq_api_key = api_key
+    
+    # Delete the message containing the API key for security
+    await update.message.delete()
+    
+    # Send confirmation
     await update.message.reply_text(
-        " OpenAI integration has been removed from this bot. "
-        "Please use Groq API instead with the /settogetherkey command."
+        "✅ Your Groq API key has been set successfully!\n"
+        "You can now use the chat features."
     )
 
-async def settogetherkey_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def setreplicateapi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """This command is deprecated."""
     await update.message.reply_text(
-        " Together AI integration has been replaced with Replicate. "
-        "Please set your Replicate API key in the .env file."
+        "⚠️ This command is deprecated. The bot now uses Together AI for image generation.\n"
+        "Please set your Together API key in the .env file."
     )
 
 async def interactive_chat(text: str, model_type: str, api_key: str) -> str:
@@ -261,6 +283,15 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             api_key=session.groq_api_key
         )
         
+        # Store in database
+        db.add_or_update_user(
+            user_id=user_id,
+            username=update.effective_user.username,
+            first_name=update.effective_user.first_name,
+            last_name=update.effective_user.last_name
+        )
+        db.store_chat(user_id, message, response, "llama3-70b-8192")
+        
         # Send text response
         await update.message.reply_text(response)
         
@@ -295,6 +326,7 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     prompt = ' '.join(context.args)
+    user_id = update.effective_user.id
 
     # Send initial status
     status_message = await update.message.reply_text(
@@ -323,6 +355,15 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Create BytesIO object
             image_io = io.BytesIO(image_bytes)
             image_io.name = 'generated_image.png'
+
+            # Store in database
+            db.add_or_update_user(
+                user_id=user_id,
+                username=update.effective_user.username,
+                first_name=update.effective_user.first_name,
+                last_name=update.effective_user.last_name
+            )
+            db.store_image_generation(user_id, prompt, enhanced_prompt, "generated_image.png")
 
             # Send the image first
             await update.message.reply_photo(
@@ -366,10 +407,10 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    if not session.replicate_api_key:
+    if not session.together_api_key:
         await update.message.reply_text(
-            " Please set your Replicate API key first using:\n"
-            "`/setreplicatekey your_api_key`",
+            " Please set your Together API key first using:\n"
+            "`/settogetherkey your_api_key`",
             parse_mode='Markdown'
         )
         return
@@ -386,13 +427,22 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         enhancer = ToneEnhancer()
         
         # Set the API key from session
-        enhancer.replicate_api_key = session.replicate_api_key
+        enhancer.together_api_key = session.together_api_key
         
         start_time = time.time()
         success, enhanced_text, error = await enhancer.enhance_text(text)
         total_time = time.time() - start_time
         
         if success and enhanced_text:
+            # Store in database
+            db.add_or_update_user(
+                user_id=user_id,
+                username=update.effective_user.username,
+                first_name=update.effective_user.first_name,
+                last_name=update.effective_user.last_name
+            )
+            db.store_text_enhancement(user_id, text, enhanced_text)
+            
             response = (
                 f" Original text:\n`{text}`\n\n"
                 f" Enhanced version:\n`{enhanced_text}`\n\n"
@@ -424,7 +474,7 @@ async def settings_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         " Current Settings:\n\n"
         f"Groq API Key: {' Set' if session.groq_api_key else ' Not Set'}\n"
-        f"Replicate API Key: {' Set' if session.replicate_api_key else ' Not Set'}\n"
+        f"Together API Key: {' Set' if session.together_api_key else ' Not Set'}\n"
         f"Selected Model: {session.selected_model}"
     )
 
@@ -543,6 +593,15 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         description = response.choices[0].message.content
         logging.info("Description extracted from response")
 
+        # Store in database
+        db.add_or_update_user(
+            user_id=user_id,
+            username=update.effective_user.username,
+            first_name=update.effective_user.first_name,
+            last_name=update.effective_user.last_name
+        )
+        db.store_image_description(user_id, file_url, description)
+
         # Send the text description
         await update.message.reply_text(description)
         logging.info("Text description sent to user")
@@ -632,6 +691,15 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             
             if success:
+                # Store in database
+                db.add_or_update_user(
+                    user_id=user_id,
+                    username=query.from_user.username,
+                    first_name=query.from_user.first_name,
+                    last_name=query.from_user.last_name
+                )
+                db.store_image_caption(user_id, photo_url, caption)
+                
                 await query.edit_message_text(f"🎨 Creative Caption:\n\n{caption}")
             else:
                 await query.edit_message_text(f"❌ Error: {caption}")
@@ -1063,6 +1131,16 @@ async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TY
         # Analyze video
         insights = get_insights(file_path)
 
+        # Store in database
+        user_id = update.effective_user.id
+        db.add_or_update_user(
+            user_id=user_id,
+            username=update.effective_user.username,
+            first_name=update.effective_user.first_name,
+            last_name=update.effective_user.last_name
+        )
+        db.store_video_analysis(user_id, file_path, insights)
+
         # Send results
         await update.message.reply_text(f"Analysis Results:\n\n{insights}")
 
@@ -1099,9 +1177,9 @@ async def caption_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user_sessions[user_id] = UserSession()
 
     session = user_sessions[user_id]
-    if not session.replicate_api_key:
+    if not session.together_api_key:
         await update.message.reply_text(
-            "Please set your Replicate API key in the .env file first.",
+            "Please set your Together API key in the .env file first.",
             parse_mode='Markdown'
         )
         return
@@ -1124,6 +1202,15 @@ async def caption_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         success, caption = await image_captioner.generate_caption(photo_url, custom_prompt)
         
         if success:
+            # Store in database
+            db.add_or_update_user(
+                user_id=user_id,
+                username=update.effective_user.username,
+                first_name=update.effective_user.first_name,
+                last_name=update.effective_user.last_name
+            )
+            db.store_image_caption(user_id, photo_url, caption)
+            
             await processing_message.edit_text(f"🖼️ Image Analysis:\n\n{caption}")
         else:
             await processing_message.edit_text(f"❌ {caption}")  # caption contains error message
@@ -1142,6 +1229,16 @@ async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
     subscribed_users.add(user_id)
+    
+    # Store in database
+    db.add_or_update_user(
+        user_id=user_id,
+        username=update.effective_user.username,
+        first_name=update.effective_user.first_name,
+        last_name=update.effective_user.last_name
+    )
+    db.update_subscription(user_id, True)
+    
     await update.message.reply_text(
         "✅ You have successfully subscribed to bot updates!\n"
         "You will now receive notifications about:\n"
@@ -1162,6 +1259,10 @@ async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
         
     subscribed_users.remove(user_id)
+    
+    # Update database
+    db.update_subscription(user_id, False)
+    
     await update.message.reply_text(
         "✅ You have been unsubscribed from bot updates.\n"
         "You will no longer receive notifications.\n\n"
@@ -1179,58 +1280,6 @@ async def notify_subscribers(bot: Bot, message: str):
             )
         except Exception as e:
             logging.error(f"Failed to notify user {user_id}: {str(e)}")
-
-async def setgroqapi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Set Groq API key for the user."""
-    if not update.message or not context.args:
-        await update.message.reply_text(
-            "Please provide your Groq API key.\n"
-            "Usage: /setgroqapi <your_api_key>\n"
-            "Example: /setgroqapi gsk_abcd1234..."
-        )
-        return
-
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-    
-    api_key = context.args[0]
-    user_sessions[user_id].groq_api_key = api_key
-    
-    # Delete the message containing the API key for security
-    await update.message.delete()
-    
-    # Send confirmation
-    await update.message.reply_text(
-        "✅ Your Groq API key has been set successfully!\n"
-        "You can now use the chat features."
-    )
-
-async def setreplicateapi_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    """Set Replicate API key for the user."""
-    if not update.message or not context.args:
-        await update.message.reply_text(
-            "Please provide your Replicate API key.\n"
-            "Usage: /setreplicateapi <your_api_key>\n"
-            "Example: /setreplicateapi r8_abcd1234..."
-        )
-        return
-
-    user_id = update.effective_user.id
-    if user_id not in user_sessions:
-        user_sessions[user_id] = UserSession()
-    
-    api_key = context.args[0]
-    user_sessions[user_id].replicate_api_key = api_key
-    
-    # Delete the message containing the API key for security
-    await update.message.delete()
-    
-    # Send confirmation
-    await update.message.reply_text(
-        "✅ Your Replicate API key has been set successfully!\n"
-        "You can now use the image generation features."
-    )
 
 async def print_bot_info(bot):
     """Print basic information about the bot"""
@@ -1271,7 +1320,6 @@ def setup_bot():
     application.add_handler(CommandHandler("unsubscribe", unsubscribe_command))
     application.add_handler(CommandHandler("maintenance", maintenance_command))
     application.add_handler(CommandHandler("setgroqapi", setgroqapi_command))
-    application.add_handler(CommandHandler("setreplicateapi", setreplicateapi_command))
 
     # Add message handlers
     application.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_text_message))
@@ -1281,38 +1329,25 @@ def setup_bot():
     # Add callback query handler
     application.add_handler(CallbackQueryHandler(button_callback))
 
-    # Create the list of commands
-    commands = [BotCommand(cmd.strip('/'), desc) for cmd, desc in COMMANDS.items()]
-    
-    # Set up commands asynchronously
-    asyncio.create_task(application.bot.set_my_commands(commands))
-
     return application
 
-async def run_bot():
-    """Run the bot."""
+def main():
+    """Main function to run the bot."""
     try:
         # Initialize Gemini AI
         initialize_genai()
         
-        # Set up the bot
+        # Set up and run the bot
         application = setup_bot()
         
-        # Start the bot
-        await application.initialize()
-        await application.start()
-        await application.run_polling()
+        # Run the bot
+        print("Starting bot...")
+        application.run_polling(drop_pending_updates=True)
         
+    except KeyboardInterrupt:
+        print("Bot stopped by user request")
     except Exception as e:
-        logger.error(f"Error in run_bot: {str(e)}")
-        raise
-    finally:
-        # Properly shut down the bot
-        await application.stop()
+        print(f"Error running bot: {str(e)}")
 
 if __name__ == "__main__":
-    # Initialize Gemini AI
-    initialize_genai()
-    # Run the bot using the app.py implementation
-    from app import main
     main()
