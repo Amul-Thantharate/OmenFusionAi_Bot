@@ -3,15 +3,15 @@
 ## Latest Release - v2.5.0 (January 19, 2025)
 
 ### ✨ New Features
-- Migrated all image generation to Groq's advanced models
+- Integrated Together AI for high-quality image generation
 - Enhanced image caption generation using Groq LLaMA
-- Streamlined API key management with single provider
+- Added Together AI API key management
 
 ### 🔄 Changes
-- Removed Replicate integration
-- Consolidated image generation under Groq
-- Simplified API key management
+- Migrated image generation to Together AI
+- Added `/settogetherapi` command
 - Enhanced image quality and generation speed
+- Improved prompt handling for better results
 
 ### 🔧 Core Improvements
 - Optimized image generation pipeline
@@ -20,15 +20,15 @@
 - Enhanced memory management
 
 ### 🔒 Security
-- Simplified API key storage and management
+- Added secure Together AI key storage
 - Enhanced error handling for API authentication
 - Improved key validation process
 
 ### 📚 Documentation
-- Updated all documentation to reflect Groq integration
-- Removed legacy API references
+- Updated all documentation to reflect Together AI integration
 - Added new image generation examples
 - Updated setup instructions
+- Added Together AI key setup guide
 
 ## Required Environment Variables
 ```env
@@ -40,6 +40,7 @@ ROOT_PASSWORD=your_admin_password
 ## Optional API Keys
 Users can set these directly through the bot:
 - Groq API Key (`/setgroqapi`)
+- Together AI Key (`/settogetherapi`)
 
 ---
 

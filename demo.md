@@ -62,16 +62,16 @@ Bot: 🎧 *Sends voice description of the image*
 ### Detailed Scene Generation
 ```
 You: /imagine A cyberpunk cityscape at sunset with neon signs and flying vehicles
-Bot: 🎨 Enhancing your prompt with Groq...
+Bot: 🎨 Enhancing your prompt with Together AI...
 Bot: Enhanced prompt: "Hyper-detailed cyberpunk megalopolis during golden hour, massive holographic advertisements floating between towering skyscrapers, flying vehicles creating light trails, ray-traced lighting, cinematic composition, 8K resolution"
-Bot: *Generates high-quality image using Groq's advanced models*
+Bot: *Generates high-quality image using Together AI's state-of-the-art models*
 ```
 
 ### Artistic Style Specification
 ```
 You: /imagine A portrait in the style of Van Gogh's Starry Night
-Bot: 🎨 Enhancing your prompt with Groq's style transfer...
-Bot: *Generates artistic interpretation using advanced AI models*
+Bot: 🎨 Processing with Together AI's style transfer...
+Bot: *Generates artistic interpretation using advanced stable diffusion models*
 ```
 
 ## Latest Features (January 2025) 🆕
@@ -92,7 +92,7 @@ Bot: *Generates more natural and fluid voice output*
 ### Image Generation Improvements
 ```
 You: /imagine "A futuristic city with floating gardens"
-Bot: 🎨 Processing with Groq's enhanced image generation...
+Bot: 🎨 Processing with Together AI's enhanced models...
 Bot: *Generates higher quality image with improved details and coherence*
 ```
 
