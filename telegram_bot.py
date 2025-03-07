@@ -27,7 +27,7 @@ from constants import HELP_MESSAGE, SUMMARY_PROMPT, MEDIA_FOLDER
 from image_generator import AIImageGenerator
 from image_caption import ImageCaptioner
 from video_insights import get_insights
-from database_helper import DatabaseHelper
+
 
 # Initialize image generator and captioner
 image_generator = AIImageGenerator()
@@ -60,9 +60,6 @@ TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
 # Global variable for user sessions
 user_sessions = {}
-
-# Initialize database
-db = DatabaseHelper()
 
 # Dictionary of available commands and their descriptions
 COMMANDS = {
@@ -283,15 +280,6 @@ async def chat_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             api_key=session.groq_api_key
         )
         
-        # Store in database
-        db.add_or_update_user(
-            user_id=user_id,
-            username=update.effective_user.username,
-            first_name=update.effective_user.first_name,
-            last_name=update.effective_user.last_name
-        )
-        db.store_chat(user_id, message, response, "llama3-70b-8192")
-        
         # Send text response
         await update.message.reply_text(response)
         
@@ -355,15 +343,6 @@ async def imagine_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
             # Create BytesIO object
             image_io = io.BytesIO(image_bytes)
             image_io.name = 'generated_image.png'
-
-            # Store in database
-            db.add_or_update_user(
-                user_id=user_id,
-                username=update.effective_user.username,
-                first_name=update.effective_user.first_name,
-                last_name=update.effective_user.last_name
-            )
-            db.store_image_generation(user_id, prompt, enhanced_prompt, "generated_image.png")
 
             # Send the image first
             await update.message.reply_photo(
@@ -434,15 +413,6 @@ async def enhance_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         total_time = time.time() - start_time
         
         if success and enhanced_text:
-            # Store in database
-            db.add_or_update_user(
-                user_id=user_id,
-                username=update.effective_user.username,
-                first_name=update.effective_user.first_name,
-                last_name=update.effective_user.last_name
-            )
-            db.store_text_enhancement(user_id, text, enhanced_text)
-            
             response = (
                 f" Original text:\n`{text}`\n\n"
                 f" Enhanced version:\n`{enhanced_text}`\n\n"
@@ -593,15 +563,6 @@ async def describe_image(update: Update, context: ContextTypes.DEFAULT_TYPE):
         description = response.choices[0].message.content
         logging.info("Description extracted from response")
 
-        # Store in database
-        db.add_or_update_user(
-            user_id=user_id,
-            username=update.effective_user.username,
-            first_name=update.effective_user.first_name,
-            last_name=update.effective_user.last_name
-        )
-        db.store_image_description(user_id, file_url, description)
-
         # Send the text description
         await update.message.reply_text(description)
         logging.info("Text description sent to user")
@@ -691,15 +652,6 @@ async def button_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             
             if success:
-                # Store in database
-                db.add_or_update_user(
-                    user_id=user_id,
-                    username=query.from_user.username,
-                    first_name=query.from_user.first_name,
-                    last_name=query.from_user.last_name
-                )
-                db.store_image_caption(user_id, photo_url, caption)
-                
                 await query.edit_message_text(f"🎨 Creative Caption:\n\n{caption}")
             else:
                 await query.edit_message_text(f"❌ Error: {caption}")
@@ -1131,16 +1083,6 @@ async def analyze_video_command(update: Update, context: ContextTypes.DEFAULT_TY
         # Analyze video
         insights = get_insights(file_path)
 
-        # Store in database
-        user_id = update.effective_user.id
-        db.add_or_update_user(
-            user_id=user_id,
-            username=update.effective_user.username,
-            first_name=update.effective_user.first_name,
-            last_name=update.effective_user.last_name
-        )
-        db.store_video_analysis(user_id, file_path, insights)
-
         # Send results
         await update.message.reply_text(f"Analysis Results:\n\n{insights}")
 
@@ -1202,15 +1144,6 @@ async def caption_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         success, caption = await image_captioner.generate_caption(photo_url, custom_prompt)
         
         if success:
-            # Store in database
-            db.add_or_update_user(
-                user_id=user_id,
-                username=update.effective_user.username,
-                first_name=update.effective_user.first_name,
-                last_name=update.effective_user.last_name
-            )
-            db.store_image_caption(user_id, photo_url, caption)
-            
             await processing_message.edit_text(f"🖼️ Image Analysis:\n\n{caption}")
         else:
             await processing_message.edit_text(f"❌ {caption}")  # caption contains error message
@@ -1229,15 +1162,6 @@ async def subscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
         
     subscribed_users.add(user_id)
-    
-    # Store in database
-    db.add_or_update_user(
-        user_id=user_id,
-        username=update.effective_user.username,
-        first_name=update.effective_user.first_name,
-        last_name=update.effective_user.last_name
-    )
-    db.update_subscription(user_id, True)
     
     await update.message.reply_text(
         "✅ You have successfully subscribed to bot updates!\n"
@@ -1259,9 +1183,6 @@ async def unsubscribe_command(update: Update, context: ContextTypes.DEFAULT_TYPE
         return
         
     subscribed_users.remove(user_id)
-    
-    # Update database
-    db.update_subscription(user_id, False)
     
     await update.message.reply_text(
         "✅ You have been unsubscribed from bot updates.\n"
