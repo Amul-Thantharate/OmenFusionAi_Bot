@@ -41,7 +41,7 @@ class AIImageGenerator:
                     "role": "user",
                     "content": f"Enhance this image prompt: {user_prompt}"
                 }],
-                model="mixtral-8x7b-32768",  
+                model="llama3-8b-8192",  
                 temperature=0.7,
                 max_tokens=256
             )
